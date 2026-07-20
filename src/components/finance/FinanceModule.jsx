@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from '../common/RNBridge';
 import { useData } from '../../context/DataContext';
+import { useAuth } from '../../context/AuthContext';
 import { COLORS } from '../../theme/colors';
 import { DollarSign, FileText, PieChart, Plus, Edit2, Trash2, Calendar, TrendingUp, Package, Users, ShieldAlert, Check } from 'lucide-react';
 import { formatCurrencyInput, parseCurrencyInput } from '../../utils/formatters';
 
 export const FinanceModule = () => {
   const { expenses, orders, products, batches, addExpense, updateExpense, deleteExpense } = useData();
+  const { requireAdmin } = useAuth();
 
   const [activeTab, setActiveTab] = useState('PROFIT');
 
@@ -20,50 +22,58 @@ export const FinanceModule = () => {
   const currentMonthStr = new Date().toISOString().substring(0, 7);
   const [selectedMonth, setSelectedMonth] = useState(currentMonthStr);
 
-  const startAddExpense = () => {
-    setEditingExpenseId('NEW');
-    setExpDate(new Date().toISOString().substring(0, 10));
-    setExpAmount(100000);
-    setExpReason('');
-    setExpCategory('Bao bì & In ấn');
-    setIsExpenseModalOpen(true);
+  const handleOpenAddExpense = () => {
+    requireAdmin(() => {
+      setEditingExpenseId('NEW');
+      setExpDate(new Date().toISOString().substring(0, 10));
+      setExpAmount(100000);
+      setExpReason('');
+      setExpCategory('Bao bì & In ấn');
+      setIsExpenseModalOpen(true);
+    }, 'Vui lòng đăng nhập Admin để ghi khoản chi mới!');
   };
 
   const startEditExpense = (exp) => {
-    setEditingExpenseId(exp.id);
-    setExpDate(exp.date || '');
-    setExpAmount(Number(exp.amount || 0));
-    setExpReason(exp.reason || '');
-    setExpCategory(exp.category || 'Khác');
-    setIsExpenseModalOpen(true);
+    requireAdmin(() => {
+      setEditingExpenseId(exp.id);
+      setExpDate(exp.date || '');
+      setExpAmount(Number(exp.amount || 0));
+      setExpReason(exp.reason || '');
+      setExpCategory(exp.category || 'Khác');
+      setIsExpenseModalOpen(true);
+    }, 'Vui lòng đăng nhập Admin để sửa khoản chi!');
   };
 
   const handleSaveExpense = () => {
-    if (!expReason.trim() || !expAmount) {
-      alert('Vui lòng nhập số tiền và lý do chi!');
-      return;
-    }
+    requireAdmin(() => {
+      if (!expReason.trim() || !expAmount) {
+        alert('Vui lòng nhập số tiền và lý do chi!');
+        return;
+      }
 
-    const payload = {
-      date: expDate,
-      amount: Number(expAmount) || 0,
-      reason: expReason,
-      category: expCategory
-    };
+      const payload = {
+        date: expDate,
+        amount: Number(expAmount) || 0,
+        reason: expReason,
+        category: expCategory
+      };
 
-    if (editingExpenseId === 'NEW') {
-      addExpense(payload);
-    } else {
-      updateExpense(editingExpenseId, payload);
-    }
+      if (editingExpenseId === 'NEW') {
+        addExpense(payload);
+      } else {
+        updateExpense(editingExpenseId, payload);
+      }
 
-    setIsExpenseModalOpen(false);
+      setIsExpenseModalOpen(false);
+    }, 'Vui lòng đăng nhập Admin để lưu khoản chi!');
   };
 
   const handleDeleteExpense = (exp) => {
-    if (window.confirm(`Xóa khoản chi "${exp.reason}" (${formatCurrency(exp.amount)})?`)) {
-      deleteExpense(exp.id);
-    }
+    requireAdmin(() => {
+      if (window.confirm(`Xóa khoản chi "${exp.reason}" (${formatCurrency(exp.amount)})?`)) {
+        deleteExpense(exp.id);
+      }
+    }, 'Vui lòng đăng nhập Admin để xóa khoản chi!');
   };
 
   const formatCurrency = (val) => {

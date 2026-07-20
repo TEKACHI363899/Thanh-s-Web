@@ -14,6 +14,9 @@ export const AuthProvider = ({ children }) => {
   });
 
   const [loadingAuth, setLoadingAuth] = useState(true);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  const isReadOnly = !currentUser;
 
   // Realtime Firebase Auth Listener
   useEffect(() => {
@@ -47,6 +50,21 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (e) {}
   }, [currentUser]);
+
+  // Open / Close Auth Modal
+  const openAuthModal = () => setIsAuthModalOpen(true);
+  const closeAuthModal = () => setIsAuthModalOpen(false);
+
+  // Helper guard for action requiring admin login
+  const requireAdmin = (actionCallback, message = 'Vui lòng đăng nhập tài khoản Admin để thực hiện thao tác này!') => {
+    if (!currentUser) {
+      alert(`⚠️ ${message}`);
+      openAuthModal();
+      return false;
+    }
+    if (actionCallback) actionCallback();
+    return true;
+  };
 
   // Firebase Sign In
   const loginWithFirebase = async (email, password) => {
@@ -113,7 +131,12 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider value={{
       currentUser,
+      isReadOnly,
       loadingAuth,
+      isAuthModalOpen,
+      openAuthModal,
+      closeAuthModal,
+      requireAdmin,
       loginWithFirebase,
       signUpWithFirebase,
       logoutAdmin

@@ -1,63 +1,39 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView } from '../common/RNBridge';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image } from '../common/RNBridge';
 import { useData } from '../../context/DataContext';
+import { useAuth } from '../../context/AuthContext';
 import { COLORS } from '../../theme/colors';
-import { Plus, Search, Edit2, Trash2, Tag, Package, AlertTriangle, Filter, X, Check, RotateCcw, Layers, DollarSign, Calendar } from 'lucide-react';
+import { Plus, Search, Filter, Layers, Edit2, Trash2, Tag, ChevronDown, CheckCircle, Package, AlertTriangle, X, RotateCcw, ArrowRight, DollarSign, BarChart2, Calendar, FileText } from 'lucide-react';
 import { ProductFormModal } from './ProductFormModal';
 import { BatchManagementModal } from '../batches/BatchManagementModal';
 
 export const ProductList = () => {
   const { products, batches, deleteProduct, deleteBatch } = useData();
+  const { requireAdmin } = useAuth();
 
-  // Tab mode: 'PRODUCTS' or 'BATCHES'
-  const [activeSubTab, setActiveSubTab] = useState('PRODUCTS');
-
-  // Filter Modal & State
-  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('ALL');
   const [selectedBatch, setSelectedBatch] = useState('ALL');
+  const [activeSubTab, setActiveSubTab] = useState('PRODUCTS'); // 'PRODUCTS' or 'BATCHES'
 
-  // Modals state
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState(null);
   const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [editingBatch, setEditingBatch] = useState(null);
 
-  // Filter calculation
-  const activeFilterCount = (searchTerm.trim() ? 1 : 0) + (selectedCategory !== 'ALL' ? 1 : 0) + (selectedBatch !== 'ALL' ? 1 : 0);
+  // Active filter count
+  const activeFilterCount = (searchTerm.trim() ? 1 : 0) + 
+    (selectedCategory !== 'ALL' ? 1 : 0) + 
+    (selectedBatch !== 'ALL' ? 1 : 0);
 
   const filteredProducts = products.filter(p => {
     const term = searchTerm.toLowerCase().trim();
     const matchesSearch = !term || p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term);
-    const matchesCategory = selectedCategory === 'ALL' || p.category === selectedCategory;
+    const matchesCat = selectedCategory === 'ALL' || p.category === selectedCategory;
     const matchesBatch = selectedBatch === 'ALL' || p.batchId === selectedBatch;
-    return matchesSearch && matchesCategory && matchesBatch;
+    return matchesSearch && matchesCat && matchesBatch;
   });
-
-  const handleEditProduct = (prod) => {
-    setEditingProduct(prod);
-    setIsProductModalOpen(true);
-  };
-
-  const handleDeleteProduct = (prod) => {
-    if (window.confirm(`Bạn có chắc chắn muốn xóa sản phẩm "${prod.name}" (${prod.sku})?`)) {
-      deleteProduct(prod.id);
-    }
-  };
-
-  const handleDeleteBatch = (batch) => {
-    const productsInBatch = products.filter(p => p.batchId === batch.id);
-    if (productsInBatch.length > 0) {
-      if (!window.confirm(`Lô hàng "${batch.name}" có ${productsInBatch.length} sản phẩm đang gắn. Bạn có chắc chắn muốn xóa?`)) {
-        return;
-      }
-    } else {
-      if (!window.confirm(`Xóa lô hàng "${batch.name}"?`)) {
-        return;
-      }
-    }
-    deleteBatch(batch.id);
-  };
 
   const resetFilters = () => {
     setSearchTerm('');
@@ -65,13 +41,43 @@ export const ProductList = () => {
     setSelectedBatch('ALL');
   };
 
-  const getBatchName = (batchId) => {
-    const found = batches.find(b => b.id === batchId);
-    return found ? `${found.code} - ${found.name}` : 'Chưa gắn lô';
+  const handleEditProduct = (p) => {
+    requireAdmin(() => {
+      setEditingProduct(p);
+      setIsProductModalOpen(true);
+    }, 'Vui lòng đăng nhập Admin để sửa sản phẩm!');
+  };
+
+  const handleDeleteProduct = (p) => {
+    requireAdmin(() => {
+      if (window.confirm(`Xóa sản phẩm "${p.name}" (${p.sku}) khỏi kho?`)) {
+        deleteProduct(p.id);
+      }
+    }, 'Vui lòng đăng nhập Admin để xóa sản phẩm!');
+  };
+
+  const handleEditBatch = (b) => {
+    requireAdmin(() => {
+      setEditingBatch(b);
+      setIsBatchModalOpen(true);
+    }, 'Vui lòng đăng nhập Admin để sửa lô hàng!');
+  };
+
+  const handleDeleteBatch = (b) => {
+    requireAdmin(() => {
+      if (window.confirm(`Xóa lô hàng "${b.name}" (${b.code})? Tất cả sản phẩm thuộc lô cũng sẽ mất lô liên kết!`)) {
+        deleteBatch(b.id);
+      }
+    }, 'Vui lòng đăng nhập Admin để xóa lô hàng!');
   };
 
   const formatCurrency = (val) => {
     return (Number(val) || 0).toLocaleString('vi-VN') + ' VNĐ';
+  };
+
+  const getBatchName = (batchId) => {
+    const b = batches.find(item => item.id === batchId);
+    return b ? `[${b.code}] ${b.name}` : 'Không rõ Lô';
   };
 
   return (
@@ -79,9 +85,9 @@ export const ProductList = () => {
       {/* Top Banner Toolbar */}
       <View style={styles.topBanner}>
         <View style={{ flex: 1 }}>
-          <Text style={styles.mainTitle}>📦 Quản Lý Sản Phẩm & Lô Hàng Tồn Kho</Text>
+          <Text style={styles.mainTitle}>Quản Lý Sản Phẩm & Lô Hàng Tồn Kho</Text>
           <Text style={styles.subtitle}>
-            Tự động nhảy SKU riêng cho Trang sức (TS) & Quần áo (QA), quản lý giá vốn lô hàng & trừ kho tự động
+            Quản lý Trang sức, Quần áo và các Đợt hàng nhập kho • Theo dõi tồn kho thực tế
           </Text>
         </View>
 
@@ -90,8 +96,10 @@ export const ProductList = () => {
           <TouchableOpacity 
             style={styles.bigAddBtn} 
             onPress={() => {
-              setEditingProduct(null);
-              setIsProductModalOpen(true);
+              requireAdmin(() => {
+                setEditingProduct(null);
+                setIsProductModalOpen(true);
+              }, 'Vui lòng đăng nhập Admin để thêm sản phẩm mới!');
             }}
           >
             <Plus size={20} color="#ffffff" style={{ marginRight: 8 }} />
@@ -100,7 +108,12 @@ export const ProductList = () => {
         ) : (
           <TouchableOpacity 
             style={styles.bigBatchAddBtn} 
-            onPress={() => setIsBatchModalOpen(true)}
+            onPress={() => {
+              requireAdmin(() => {
+                setEditingBatch(null);
+                setIsBatchModalOpen(true);
+              }, 'Vui lòng đăng nhập Admin để tạo lô hàng mới!');
+            }}
           >
             <Package size={20} color="#ffffff" style={{ marginRight: 8 }} />
             <Text style={styles.bigBtnText}>Tạo Lô Hàng Mới</Text>

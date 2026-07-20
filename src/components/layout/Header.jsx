@@ -33,11 +33,19 @@ export const Header = ({ activeTab, onToggleSidebar, onOpenAuthModal }) => {
 
       {/* Right: Realtime Status & Active Admin Profile */}
       <View style={styles.rightSection}>
-        {/* Realtime Live Online Badge */}
-        <View style={styles.onlineStatusBadge}>
-          <Radio size={14} color={COLORS.success} style={{ marginRight: 6 }} />
-          <Text style={styles.onlineStatusText}>Realtime Online (Cloud Database Active)</Text>
-        </View>
+        {/* Realtime Live Online Badge or Read-Only Badge */}
+        {currentUser ? (
+          <View style={styles.onlineStatusBadge}>
+            <Radio size={14} color={COLORS.success} style={{ marginRight: 6 }} />
+            <Text style={styles.onlineStatusText}>Realtime Online (Cloud DB Active)</Text>
+          </View>
+        ) : (
+          <View style={[styles.onlineStatusBadge, { backgroundColor: 'rgba(245, 158, 11, 0.15)', borderColor: COLORS.statusPending }]}>
+            <Text style={{ fontSize: 13, color: COLORS.statusPending, fontWeight: '700' }}>
+              👁️ Chế Độ Chỉ Xem (Read-Only)
+            </Text>
+          </View>
+        )}
 
         {/* Current Logged In Admin Profile Button */}
         {currentUser ? (

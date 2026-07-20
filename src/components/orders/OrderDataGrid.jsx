@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from '../common/RNBridge';
 import { useData } from '../../context/DataContext';
+import { useAuth } from '../../context/AuthContext';
 import { COLORS } from '../../theme/colors';
 import { Plus, Search, Filter, Calendar, Edit2, Trash2, Tag, ChevronDown, CheckCircle, Clock, Truck, XCircle, AlertCircle, Phone, User, Globe, FileText, Package, RotateCcw, X, Check } from 'lucide-react';
 import { OrderFormModal } from './OrderFormModal';
 
 export const OrderDataGrid = () => {
   const { orders, batches, deleteOrder, setOrderStatus } = useData();
+  const { requireAdmin } = useAuth();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('ALL');
@@ -99,8 +101,10 @@ export const OrderDataGrid = () => {
         <TouchableOpacity 
           style={styles.bigCreateOrderBtn} 
           onPress={() => {
-            setEditingOrder(null);
-            setIsOrderModalOpen(true);
+            requireAdmin(() => {
+              setEditingOrder(null);
+              setIsOrderModalOpen(true);
+            }, 'Vui lòng đăng nhập Admin để tạo đơn hàng mới!');
           }}
         >
           <Plus size={18} color="#ffffff" style={{ marginRight: 6 }} />
@@ -255,7 +259,12 @@ export const OrderDataGrid = () => {
                       <View style={[styles.statusDropdownContainer, { backgroundColor: stStyle.bg }]}>
                         <select
                           value={ord.status}
-                          onChange={(e) => setOrderStatus(ord.id, e.target.value)}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            requireAdmin(() => {
+                              setOrderStatus(ord.id, val);
+                            }, 'Vui lòng đăng nhập Admin để chuyển trạng thái đơn hàng!');
+                          }}
                           style={{
                             backgroundColor: 'transparent',
                             border: 'none',
@@ -296,12 +305,18 @@ export const OrderDataGrid = () => {
 
                     {/* Actions: Edit & Delete Buttons */}
                     <View style={[styles.td, { width: 130, flexDirection: 'row', justifyContent: 'center', gap: 6 }]}>
-                      <TouchableOpacity style={styles.bigEditBtn} onPress={() => handleEdit(ord)}>
+                      <TouchableOpacity 
+                        style={styles.bigEditBtn} 
+                        onPress={() => requireAdmin(() => handleEdit(ord), 'Vui lòng đăng nhập Admin để sửa đơn hàng!')}
+                      >
                         <Edit2 size={14} color={COLORS.primaryLight} style={{ marginRight: 2 }} />
                         <Text style={{ color: COLORS.primaryLight, fontWeight: '700', fontSize: 12 }}>Sửa</Text>
                       </TouchableOpacity>
 
-                      <TouchableOpacity style={styles.bigDeleteBtn} onPress={() => handleDelete(ord)}>
+                      <TouchableOpacity 
+                        style={styles.bigDeleteBtn} 
+                        onPress={() => requireAdmin(() => handleDelete(ord), 'Vui lòng đăng nhập Admin để xóa đơn hàng!')}
+                      >
                         <Trash2 size={14} color={COLORS.danger} style={{ marginRight: 2 }} />
                         <Text style={{ color: COLORS.danger, fontWeight: '700', fontSize: 12 }}>Xóa</Text>
                       </TouchableOpacity>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet } from './components/common/RNBridge';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { DataProvider } from './context/DataContext';
 import { Header } from './components/layout/Header';
 import { Sidebar } from './components/layout/Sidebar';
@@ -12,25 +12,34 @@ import { BatchManagementModal } from './components/batches/BatchManagementModal'
 import { OrderFormModal } from './components/orders/OrderFormModal';
 
 export const AppContent = () => {
+  const { isAuthModalOpen, openAuthModal, closeAuthModal, requireAdmin } = useAuth();
+
   // Main Navigation State
   const [activeTab, setActiveTab] = useState('ORDERS');
   const [collapsed, setCollapsed] = useState(false);
 
   // Global Modals State
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
 
+  const handleOpenBatchModal = () => {
+    requireAdmin(() => setIsBatchModalOpen(true), 'Vui lòng đăng nhập Admin để quản lý lô hàng!');
+  };
+
+  const handleOpenOrderModal = () => {
+    requireAdmin(() => setIsOrderModalOpen(true), 'Vui lòng đăng nhập Admin để tạo đơn hàng!');
+  };
+
   return (
     <View style={styles.appWrapper}>
-      {/* Collapsible Sidebar (Sidebar thò thụt) */}
+      {/* Collapsible Sidebar */}
       <Sidebar 
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
         collapsed={collapsed} 
         setCollapsed={setCollapsed}
-        onOpenBatchModal={() => setIsBatchModalOpen(true)}
-        onOpenOrderModal={() => setIsOrderModalOpen(true)}
+        onOpenBatchModal={handleOpenBatchModal}
+        onOpenOrderModal={handleOpenOrderModal}
       />
 
       {/* Main Content Workspace */}
@@ -38,7 +47,7 @@ export const AppContent = () => {
         <Header 
           activeTab={activeTab} 
           onToggleSidebar={() => setCollapsed(!collapsed)}
-          onOpenAuthModal={() => setIsAuthModalOpen(true)} 
+          onOpenAuthModal={openAuthModal} 
         />
 
         <View style={styles.contentBody}>
@@ -51,7 +60,7 @@ export const AppContent = () => {
       {/* Modals */}
       <LoginModal 
         visible={isAuthModalOpen} 
-        onClose={() => setIsAuthModalOpen(false)} 
+        onClose={closeAuthModal} 
       />
 
       <BatchManagementModal
