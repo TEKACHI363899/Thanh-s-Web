@@ -60,22 +60,36 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
       setEstimatedArrivalDate('');
       setStatus('Chờ xử lý');
       setOrderNotes('');
-      setSelectedItems(products.length > 0 ? [{
-        productId: products[0].id,
-        sku: products[0].sku,
-        productName: products[0].name,
-        batchId: products[0].batchId,
-        quantity: 1,
-        unitPrice: products[0].sellingPrice,
-        unitCost: products[0].costPrice,
-        note: ''
-      }] : []);
+      if (initialOrder) {
+        setSelectedItems(initialOrder.items || []);
+      } else {
+        const inStockProducts = products.filter(p => p.stock > 0);
+        if (inStockProducts.length > 0) {
+          const defaultP = inStockProducts[0];
+          setSelectedItems([{
+            productId: defaultP.id,
+            sku: defaultP.sku,
+            productName: defaultP.name,
+            batchId: defaultP.batchId,
+            quantity: 1,
+            unitPrice: defaultP.sellingPrice,
+            unitCost: defaultP.costPrice,
+            note: ''
+          }]);
+        } else {
+          setSelectedItems([]);
+        }
+      }
     }
   }, [initialOrder, visible]);
 
   const handleAddItem = () => {
-    if (!products.length) return;
-    const defaultP = products[0];
+    const inStockProducts = products.filter(p => p.stock > 0);
+    if (inStockProducts.length === 0) {
+      alert('⚠️ Không thể thêm sản phẩm mới! Tất cả sản phẩm trong kho hiện tại đều đã HẾT HÀNG (Tồn kho = 0). Vui lòng nạp thêm lô hàng trước!');
+      return;
+    }
+    const defaultP = inStockProducts[0];
     setSelectedItems(prev => [...prev, {
       productId: defaultP.id,
       sku: defaultP.sku,
@@ -94,6 +108,11 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
       if (field === 'productId') {
         const foundP = products.find(p => p.id === value);
         if (foundP) {
+          const isCurrentlySelectedInInitial = initialOrder && initialOrder.items && initialOrder.items.some(it => it.productId === foundP.id);
+          if (foundP.stock <= 0 && !isCurrentlySelectedInInitial) {
+            alert(`⚠️ Sản phẩm "${foundP.name}" (${foundP.sku}) đã HẾT HÀNG trong kho (Tồn: 0). Không thể chọn vào đơn hàng!`);
+            return copy;
+          }
           copy[index] = {
             ...copy[index],
             productId: foundP.id,
@@ -101,8 +120,25 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
             productName: foundP.name,
             batchId: foundP.batchId,
             unitPrice: foundP.sellingPrice,
-            unitCost: foundP.costPrice
+            unitCost: foundP.costPrice,
+            quantity: 1
           };
+        }
+      } else if (field === 'quantity') {
+        const valNum = parseInt(value, 10) || 1;
+        const currentProd = products.find(p => p.id === copy[index].productId);
+        if (currentProd) {
+          const prevOrderedQty = initialOrder && initialOrder.items ? (initialOrder.items.find(it => it.productId === currentProd.id)?.quantity || 0) : 0;
+          const maxAllowed = currentProd.stock + prevOrderedQty;
+
+          if (valNum > maxAllowed) {
+            alert(`⚠️ Số lượng nhập (${valNum}) vượt quá tồn kho khả dụng (${maxAllowed}) của sản phẩm "${currentProd.name}"! Tự động điều chỉnh về ${maxAllowed}.`);
+            copy[index].quantity = Math.max(1, maxAllowed);
+          } else {
+            copy[index].quantity = Math.max(1, valNum);
+          }
+        } else {
+          copy[index].quantity = Math.max(1, valNum);
         }
       } else {
         copy[index] = { ...copy[index], [field]: value };
@@ -129,6 +165,19 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
     if (selectedItems.length === 0) {
       alert('Đơn hàng cần có ít nhất 1 sản phẩm!');
       return;
+    }
+
+    // Validate that no item exceeds available stock
+    for (const item of selectedItems) {
+      const p = products.find(prod => prod.id === item.productId);
+      if (p) {
+        const prevOrderedQty = initialOrder && initialOrder.items ? (initialOrder.items.find(it => it.productId === p.id)?.quantity || 0) : 0;
+        const maxAllowed = p.stock + prevOrderedQty;
+        if (item.quantity > maxAllowed) {
+          alert(`⚠️ Sản phẩm "${p.name}" (${p.sku}) chỉ còn tồn kho ${maxAllowed} sản phẩm. Không thể tạo đơn vượt tồn kho!`);
+          return;
+        }
+      }
     }
 
     const payload = {
@@ -332,17 +381,36 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
               </View>
 
               <View style={styles.selectProductBox}>
-                {products.map(p => (
-                  <TouchableOpacity
-                    key={p.id}
-                    style={[styles.prodChip, item.productId === p.id && styles.prodChipActive]}
-                    onPress={() => handleUpdateItem(index, 'productId', p.id)}
-                  >
-                    <Text style={[styles.prodChipText, item.productId === p.id && styles.prodChipTextActive]}>
-                      [{p.sku}] {p.name} - {formatCurrency(p.sellingPrice)} (Tồn: {p.stock})
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+                {products.map(p => {
+                  const isOutOfStock = p.stock <= 0;
+                  const isSelected = item.productId === p.id;
+                  return (
+                    <TouchableOpacity
+                      key={p.id}
+                      disabled={isOutOfStock && !isSelected}
+                      style={[
+                        styles.prodChip,
+                        isSelected && styles.prodChipActive,
+                        isOutOfStock && !isSelected && styles.prodChipDisabled
+                      ]}
+                      onPress={() => {
+                        if (isOutOfStock && !isSelected) {
+                          alert(`⚠️ Sản phẩm "${p.name}" (${p.sku}) đã HẾT HÀNG trong kho (Tồn: 0). Vui lòng chọn sản phẩm khác hoặc tạo lô hàng mới!`);
+                          return;
+                        }
+                        handleUpdateItem(index, 'productId', p.id);
+                      }}
+                    >
+                      <Text style={[
+                        styles.prodChipText,
+                        isSelected && styles.prodChipTextActive,
+                        isOutOfStock && !isSelected && styles.prodChipTextDisabled
+                      ]}>
+                        [{p.sku}] {p.name} - {formatCurrency(p.sellingPrice)} {isOutOfStock ? '❌ (HẾT HÀNG)' : `(Tồn: ${p.stock})`}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
 
               <View style={styles.grid3}>
@@ -715,6 +783,11 @@ const styles = StyleSheet.create({
     borderColor: COLORS.primaryLight,
     backgroundColor: 'rgba(59, 130, 246, 0.2)'
   },
+  prodChipDisabled: {
+    backgroundColor: 'rgba(30, 41, 59, 0.5)',
+    borderColor: 'rgba(51, 65, 85, 0.5)',
+    opacity: 0.6
+  },
   prodChipText: {
     fontSize: 12,
     color: COLORS.textMuted
@@ -722,6 +795,10 @@ const styles = StyleSheet.create({
   prodChipTextActive: {
     color: COLORS.textMain,
     fontWeight: '600'
+  },
+  prodChipTextDisabled: {
+    color: '#64748b',
+    textDecorationLine: 'line-through'
   },
   grid3: {
     flexDirection: 'row',
