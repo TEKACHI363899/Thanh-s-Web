@@ -5,7 +5,7 @@ import { COLORS } from '../../theme/colors';
 import { Radio, ShieldCheck, ChevronDown, LogOut, Menu } from 'lucide-react';
 
 export const Header = ({ activeTab, onToggleSidebar, onOpenAuthModal }) => {
-  const { currentUser, onlineAdmins, logoutAdmin, availableAdmins, loginAdmin } = useAuth();
+  const { currentUser, logoutAdmin } = useAuth();
   const [showAdminMenu, setShowAdminMenu] = useState(false);
 
   const getTitle = () => {
@@ -13,7 +13,7 @@ export const Header = ({ activeTab, onToggleSidebar, onOpenAuthModal }) => {
       case 'ORDERS':
         return '📊 Bảng Đơn Hàng (Data Grid)';
       case 'PRODUCTS':
-        return '📦 Quản Lý Sản Phẩm & Tồn Kho';
+        return '📦 Quản Lý Sản Phẩm & Lô Hàng Tồn Kho';
       case 'FINANCE':
         return '💰 Tài Chính & Báo Cáo Lợi Nhuận';
       default:
@@ -31,12 +31,12 @@ export const Header = ({ activeTab, onToggleSidebar, onOpenAuthModal }) => {
         <Text style={styles.viewTitle}>{getTitle()}</Text>
       </View>
 
-      {/* Right: Realtime Status & Active Admin Switcher */}
+      {/* Right: Realtime Status & Active Admin Profile */}
       <View style={styles.rightSection}>
         {/* Realtime Live Online Badge */}
         <View style={styles.onlineStatusBadge}>
           <Radio size={14} color={COLORS.success} style={{ marginRight: 6 }} />
-          <Text style={styles.onlineStatusText}>Realtime Online ({onlineAdmins.length} Admin)</Text>
+          <Text style={styles.onlineStatusText}>Realtime Online (Cloud Database Active)</Text>
         </View>
 
         {/* Current Logged In Admin Profile Button */}
@@ -46,41 +46,26 @@ export const Header = ({ activeTab, onToggleSidebar, onOpenAuthModal }) => {
               style={styles.adminProfileBtn}
               onPress={() => setShowAdminMenu(!showAdminMenu)}
             >
-              <Text style={{ fontSize: 18 }}>{currentUser.avatar || '👨‍💼'}</Text>
+              <Text style={{ fontSize: 18 }}>{currentUser.avatar || '👑'}</Text>
               <View>
                 <Text style={styles.adminNameText}>{currentUser.name}</Text>
-                <Text style={styles.adminRoleSub}>Đang hoạt động</Text>
+                <Text style={styles.adminRoleSub}>👑 Admin Hệ Thống</Text>
               </View>
               <ChevronDown size={16} color={COLORS.textMuted} style={{ marginLeft: 4 }} />
             </TouchableOpacity>
 
-            {/* Dropdown Menu to switch Admin accounts */}
+            {/* Dropdown Menu */}
             {showAdminMenu && (
               <View style={styles.adminDropdownMenu}>
                 <View style={styles.dropdownHeader}>
                   <ShieldCheck size={16} color={COLORS.primaryLight} style={{ marginRight: 6 }} />
-                  <Text style={styles.dropdownTitle}>Đổi Tài Khoản Admin Đang Dùng:</Text>
+                  <Text style={styles.dropdownTitle}>Thông Tin Tài Khoản Admin:</Text>
                 </View>
 
-                {availableAdmins.map(adm => (
-                  <TouchableOpacity
-                    key={adm.id}
-                    style={[styles.dropdownItem, currentUser.id === adm.id && styles.dropdownItemActive]}
-                    onPress={() => {
-                      loginAdmin(adm.id);
-                      setShowAdminMenu(false);
-                    }}
-                  >
-                    <Text style={{ fontSize: 18, marginRight: 10 }}>{adm.avatar}</Text>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.itemAdminName}>{adm.name}</Text>
-                      <Text style={styles.itemAdminEmail}>{adm.email}</Text>
-                    </View>
-                    {currentUser.id === adm.id && (
-                      <Text style={{ fontSize: 11, color: COLORS.success, fontWeight: '800' }}>● Đang chọn</Text>
-                    )}
-                  </TouchableOpacity>
-                ))}
+                <View style={{ padding: 10 }}>
+                  <Text style={{ fontSize: 14, fontWeight: '800', color: COLORS.textMain }}>{currentUser.name}</Text>
+                  <Text style={{ fontSize: 12, color: COLORS.textMuted, marginTop: 2 }}>{currentUser.email}</Text>
+                </View>
 
                 <TouchableOpacity 
                   style={styles.logoutBtn}
@@ -98,7 +83,7 @@ export const Header = ({ activeTab, onToggleSidebar, onOpenAuthModal }) => {
           </View>
         ) : (
           <TouchableOpacity style={styles.loginTriggerBtn} onPress={onOpenAuthModal}>
-            <Text style={styles.loginTriggerText}>Đăng Nhập Admin</Text>
+            <Text style={styles.loginTriggerText}>🔑 Đăng Nhập / Đăng Ký Admin</Text>
           </TouchableOpacity>
         )}
       </View>

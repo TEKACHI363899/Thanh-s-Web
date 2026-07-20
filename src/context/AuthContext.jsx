@@ -3,27 +3,24 @@ import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signO
 
 const AuthContext = createContext();
 
-export const INITIAL_ADMIN_USERS = [
-  { id: 'admin1', name: 'Admin 1 (Quản lý 1)', email: 'admin1@thanhstore.vn', avatar: '👨‍💼', color: '#3b82f6', role: 'ADMIN' },
-  { id: 'admin2', name: 'Admin 2 (Quản lý 2)', email: 'admin2@thanhstore.vn', avatar: '👩‍💼', color: '#ec4899', role: 'ADMIN' },
-  { id: 'admin3', name: 'Admin 3 (Kho & Đơn)', email: 'admin3@thanhstore.vn', avatar: '🧑‍💻', color: '#8b5cf6', role: 'ADMIN' },
-];
-
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(() => {
     try {
       const saved = localStorage.getItem('thanh_app_user');
-      return saved ? JSON.parse(saved) : INITIAL_ADMIN_USERS[0];
+      return saved ? JSON.parse(saved) : null;
     } catch (e) {
-      return INITIAL_ADMIN_USERS[0];
+      return null;
     }
   });
 
-  const [onlineAdmins, setOnlineAdmins] = useState(INITIAL_ADMIN_USERS);
+  const [loadingAuth, setLoadingAuth] = useState(true);
 
-  // Listen to Firebase Authentication State Changes
+  // Realtime Firebase Auth Listener
   useEffect(() => {
-    if (!auth) return;
+    if (!auth) {
+      setLoadingAuth(false);
+      return;
+    }
     const unsub = onAuthStateChanged(auth, (user) => {
       if (user) {
         const adminUser = {
@@ -36,6 +33,7 @@ export const AuthProvider = ({ children }) => {
         };
         setCurrentUser(adminUser);
       }
+      setLoadingAuth(false);
     });
     return () => unsub();
   }, []);
@@ -50,7 +48,7 @@ export const AuthProvider = ({ children }) => {
     } catch (e) {}
   }, [currentUser]);
 
-  // Sign In with Firebase
+  // Firebase Sign In
   const loginWithFirebase = async (email, password) => {
     try {
       const userCred = await signInWithEmailAndPassword(auth, email, password);
@@ -66,11 +64,17 @@ export const AuthProvider = ({ children }) => {
       setCurrentUser(adminUser);
       return { success: true, user: adminUser };
     } catch (err) {
-      return { success: false, error: err.message };
+      let msg = 'Đăng nhập thất bại. Vui lòng kiểm tra lại Email và Mật khẩu!';
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+        msg = 'Email hoặc mật khẩu không chính xác!';
+      } else if (err.code === 'auth/too-many-requests') {
+        msg = 'Tài khoản tạm thời bị khóa do gõ sai quá nhiều lần. Vui lòng thử lại sau!';
+      }
+      return { success: false, error: msg };
     }
   };
 
-  // Sign Up with Firebase (New Admin Account)
+  // Firebase Sign Up (Creating real new Admin account)
   const signUpWithFirebase = async (email, password, name) => {
     try {
       const userCred = await createUserWithEmailAndPassword(auth, email, password);
@@ -86,31 +90,19 @@ export const AuthProvider = ({ children }) => {
       setCurrentUser(newAdmin);
       return { success: true, user: newAdmin };
     } catch (err) {
-      return { success: false, error: err.message };
+      let msg = 'Đăng ký không thành công!';
+      if (err.code === 'auth/email-already-in-use') {
+        msg = 'Email này đã được đăng ký tài khoản trước đó!';
+      } else if (err.code === 'auth/weak-password') {
+        msg = 'Mật khẩu quá yếu! Vui lòng nhập từ 6 ký tự trở lên.';
+      } else if (err.code === 'auth/invalid-email') {
+        msg = 'Định dạng Email không hợp lệ!';
+      }
+      return { success: false, error: msg };
     }
   };
 
-  const loginAdmin = (adminId) => {
-    const found = INITIAL_ADMIN_USERS.find(u => u.id === adminId);
-    if (found) {
-      setCurrentUser(found);
-      return true;
-    }
-    return false;
-  };
-
-  const loginCustom = (email, name) => {
-    const newUser = {
-      id: 'admin_' + Date.now(),
-      name: name || email.split('@')[0],
-      email: email,
-      avatar: '👑',
-      color: '#10b981',
-      role: 'ADMIN'
-    };
-    setCurrentUser(newUser);
-  };
-
+  // Logout from Firebase
   const logoutAdmin = async () => {
     try {
       if (auth) await signOut(auth);
@@ -121,13 +113,10 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider value={{
       currentUser,
-      onlineAdmins,
+      loadingAuth,
       loginWithFirebase,
       signUpWithFirebase,
-      loginAdmin,
-      loginCustom,
-      logoutAdmin,
-      availableAdmins: INITIAL_ADMIN_USERS
+      logoutAdmin
     }}>
       {children}
     </AuthContext.Provider>

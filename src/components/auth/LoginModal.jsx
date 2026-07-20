@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from '../common/RNBridge';
 import { useAuth } from '../../context/AuthContext';
 import { COLORS } from '../../theme/colors';
-import { ShieldCheck, User, Lock, ArrowRight, X, UserPlus, LogIn, KeyRound } from 'lucide-react';
+import { ShieldCheck, User, Lock, ArrowRight, X, UserPlus, LogIn, Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react';
 
 export const LoginModal = ({ visible, onClose }) => {
-  const { availableAdmins, loginAdmin, loginCustom, loginWithFirebase, signUpWithFirebase } = useAuth();
+  const { loginWithFirebase, signUpWithFirebase } = useAuth();
 
   // Mode: 'SIGNIN' or 'SIGNUP'
   const [authMode, setAuthMode] = useState('SIGNIN');
@@ -14,11 +14,15 @@ export const LoginModal = ({ visible, onClose }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async () => {
+  const handleAuthSubmit = async () => {
     setErrorMessage('');
+    setSuccessMessage('');
+
     if (!email.trim() || !password.trim()) {
       setErrorMessage('Vui lòng điền đầy đủ Email và Mật khẩu!');
       return;
@@ -27,36 +31,42 @@ export const LoginModal = ({ visible, onClose }) => {
     setLoading(true);
 
     if (authMode === 'SIGNUP') {
+      if (!name.trim()) {
+        setErrorMessage('Vui lòng nhập Tên Admin / Người quản lý!');
+        setLoading(false);
+        return;
+      }
       if (password !== confirmPassword) {
         setErrorMessage('Mật khẩu xác nhận không khớp!');
         setLoading(false);
         return;
       }
       if (password.length < 6) {
-        setErrorMessage('Mật khẩu phải từ 6 ký tự trở lên!');
+        setErrorMessage('Mật khẩu phải chứa ít nhất 6 ký tự!');
         setLoading(false);
         return;
       }
 
-      // Execute Firebase Sign Up
+      // Call Firebase Auth Sign Up
       const res = await signUpWithFirebase(email, password, name);
       if (res.success) {
-        alert(`🎉 Đăng ký tài khoản Admin thành công cho "${res.user.email}"! Mọi tài khoản đều có quyền Admin quản lý.`);
-        onClose();
+        setSuccessMessage(`🎉 Đăng ký thành công tài khoản Admin cho "${email}"!`);
+        setTimeout(() => {
+          onClose();
+        }, 1200);
       } else {
-        // Fallback for custom local login if Firebase Auth domain is in demo mode
-        loginCustom(email, name);
-        onClose();
+        setErrorMessage(res.error);
       }
     } else {
-      // Execute Firebase Sign In
+      // Call Firebase Auth Sign In
       const res = await loginWithFirebase(email, password);
       if (res.success) {
-        onClose();
+        setSuccessMessage('🎉 Đăng nhập thành công!');
+        setTimeout(() => {
+          onClose();
+        }, 800);
       } else {
-        // Fallback local admin login
-        loginCustom(email, name);
-        onClose();
+        setErrorMessage(res.error);
       }
     }
 
@@ -68,28 +78,35 @@ export const LoginModal = ({ visible, onClose }) => {
   return (
     <View style={styles.overlay}>
       <View style={styles.modalBox}>
+        {/* Modal Header */}
         <View style={styles.header}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <ShieldCheck size={22} color={COLORS.primaryLight} />
-            <Text style={styles.headerTitle}>Hệ Thống Đăng Nhập & Đăng Ký Admin</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+            <View style={styles.headerIconCircle}>
+              <ShieldCheck size={20} color={COLORS.primaryLight} />
+            </View>
+            <View>
+              <Text style={styles.headerTitle}>Hệ Thống Đăng Nhập & Đăng Ký Admin</Text>
+              <Text style={styles.headerSub}>Google Firebase Realtime Authentication</Text>
+            </View>
           </View>
           <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
             <X size={18} color={COLORS.textMuted} />
           </TouchableOpacity>
         </View>
 
-        {/* Tab Switcher: Sign In vs Sign Up */}
+        {/* Tab Segment Switcher */}
         <View style={styles.tabSwitcher}>
           <TouchableOpacity
             style={[styles.tabBtn, authMode === 'SIGNIN' && styles.tabBtnActive]}
             onPress={() => {
               setAuthMode('SIGNIN');
               setErrorMessage('');
+              setSuccessMessage('');
             }}
           >
             <LogIn size={16} color={authMode === 'SIGNIN' ? '#ffffff' : COLORS.textMuted} style={{ marginRight: 6 }} />
             <Text style={[styles.tabText, authMode === 'SIGNIN' && styles.tabTextActive]}>
-              🔑 Đăng Nhập
+              🔑 Đăng Nhập Admin
             </Text>
           </TouchableOpacity>
 
@@ -98,6 +115,7 @@ export const LoginModal = ({ visible, onClose }) => {
             onPress={() => {
               setAuthMode('SIGNUP');
               setErrorMessage('');
+              setSuccessMessage('');
             }}
           >
             <UserPlus size={16} color={authMode === 'SIGNUP' ? '#ffffff' : COLORS.textMuted} style={{ marginRight: 6 }} />
@@ -108,117 +126,105 @@ export const LoginModal = ({ visible, onClose }) => {
         </View>
 
         <View style={styles.body}>
+          {/* Alert Messages */}
           {errorMessage ? (
             <View style={styles.errorAlert}>
-              <Text style={styles.errorAlertText}>⚠️ {errorMessage}</Text>
+              <AlertCircle size={18} color={COLORS.danger} style={{ marginRight: 8, flexShrink: 0 }} />
+              <Text style={styles.errorAlertText}>{errorMessage}</Text>
             </View>
           ) : null}
 
-          {authMode === 'SIGNIN' ? (
+          {successMessage ? (
+            <View style={styles.successAlert}>
+              <CheckCircle size={18} color={COLORS.success} style={{ marginRight: 8, flexShrink: 0 }} />
+              <Text style={styles.successAlertText}>{successMessage}</Text>
+            </View>
+          ) : null}
+
+          {authMode === 'SIGNUP' && (
+            <View style={styles.adminBadgeNotice}>
+              <Text style={styles.adminBadgeNoticeText}>
+                👑 **Đặc Quyền**: Tất cả các tài khoản đăng ký mới sẽ tự động có **quyền Admin toàn năng** (xem/sửa kho, tạo đơn, quản lý tài chính song song).
+              </Text>
+            </View>
+          )}
+
+          {authMode === 'SIGNUP' && (
             <>
-              <Text style={styles.sectionLabel}>⚡ Chọn Nhanh Tài Khoản Admin Demo:</Text>
-              <View style={styles.adminCardsRow}>
-                {availableAdmins.map(adm => (
-                  <TouchableOpacity
-                    key={adm.id}
-                    style={styles.adminCardBtn}
-                    onPress={() => {
-                      loginAdmin(adm.id);
-                      onClose();
-                    }}
-                  >
-                    <Text style={{ fontSize: 24, marginBottom: 4 }}>{adm.avatar}</Text>
-                    <Text style={styles.adminCardName}>{adm.name}</Text>
-                    <Text style={styles.adminCardEmail}>{adm.email}</Text>
-                    <View style={styles.quickLoginTag}>
-                      <Text style={styles.quickLoginTagText}>Đăng nhập ➔</Text>
-                    </View>
-                  </TouchableOpacity>
-                ))}
+              <Text style={styles.inputLabel}>Tên Admin / Tên Người Quản Lý *:</Text>
+              <View style={styles.inputWrapper}>
+                <User size={18} color={COLORS.textMuted} style={{ marginRight: 10 }} />
+                <TextInput
+                  style={styles.inputField}
+                  placeholder="Ví dụ: Admin Thanh, Quản lý Kho 1..."
+                  placeholderTextColor={COLORS.textMuted}
+                  value={name}
+                  onChangeText={setName}
+                />
               </View>
-
-              <View style={styles.divider}>
-                <View style={styles.dividerLine} />
-                <Text style={styles.dividerText}>Hoặc Đăng Nhập Email / Mật Khẩu</Text>
-                <View style={styles.dividerLine} />
-              </View>
-
-              <Text style={styles.label}>Email Admin *:</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="admin@thanhstore.vn"
-                placeholderTextColor={COLORS.textMuted}
-                value={email}
-                onChangeText={setEmail}
-              />
-
-              <Text style={styles.label}>Mật khẩu *:</Text>
-              <TextInput
-                style={styles.input}
-                secureTextEntry
-                placeholder="••••••••"
-                placeholderTextColor={COLORS.textMuted}
-                value={password}
-                onChangeText={setPassword}
-              />
-
-              <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit} disabled={loading}>
-                <Text style={styles.submitBtnText}>{loading ? 'Đang xử lý...' : 'Đăng Nhập Ngay'}</Text>
-                <ArrowRight size={16} color="#ffffff" style={{ marginLeft: 6 }} />
-              </TouchableOpacity>
-            </>
-          ) : (
-            <>
-              <View style={styles.adminRoleNotice}>
-                <Text style={styles.adminRoleNoticeText}>
-                  👑 **Quyền Hạn**: Mọi tài khoản tạo mới sẽ tự động có toàn quyền Admin (Quản lý kho, đơn hàng, lô hàng & tài chính song song).
-                </Text>
-              </View>
-
-              <Text style={styles.label}>Tên Admin / Người Quản Lý *:</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Ví dụ: Admin Thanh, Nhân viên Kho 1..."
-                placeholderTextColor={COLORS.textMuted}
-                value={name}
-                onChangeText={setName}
-              />
-
-              <Text style={styles.label}>Email Đăng Ký *:</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="ten-cua-ban@thanhstore.vn"
-                placeholderTextColor={COLORS.textMuted}
-                value={email}
-                onChangeText={setEmail}
-              />
-
-              <Text style={styles.label}>Mật Khẩu (Ít nhất 6 ký tự) *:</Text>
-              <TextInput
-                style={styles.input}
-                secureTextEntry
-                placeholder="••••••••"
-                placeholderTextColor={COLORS.textMuted}
-                value={password}
-                onChangeText={setPassword}
-              />
-
-              <Text style={styles.label}>Xác Nhận Mật Khẩu *:</Text>
-              <TextInput
-                style={styles.input}
-                secureTextEntry
-                placeholder="••••••••"
-                placeholderTextColor={COLORS.textMuted}
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-              />
-
-              <TouchableOpacity style={[styles.submitBtn, { backgroundColor: COLORS.success }]} onPress={handleSubmit} disabled={loading}>
-                <Text style={styles.submitBtnText}>{loading ? 'Đang tạo...' : 'Tạo Tài Khoản Admin Mới'}</Text>
-                <UserPlus size={16} color="#ffffff" style={{ marginLeft: 6 }} />
-              </TouchableOpacity>
             </>
           )}
+
+          <Text style={styles.inputLabel}>Email Đăng Nhập / Đăng Ký *:</Text>
+          <View style={styles.inputWrapper}>
+            <User size={18} color={COLORS.textMuted} style={{ marginRight: 10 }} />
+            <TextInput
+              style={styles.inputField}
+              placeholder="admin@thanhstore.vn"
+              placeholderTextColor={COLORS.textMuted}
+              value={email}
+              onChangeText={setEmail}
+            />
+          </View>
+
+          <Text style={styles.inputLabel}>Mật Khẩu *:</Text>
+          <View style={styles.inputWrapper}>
+            <Lock size={18} color={COLORS.textMuted} style={{ marginRight: 10 }} />
+            <TextInput
+              style={styles.inputField}
+              secureTextEntry={!showPassword}
+              placeholder="••••••••"
+              placeholderTextColor={COLORS.textMuted}
+              value={password}
+              onChangeText={setPassword}
+            />
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={{ padding: 4 }}>
+              {showPassword ? <EyeOff size={18} color={COLORS.textMuted} /> : <Eye size={18} color={COLORS.textMuted} />}
+            </TouchableOpacity>
+          </View>
+
+          {authMode === 'SIGNUP' && (
+            <>
+              <Text style={styles.inputLabel}>Xác Nhận Mật Khẩu *:</Text>
+              <View style={styles.inputWrapper}>
+                <Lock size={18} color={COLORS.textMuted} style={{ marginRight: 10 }} />
+                <TextInput
+                  style={styles.inputField}
+                  secureTextEntry={!showPassword}
+                  placeholder="••••••••"
+                  placeholderTextColor={COLORS.textMuted}
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                />
+              </View>
+            </>
+          )}
+
+          {/* Submit Button */}
+          <TouchableOpacity 
+            style={[styles.submitBtn, authMode === 'SIGNUP' && { backgroundColor: COLORS.success }]} 
+            onPress={handleAuthSubmit} 
+            disabled={loading}
+          >
+            <Text style={styles.submitBtnText}>
+              {loading ? 'Đang xử lý...' : (authMode === 'SIGNIN' ? 'Đăng Nhập Ngay' : 'Tạo Tài Khoản Admin')}
+            </Text>
+            {authMode === 'SIGNIN' ? (
+              <ArrowRight size={18} color="#ffffff" style={{ marginLeft: 8 }} />
+            ) : (
+              <UserPlus size={18} color="#ffffff" style={{ marginLeft: 8 }} />
+            )}
+          </TouchableOpacity>
         </View>
       </View>
     </View>
@@ -232,7 +238,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(15, 23, 42, 0.85)',
+    backgroundColor: 'rgba(15, 23, 42, 0.88)',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 9999,
@@ -240,31 +246,48 @@ const styles = StyleSheet.create({
   },
   modalBox: {
     width: '100%',
-    maxWidth: 540,
+    maxWidth: 500,
     backgroundColor: COLORS.cardDark,
-    borderRadius: 18,
+    borderRadius: 20,
     borderWidth: 1.5,
     borderColor: COLORS.cardBorder,
-    overflow: 'hidden'
+    overflow: 'hidden',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.5,
+    shadowRadius: 20
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 14,
+    paddingHorizontal: 22,
+    paddingVertical: 18,
     backgroundColor: '#162032',
     borderBottomWidth: 1,
     borderBottomColor: COLORS.cardBorder
   },
+  headerIconCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    backgroundColor: 'rgba(59, 130, 246, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
   headerTitle: {
     fontSize: 16,
-    fontWeight: '800',
+    fontWeight: '900',
     color: COLORS.textMain
+  },
+  headerSub: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    marginTop: 2
   },
   closeBtn: {
     padding: 6,
-    borderRadius: 6,
+    borderRadius: 8,
     backgroundColor: COLORS.surfaceHover
   },
   tabSwitcher: {
@@ -279,8 +302,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 10,
-    borderRadius: 8
+    paddingVertical: 12,
+    borderRadius: 10
   },
   tabBtnActive: {
     backgroundColor: COLORS.primary
@@ -295,22 +318,27 @@ const styles = StyleSheet.create({
     fontWeight: '800'
   },
   body: {
-    padding: 20
+    padding: 22
   },
   errorAlert: {
-    backgroundColor: 'rgba(239, 68, 68, 0.2)',
-    padding: 10,
-    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+    padding: 12,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: COLORS.danger,
-    marginBottom: 12
+    marginBottom: 14
   },
   errorAlertText: {
     color: COLORS.danger,
     fontSize: 13,
-    fontWeight: '700'
+    fontWeight: '700',
+    flex: 1
   },
-  adminRoleNotice: {
+  successAlert: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: 'rgba(16, 185, 129, 0.15)',
     padding: 12,
     borderRadius: 10,
@@ -318,100 +346,64 @@ const styles = StyleSheet.create({
     borderColor: COLORS.success,
     marginBottom: 14
   },
-  adminRoleNoticeText: {
+  successAlertText: {
+    color: COLORS.success,
+    fontSize: 13,
+    fontWeight: '700',
+    flex: 1
+  },
+  adminBadgeNotice: {
+    backgroundColor: 'rgba(16, 185, 129, 0.12)',
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.3)',
+    marginBottom: 16
+  },
+  adminBadgeNoticeText: {
     color: COLORS.success,
     fontSize: 13,
     lineHeight: 18
   },
-  sectionLabel: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.primaryLight,
-    marginBottom: 10
-  },
-  adminCardsRow: {
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 16
-  },
-  adminCardBtn: {
-    flex: 1,
-    backgroundColor: '#0f172a',
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: COLORS.cardBorder,
-    alignItems: 'center'
-  },
-  adminCardName: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.textMain,
-    textAlign: 'center'
-  },
-  adminCardEmail: {
-    fontSize: 10,
-    color: COLORS.textMuted,
-    textAlign: 'center',
-    marginTop: 2
-  },
-  quickLoginTag: {
-    backgroundColor: 'rgba(59, 130, 246, 0.2)',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 4,
-    marginTop: 8
-  },
-  quickLoginTagText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.primaryLight
-  },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 14
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: COLORS.cardBorder
-  },
-  dividerText: {
-    fontSize: 12,
-    color: COLORS.textMuted,
-    marginHorizontal: 10
-  },
-  label: {
+  inputLabel: {
     fontSize: 13,
     fontWeight: '700',
     color: COLORS.textSub,
     marginBottom: 6,
-    marginTop: 10
+    marginTop: 12
   },
-  input: {
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#0f172a',
     borderWidth: 1.5,
     borderColor: COLORS.cardBorder,
-    borderRadius: 10,
+    borderRadius: 12,
     paddingHorizontal: 14,
+    paddingVertical: 4
+  },
+  inputField: {
+    flex: 1,
     paddingVertical: 10,
     color: '#f8fafc',
-    fontSize: 14,
-    outlineStyle: 'none'
+    fontSize: 14
   },
   submitBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: COLORS.primary,
-    paddingVertical: 12,
-    borderRadius: 10,
-    marginTop: 20
+    paddingVertical: 14,
+    borderRadius: 12,
+    marginTop: 24,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10
   },
   submitBtnText: {
     color: '#ffffff',
-    fontWeight: '800',
+    fontWeight: '900',
     fontSize: 15
   }
 });
