@@ -280,7 +280,8 @@ export const DataProvider = ({ children }) => {
     setOrders(prev => [newOrder, ...prev]);
     syncToCloud('orders', newOrder.id, newOrder);
 
-    if (newOrder.status === 'Đã giao') {
+    // Deduct stock immediately upon order creation (unless status is Hoàn/Hủy right away)
+    if (newOrder.status !== 'Hoàn/Hủy') {
       applyStockDeduction(newOrder.items, 'deduct');
     }
 
@@ -292,17 +293,18 @@ export const DataProvider = ({ children }) => {
     const oldOrder = orders.find(o => o.id === id);
     if (!oldOrder) return;
 
-    const wasDelivered = oldOrder.status === 'Đã giao';
-    const isNowDelivered = updatedData.status === 'Đã giao';
+    const wasCancelled = oldOrder.status === 'Hoàn/Hủy';
+    const isNowCancelled = updatedData.status === 'Hoàn/Hủy';
     const finalOrder = { ...oldOrder, ...updatedData };
 
     setOrders(prev => prev.map(o => o.id === id ? finalOrder : o));
     syncToCloud('orders', id, finalOrder);
 
-    if (!wasDelivered && isNowDelivered) {
-      applyStockDeduction(updatedData.items || oldOrder.items, 'deduct');
-    } else if (wasDelivered && !isNowDelivered) {
+    // If order gets cancelled, restore stock. If restored from cancelled back to active, deduct stock.
+    if (!wasCancelled && isNowCancelled) {
       applyStockDeduction(oldOrder.items, 'restore');
+    } else if (wasCancelled && !isNowCancelled) {
+      applyStockDeduction(updatedData.items || oldOrder.items, 'deduct');
     }
 
     notifyChange();
@@ -310,7 +312,8 @@ export const DataProvider = ({ children }) => {
 
   const deleteOrder = (id) => {
     const targetOrder = orders.find(o => o.id === id);
-    if (targetOrder && targetOrder.status === 'Đã giao') {
+    // If deleted order was active (not cancelled), restore stock
+    if (targetOrder && targetOrder.status !== 'Hoàn/Hủy') {
       applyStockDeduction(targetOrder.items, 'restore');
     }
     setOrders(prev => prev.filter(o => o.id !== id));
