@@ -88,8 +88,7 @@ export const FinanceModule = () => {
 
   const totalDeliveredRevenue = deliveredOrdersInMonth.reduce((sum, o) => {
     const itemsTotal = o.items.reduce((s, it) => s + (it.unitPrice * it.quantity), 0);
-    const ship = o.isFreeship ? 0 : (o.shippingFee || 0);
-    return sum + itemsTotal + ship;
+    return sum + itemsTotal; // Doanh thu thuần = 100% tiền hàng, KHÔNG tính phí ship thu hộ shipper
   }, 0);
 
   const totalCostOfGoodsSold = deliveredOrdersInMonth.reduce((sum, o) => {

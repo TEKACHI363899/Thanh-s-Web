@@ -286,15 +286,17 @@ export const OrderDataGrid = () => {
                       </View>
                     </View>
 
-                    {/* Debt / Deposit */}
+                    {/* Debt / Deposit / COD */}
                     <View style={[styles.td, { width: 140 }]}>
                       {ord.remainingDebt > 0 ? (
                         <View>
-                          <Text style={styles.debtVal}>Nợ: {formatCurrency(ord.remainingDebt)}</Text>
-                          <Text style={styles.depositVal}>Cọc: {formatCurrency(ord.depositAmount)}</Text>
+                          <Text style={styles.debtVal}>COD: {formatCurrency(ord.remainingDebt)}</Text>
+                          {ord.depositAmount > 0 ? (
+                            <Text style={styles.depositVal}>Cọc: {formatCurrency(ord.depositAmount)}</Text>
+                          ) : null}
                         </View>
                       ) : (
-                        <Text style={styles.noDebtText}>Hết nợ</Text>
+                        <Text style={styles.noDebtText}>Đã thanh toán</Text>
                       )}
                     </View>
 

@@ -601,30 +601,30 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
 
           <View style={styles.summaryCard}>
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Tiền hàng:</Text>
-              <Text style={styles.summaryVal}>{formatCurrency(subtotal)}</Text>
+              <Text style={styles.summaryLabel}>1. Tổng Tiền Hàng (Tính Doanh Thu Shop):</Text>
+              <Text style={[styles.summaryVal, { fontWeight: '800', color: COLORS.success }]}>{formatCurrency(subtotal)}</Text>
             </View>
 
             <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Phí ship:</Text>
+              <Text style={styles.summaryLabel}>2. Phí Ship (Trả cho đơn vị vận chuyển, KHÔNG tính doanh thu):</Text>
               <Text style={styles.summaryVal}>{isFreeship ? 'Miễn phí (Freeship)' : formatCurrency(actualShip)}</Text>
             </View>
 
-            <View style={[styles.summaryRow, { borderTopWidth: 1, borderTopColor: COLORS.cardBorder, paddingTop: 8, marginTop: 4 }]}>
-              <Text style={styles.summaryGrandTitle}>TỔNG THU ĐƠN HÀNG:</Text>
-              <Text style={styles.summaryGrandVal}>{formatCurrency(grandTotal)}</Text>
-            </View>
-
-            {orderType === 'Order' && (
+            {deposit > 0 && (
               <View style={styles.summaryRow}>
-                <Text style={{ color: COLORS.statusPending, fontSize: 13, fontWeight: '700' }}>
-                  Đã cọc: {formatCurrency(deposit)} | CÒN NỢ THU COD:
-                </Text>
-                <Text style={{ color: COLORS.danger, fontSize: 15, fontWeight: '800' }}>
-                  {formatCurrency(remainingDebt)}
-                </Text>
+                <Text style={[styles.summaryLabel, { color: COLORS.statusPending }]}>3. Khách Đã Cọc Trước:</Text>
+                <Text style={[styles.summaryVal, { color: COLORS.statusPending, fontWeight: '800' }]}>- {formatCurrency(deposit)}</Text>
               </View>
             )}
+
+            <View style={[styles.summaryRow, { borderTopWidth: 1, borderTopColor: COLORS.cardBorder, paddingTop: 8, marginTop: 4 }]}>
+              <Text style={styles.summaryGrandTitle}>
+                {deposit > 0 ? 'TIỀN COD CẦN THU HỘ KHI GIAO:' : 'TỔNG CẦN THU KHI GIAO HÀNG:'}
+              </Text>
+              <Text style={[styles.summaryGrandVal, { color: remainingDebt > 0 ? COLORS.danger : COLORS.success }]}>
+                {formatCurrency(remainingDebt)}
+              </Text>
+            </View>
           </View>
         </ScrollView>
 
