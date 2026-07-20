@@ -30,6 +30,11 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
   const [status, setStatus] = useState('Chờ xử lý');
   const [orderNotes, setOrderNotes] = useState('');
 
+  // Search & Filter state for picking products from warehouse
+  const [prodSearchTerm, setProdSearchTerm] = useState('');
+  const [prodCatFilter, setProdCatFilter] = useState('ALL');
+  const [prodBatchFilter, setProdBatchFilter] = useState('ALL');
+
   useEffect(() => {
     if (initialOrder) {
       setCustomerName(initialOrder.customerName || '');
@@ -62,6 +67,9 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
       setEstimatedArrivalDate('');
       setStatus('Chờ xử lý');
       setOrderNotes('');
+      setProdSearchTerm('');
+      setProdCatFilter('ALL');
+      setProdBatchFilter('ALL');
       if (initialOrder) {
         setSelectedItems(initialOrder.items || []);
       } else {
@@ -373,49 +381,111 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
             </TouchableOpacity>
           </View>
 
-          {selectedItems.map((item, index) => (
-            <View key={index} style={styles.itemCard}>
-              <View style={styles.itemRow1}>
-                <Text style={styles.itemIndex}>Món #{index + 1}:</Text>
-                {selectedItems.length > 1 && (
-                  <TouchableOpacity onPress={() => handleRemoveItem(index)}>
-                    <Trash2 size={16} color={COLORS.danger} />
-                  </TouchableOpacity>
-                )}
-              </View>
+          {/* Search & Filter Toolbar for Product Selection */}
+          <View style={styles.pickerFilterToolbar}>
+            <View style={styles.pickerSearchInputBox}>
+              <Search size={16} color={COLORS.primaryLight} style={{ marginRight: 8 }} />
+              <TextInput
+                style={styles.pickerSearchInput}
+                placeholder="🔍 Nhập Tên sản phẩm hoặc Mã SKU để lọc tìm..."
+                placeholderTextColor={COLORS.textMuted}
+                value={prodSearchTerm}
+                onChangeText={setProdSearchTerm}
+              />
+              {prodSearchTerm ? (
+                <TouchableOpacity onPress={() => setProdSearchTerm('')}>
+                  <X size={14} color={COLORS.textMuted} />
+                </TouchableOpacity>
+              ) : null}
+            </View>
 
-              <View style={styles.selectProductBox}>
-                {products.map(p => {
-                  const isOutOfStock = p.stock <= 0;
-                  const isSelected = item.productId === p.id;
-                  return (
-                    <TouchableOpacity
-                      key={p.id}
-                      disabled={isOutOfStock && !isSelected}
-                      style={[
-                        styles.prodChip,
-                        isSelected && styles.prodChipActive,
-                        isOutOfStock && !isSelected && styles.prodChipDisabled
-                      ]}
-                      onPress={() => {
-                        if (isOutOfStock && !isSelected) {
-                          alert(`⚠️ Sản phẩm "${p.name}" (${p.sku}) đã HẾT HÀNG trong kho (Tồn: 0). Vui lòng chọn sản phẩm khác hoặc tạo lô hàng mới!`);
-                          return;
-                        }
-                        handleUpdateItem(index, 'productId', p.id);
-                      }}
-                    >
-                      <Text style={[
-                        styles.prodChipText,
-                        isSelected && styles.prodChipTextActive,
-                        isOutOfStock && !isSelected && styles.prodChipTextDisabled
-                      ]}>
-                        [{p.sku}] {p.name} - {formatCurrency(p.sellingPrice)} {isOutOfStock ? '❌ (HẾT HÀNG)' : `(Tồn: ${p.stock})`}
-                      </Text>
+            <View style={styles.pickerFilterChipsRow}>
+              {['ALL', 'TS', 'QA'].map(cat => (
+                <TouchableOpacity
+                  key={cat}
+                  style={[styles.pickerFilterChip, prodCatFilter === cat && styles.pickerFilterChipActive]}
+                  onPress={() => setProdCatFilter(cat)}
+                >
+                  <Text style={[styles.pickerFilterChipText, prodCatFilter === cat && styles.pickerFilterChipTextActive]}>
+                    {cat === 'ALL' ? 'Tất cả loại' : (cat === 'TS' ? 'Trang Sức (TS)' : 'Quần Áo (QA)')}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+
+              <select
+                value={prodBatchFilter}
+                onChange={(e) => setProdBatchFilter(e.target.value)}
+                style={styles.pickerBatchSelect}
+              >
+                <option value="ALL" style={{ background: '#1e293b', color: '#f8fafc' }}>📦 Tất cả Lô Hàng</option>
+                {batches.map(b => (
+                  <option key={b.id} value={b.id} style={{ background: '#1e293b', color: '#f8fafc' }}>
+                    [{b.code}] {b.name}
+                  </option>
+                ))}
+              </select>
+            </View>
+          </View>
+
+          {selectedItems.map((item, index) => {
+            // Get filtered products for picker
+            const term = prodSearchTerm.toLowerCase().trim();
+            const filteredPickerProducts = products.filter(p => {
+              const matchesSearch = !term || p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term);
+              const matchesCat = prodCatFilter === 'ALL' || p.category === prodCatFilter;
+              const matchesBatch = prodBatchFilter === 'ALL' || p.batchId === prodBatchFilter;
+              // Always include currently selected product
+              const isSelected = item.productId === p.id;
+              return isSelected || (matchesSearch && matchesCat && matchesBatch);
+            });
+
+            return (
+              <View key={index} style={styles.itemCard}>
+                <View style={styles.itemRow1}>
+                  <Text style={styles.itemIndex}>Món #{index + 1}:</Text>
+                  {selectedItems.length > 1 && (
+                    <TouchableOpacity onPress={() => handleRemoveItem(index)}>
+                      <Trash2 size={16} color={COLORS.danger} />
                     </TouchableOpacity>
-                  );
-                })}
-              </View>
+                  )}
+                </View>
+
+                <View style={styles.selectProductBox}>
+                  {filteredPickerProducts.length === 0 ? (
+                    <Text style={styles.pickerEmptyText}>Không tìm thấy sản phẩm phù hợp với bộ lọc...</Text>
+                  ) : (
+                    filteredPickerProducts.map(p => {
+                      const isOutOfStock = p.stock <= 0;
+                      const isSelected = item.productId === p.id;
+                      return (
+                        <TouchableOpacity
+                          key={p.id}
+                          disabled={isOutOfStock && !isSelected}
+                          style={[
+                            styles.prodChip,
+                            isSelected && styles.prodChipActive,
+                            isOutOfStock && !isSelected && styles.prodChipDisabled
+                          ]}
+                          onPress={() => {
+                            if (isOutOfStock && !isSelected) {
+                              alert(`⚠️ Sản phẩm "${p.name}" (${p.sku}) đã HẾT HÀNG trong kho (Tồn: 0). Vui lòng chọn sản phẩm khác hoặc tạo lô hàng mới!`);
+                              return;
+                            }
+                            handleUpdateItem(index, 'productId', p.id);
+                          }}
+                        >
+                          <Text style={[
+                            styles.prodChipText,
+                            isSelected && styles.prodChipTextActive,
+                            isOutOfStock && !isSelected && styles.prodChipTextDisabled
+                          ]}>
+                            [{p.sku}] {p.name} - {formatCurrency(p.sellingPrice)} {isOutOfStock ? '❌ (HẾT HÀNG)' : `(Tồn: ${p.stock})`}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })
+                  )}
+                </View>
 
               <View style={styles.grid3}>
                 <View style={{ flex: 1 }}>
@@ -452,7 +522,8 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
                 onChangeText={(val) => handleUpdateItem(index, 'note', val)}
               />
             </View>
-          ))}
+          );
+        })}
 
           <Text style={styles.sectionHeader}>🚚 4. Vận Chuyển & Thanh Toán</Text>
           <View style={styles.grid2}>
@@ -769,11 +840,83 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: COLORS.textMain
   },
+  pickerFilterToolbar: {
+    backgroundColor: '#162032',
+    padding: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.cardBorder,
+    marginTop: 8,
+    marginBottom: 12,
+    gap: 8
+  },
+  pickerSearchInputBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#0f172a',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: COLORS.cardBorder
+  },
+  pickerSearchInput: {
+    flex: 1,
+    paddingVertical: 8,
+    fontSize: 13,
+    color: '#f8fafc'
+  },
+  pickerFilterChipsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flexWrap: 'wrap'
+  },
+  pickerFilterChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 6,
+    backgroundColor: '#0f172a',
+    borderWidth: 1,
+    borderColor: COLORS.cardBorder
+  },
+  pickerFilterChipActive: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary
+  },
+  pickerFilterChipText: {
+    fontSize: 12,
+    color: COLORS.textMuted
+  },
+  pickerFilterChipTextActive: {
+    color: '#ffffff',
+    fontWeight: '700'
+  },
+  pickerBatchSelect: {
+    backgroundColor: '#0f172a',
+    border: '1px solid #334155',
+    color: '#f8fafc',
+    borderRadius: '6px',
+    paddingHorizontal: '8px',
+    paddingVertical: '5px',
+    fontSize: '12px',
+    fontWeight: '600',
+    outline: 'none',
+    cursor: 'pointer'
+  },
+  pickerEmptyText: {
+    fontSize: 13,
+    color: COLORS.textMuted,
+    fontStyle: 'italic',
+    padding: 8
+  },
   selectProductBox: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 6,
-    marginBottom: 8
+    marginBottom: 8,
+    maxHeight: 160,
+    overflowY: 'auto',
+    paddingRight: 4
   },
   prodChip: {
     backgroundColor: '#0f172a',
