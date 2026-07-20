@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from '../common/RNBridge';
 import { useData } from '../../context/DataContext';
+import { useAuth } from '../../context/AuthContext';
 import { COLORS } from '../../theme/colors';
 import { ShoppingCart, User, Phone, MapPin, Share2, DollarSign, Truck, Calendar, Link as LinkIcon, Plus, Trash2, X, Check } from 'lucide-react';
 import { formatCurrencyInput, parseCurrencyInput } from '../../utils/formatters';
 
 export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
   const { products, batches, addOrder, updateOrder } = useData();
+  const { requireAdmin } = useAuth();
 
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
@@ -158,54 +160,56 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
   const remainingDebt = Math.max(0, grandTotal - deposit);
 
   const handleSubmit = () => {
-    if (!customerName.trim()) {
-      alert('Vui lòng nhập Tên khách hàng!');
-      return;
-    }
-    if (selectedItems.length === 0) {
-      alert('Đơn hàng cần có ít nhất 1 sản phẩm!');
-      return;
-    }
+    requireAdmin(() => {
+      if (!customerName.trim()) {
+        alert('Vui lòng nhập Tên khách hàng!');
+        return;
+      }
+      if (selectedItems.length === 0) {
+        alert('Đơn hàng cần có ít nhất 1 sản phẩm!');
+        return;
+      }
 
-    // Validate that no item exceeds available stock
-    for (const item of selectedItems) {
-      const p = products.find(prod => prod.id === item.productId);
-      if (p) {
-        const prevOrderedQty = initialOrder && initialOrder.items ? (initialOrder.items.find(it => it.productId === p.id)?.quantity || 0) : 0;
-        const maxAllowed = p.stock + prevOrderedQty;
-        if (item.quantity > maxAllowed) {
-          alert(`⚠️ Sản phẩm "${p.name}" (${p.sku}) chỉ còn tồn kho ${maxAllowed} sản phẩm. Không thể tạo đơn vượt tồn kho!`);
-          return;
+      // Validate that no item exceeds available stock
+      for (const item of selectedItems) {
+        const p = products.find(prod => prod.id === item.productId);
+        if (p) {
+          const prevOrderedQty = initialOrder && initialOrder.items ? (initialOrder.items.find(it => it.productId === p.id)?.quantity || 0) : 0;
+          const maxAllowed = p.stock + prevOrderedQty;
+          if (item.quantity > maxAllowed) {
+            alert(`⚠️ Sản phẩm "${p.name}" (${p.sku}) chỉ còn tồn kho ${maxAllowed} sản phẩm. Không thể tạo đơn vượt tồn kho!`);
+            return;
+          }
         }
       }
-    }
 
-    const payload = {
-      customerName,
-      customerPhone,
-      customerAddress,
-      platform,
-      socialUsername,
-      items: selectedItems,
-      shippingFee: actualShip,
-      isFreeship,
-      paymentMethod,
-      orderType,
-      sourceLink: orderType === 'Order' ? sourceLink : '',
-      depositAmount: deposit,
-      remainingDebt: remainingDebt,
-      estimatedArrivalDate: orderType === 'Order' ? estimatedArrivalDate : '',
-      status,
-      orderNotes
-    };
+      const payload = {
+        customerName,
+        customerPhone,
+        customerAddress,
+        platform,
+        socialUsername,
+        items: selectedItems,
+        shippingFee: actualShip,
+        isFreeship,
+        paymentMethod,
+        orderType,
+        sourceLink: orderType === 'Order' ? sourceLink : '',
+        depositAmount: deposit,
+        remainingDebt: remainingDebt,
+        estimatedArrivalDate: orderType === 'Order' ? estimatedArrivalDate : '',
+        status,
+        orderNotes
+      };
 
-    if (initialOrder) {
-      updateOrder(initialOrder.id, payload);
-    } else {
-      addOrder(payload);
-    }
+      if (initialOrder) {
+        updateOrder(initialOrder.id, payload);
+      } else {
+        addOrder(payload);
+      }
 
-    onClose();
+      onClose();
+    }, 'Vui lòng đăng nhập Admin để lưu đơn hàng!');
   };
 
   const formatCurrency = (val) => {

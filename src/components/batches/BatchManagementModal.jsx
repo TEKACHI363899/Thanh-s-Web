@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from '../common/RNBridge';
 import { useData } from '../../context/DataContext';
+import { useAuth } from '../../context/AuthContext';
 import { COLORS } from '../../theme/colors';
 import { Package, Plus, Edit2, Trash2, X, Check, Calendar, DollarSign } from 'lucide-react';
 import { formatCurrencyInput, parseCurrencyInput } from '../../utils/formatters';
 
 export const BatchManagementModal = ({ visible, onClose }) => {
   const { batches, products, addBatch, updateBatch, deleteBatch } = useData();
+  const { requireAdmin } = useAuth();
 
   const [editingBatchId, setEditingBatchId] = useState(null);
   const [code, setCode] = useState('');
@@ -16,58 +18,66 @@ export const BatchManagementModal = ({ visible, onClose }) => {
   const [notes, setNotes] = useState('');
 
   const startCreate = () => {
-    setEditingBatchId('NEW');
-    setCode(`LÔ-0${batches.length + 1}`);
-    setName(`Đợt nhập tháng ${new Date().getMonth() + 1}`);
-    setImportDate(new Date().toISOString().split('T')[0]);
-    setTotalCapital(10000000);
-    setNotes('');
+    requireAdmin(() => {
+      setEditingBatchId('NEW');
+      setCode(`LÔ-0${batches.length + 1}`);
+      setName(`Đợt nhập tháng ${new Date().getMonth() + 1}`);
+      setImportDate(new Date().toISOString().split('T')[0]);
+      setTotalCapital(10000000);
+      setNotes('');
+    }, 'Vui lòng đăng nhập Admin để tạo lô hàng mới!');
   };
 
   const startEdit = (batch) => {
-    setEditingBatchId(batch.id);
-    setCode(batch.code || '');
-    setName(batch.name || '');
-    setImportDate(batch.importDate || new Date().toISOString().split('T')[0]);
-    setTotalCapital(Number(batch.totalCapital || 0));
-    setNotes(batch.notes || '');
+    requireAdmin(() => {
+      setEditingBatchId(batch.id);
+      setCode(batch.code || '');
+      setName(batch.name || '');
+      setImportDate(batch.importDate || new Date().toISOString().split('T')[0]);
+      setTotalCapital(Number(batch.totalCapital || 0));
+      setNotes(batch.notes || '');
+    }, 'Vui lòng đăng nhập Admin để sửa lô hàng!');
   };
 
   const handleSave = () => {
-    if (!name.trim() || !code.trim()) {
-      alert('Vui lòng nhập Mã lô và Tên lô hàng!');
-      return;
-    }
+    requireAdmin(() => {
+      if (!name.trim() || !code.trim()) {
+        alert('Vui lòng nhập Mã lô và Tên lô hàng!');
+        return;
+      }
 
-    const payload = {
-      code,
-      name,
-      importDate,
-      totalCapital: Number(totalCapital) || 0,
-      notes
-    };
+      const payload = {
+        code,
+        name,
+        importDate,
+        totalCapital: Number(totalCapital) || 0,
+        notes
+      };
 
-    if (editingBatchId === 'NEW') {
-      addBatch(payload);
-    } else {
-      updateBatch(editingBatchId, payload);
-    }
+      if (editingBatchId === 'NEW') {
+        addBatch(payload);
+      } else {
+        updateBatch(editingBatchId, payload);
+      }
 
-    setEditingBatchId(null);
+      setEditingBatchId(null);
+    }, 'Vui lòng đăng nhập Admin để lưu lô hàng!');
   };
 
   const handleDelete = (batch) => {
-    const productsInBatch = products.filter(p => p.batchId === batch.id);
-    if (productsInBatch.length > 0) {
-      if (!window.confirm(`Lô hàng "${batch.name}" có ${productsInBatch.length} sản phẩm đang gắn. Bạn có chắc chắn muốn xóa?`)) {
-        return;
+    requireAdmin(() => {
+      const productsInBatch = products.filter(p => p.batchId === batch.id);
+      if (productsInBatch.length > 0) {
+        if (!window.confirm(`Lô hàng "${batch.name}" có ${productsInBatch.length} sản phẩm đang gắn. Bạn có chắc chắn muốn xóa?`)) {
+          return;
+        }
+      } else {
+        if (!window.confirm(`Xóa lô hàng "${batch.name}"?`)) {
+          return;
+        }
       }
-    } else {
-      if (!window.confirm(`Xóa lô hàng "${batch.name}"?`)) {
-        return;
-      }
-    }
-    deleteBatch(batch.id);
+      deleteBatch(batch.id);
+    }, 'Vui lòng đăng nhập Admin để xóa lô hàng!');
   };
 
   const formatCurrency = (val) => {

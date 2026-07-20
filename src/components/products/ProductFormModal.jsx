@@ -1,22 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView } from '../common/RNBridge';
 import { useData } from '../../context/DataContext';
+import { useAuth } from '../../context/AuthContext';
 import { COLORS } from '../../theme/colors';
 import { Package, Tag, DollarSign, Percent, Percent as ImageIcon, X, Check, Info } from 'lucide-react';
 import { formatCurrencyInput, parseCurrencyInput } from '../../utils/formatters';
 
 export const ProductFormModal = ({ visible, onClose, initialProduct = null }) => {
   const { batches, addProduct, updateProduct, generateNextSKU } = useData();
+  const { requireAdmin } = useAuth();
 
   const [category, setCategory] = useState('TS');
   const [sku, setSku] = useState('');
   const [name, setName] = useState('');
   const [batchId, setBatchId] = useState('');
   const [image, setImage] = useState('');
-  const [costPrice, setCostPrice] = useState(100000);
-  const [marginPercent, setMarginPercent] = useState('50');
-  const [sellingPrice, setSellingPrice] = useState(150000);
-  const [stock, setStock] = useState('10');
+  const [costPrice, setCostPrice] = useState(0);
+  const [marginPercent, setMarginPercent] = useState(30);
+  const [sellingPrice, setSellingPrice] = useState(0);
+  const [stock, setStock] = useState(1);
   const [isManualPrice, setIsManualPrice] = useState(false);
 
   useEffect(() => {
@@ -24,33 +26,31 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
       setCategory(initialProduct.category || 'TS');
       setSku(initialProduct.sku || '');
       setName(initialProduct.name || '');
-      setBatchId(initialProduct.batchId || '');
+      setBatchId(initialProduct.batchId || (batches.length > 0 ? batches[0].id : ''));
       setImage(initialProduct.image || '');
-      setCostPrice(Number(initialProduct.costPrice || 0));
-      setMarginPercent(String(initialProduct.marginPercent || '50'));
-      setSellingPrice(Number(initialProduct.sellingPrice || 0));
-      setStock(String(initialProduct.stock || '0'));
+      setCostPrice(initialProduct.costPrice || 0);
+      setMarginPercent(initialProduct.marginPercent || 30);
+      setSellingPrice(initialProduct.sellingPrice || 0);
+      setStock(initialProduct.stock || 0);
       setIsManualPrice(true);
     } else {
-      const nextSku = generateNextSKU('TS');
       setCategory('TS');
-      setSku(nextSku);
+      setSku(generateNextSKU('TS'));
       setName('');
       setBatchId(batches.length > 0 ? batches[0].id : '');
-      setImage('https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=400&q=80');
+      setImage('');
       setCostPrice(100000);
-      setMarginPercent('50');
-      setStock('10');
+      setMarginPercent(30);
+      setSellingPrice(130000);
+      setStock(1);
       setIsManualPrice(false);
-      setSellingPrice(150000);
     }
-  }, [initialProduct, visible]);
+  }, [initialProduct, visible, batches]);
 
-  const handleCategoryChange = (newCat) => {
-    setCategory(newCat);
+  const handleCategoryChange = (cat) => {
+    setCategory(cat);
     if (!initialProduct) {
-      const nextSku = generateNextSKU(newCat);
-      setSku(nextSku);
+      setSku(generateNextSKU(cat));
     }
   };
 
@@ -77,30 +77,32 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
   };
 
   const handleSubmit = () => {
-    if (!name.trim()) {
-      alert('Vui lòng nhập Tên sản phẩm!');
-      return;
-    }
+    requireAdmin(() => {
+      if (!name.trim()) {
+        alert('Vui lòng nhập Tên sản phẩm!');
+        return;
+      }
 
-    const payload = {
-      category,
-      sku,
-      name,
-      batchId,
-      image: image || 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400&q=80',
-      costPrice: Number(costPrice) || 0,
-      marginPercent: Number(marginPercent) || 0,
-      sellingPrice: Number(sellingPrice) || 0,
-      stock: Number(stock) || 0
-    };
+      const payload = {
+        category,
+        sku,
+        name,
+        batchId,
+        image: image || 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400&q=80',
+        costPrice: Number(costPrice) || 0,
+        marginPercent: Number(marginPercent) || 0,
+        sellingPrice: Number(sellingPrice) || 0,
+        stock: Number(stock) || 0
+      };
 
-    if (initialProduct) {
-      updateProduct(initialProduct.id, payload);
-    } else {
-      addProduct(payload);
-    }
+      if (initialProduct) {
+        updateProduct(initialProduct.id, payload);
+      } else {
+        addProduct(payload);
+      }
 
-    onClose();
+      onClose();
+    }, 'Vui lòng đăng nhập Admin để lưu sản phẩm!');
   };
 
   if (!visible) return null;
