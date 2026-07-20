@@ -304,77 +304,8 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
             </View>
           </View>
 
-          <Text style={styles.sectionHeader}>🏷️ 2. Phân Loại Đơn Hàng & Đơn Order</Text>
-          <View style={styles.typeSelectorRow}>
-            <TouchableOpacity
-              style={[styles.typeBadge, orderType === 'Có sẵn' && styles.typeBadgeInStockActive]}
-              onPress={() => setOrderType('Có sẵn')}
-            >
-              <Text style={[styles.typeBadgeText, orderType === 'Có sẵn' && styles.typeBadgeTextActive]}>
-                ✅ Đơn Hàng Có Sẵn
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.typeBadge, orderType === 'Order' && styles.typeBadgeOrderActive]}
-              onPress={() => setOrderType('Order')}
-            >
-              <Text style={[styles.typeBadgeText, orderType === 'Order' && styles.typeBadgeTextActive]}>
-                📦 Đơn Hàng Order (Hàng về sau)
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {orderType === 'Order' && (
-            <View style={styles.orderTypeDetailsCard}>
-              <Text style={{ fontSize: 13, fontWeight: '700', color: COLORS.statusPending, marginBottom: 8 }}>
-                📌 Thông Tin Đặt Hàng Order & Công Nợ:
-              </Text>
-
-              <Text style={styles.label}>Link / Nguồn hàng Order:</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Link Taobao, 1688, Shopee, IG xưởng..."
-                placeholderTextColor={COLORS.textMuted}
-                value={sourceLink}
-                onChangeText={setSourceLink}
-              />
-
-              <View style={styles.grid2}>
-                <View style={styles.col}>
-                  <Text style={styles.label}>Tiền khách cọc trước (VND):</Text>
-                  <TextInput
-                    style={[styles.input, { borderColor: COLORS.statusPending, fontWeight: '700', color: COLORS.statusPending }]}
-                    keyboardType="numeric"
-                    placeholder="0"
-                    placeholderTextColor={COLORS.textMuted}
-                    value={formatCurrencyInput(depositAmount)}
-                    onChangeText={(val) => setDepositAmount(parseCurrencyInput(val))}
-                  />
-                </View>
-
-                <View style={styles.col}>
-                  <Text style={styles.label}>Số tiền còn nợ (Tự động tính):</Text>
-                  <View style={styles.debtDisplayBox}>
-                    <Text style={styles.debtDisplayText}>{formatCurrency(remainingDebt)}</Text>
-                  </View>
-                </View>
-              </View>
-
-              <Text style={styles.label}>Ngày dự kiến hàng về kho:</Text>
-              <TextInput
-                type="date"
-                style={styles.input}
-                placeholder="YYYY-MM-DD"
-                placeholderTextColor={COLORS.textMuted}
-                value={estimatedArrivalDate}
-                onChangeText={setEstimatedArrivalDate}
-              />
-            </View>
-          )}
-
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 16 }}>
-            <Text style={styles.sectionHeader}>🛍️ 3. Chọn Sản Phẩm Từ Kho Hàng</Text>
+            <Text style={styles.sectionHeader}>📦 2. Chọn Sản Phẩm Từ Các Lô Hàng</Text>
             <TouchableOpacity style={styles.addItemBtn} onPress={handleAddItem}>
               <Plus size={14} color="#ffffff" style={{ marginRight: 4 }} />
               <Text style={styles.addItemBtnText}>Thêm Sản Phẩm</Text>
@@ -457,6 +388,8 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
                     filteredPickerProducts.map(p => {
                       const isOutOfStock = p.stock <= 0;
                       const isSelected = item.productId === p.id;
+                      const batchObj = batches.find(b => b.id === p.batchId);
+                      const batchCode = batchObj ? batchObj.code : '';
                       return (
                         <TouchableOpacity
                           key={p.id}
@@ -479,7 +412,7 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
                             isSelected && styles.prodChipTextActive,
                             isOutOfStock && !isSelected && styles.prodChipTextDisabled
                           ]}>
-                            [{p.sku}] {p.name} - {formatCurrency(p.sellingPrice)} {isOutOfStock ? '❌ (HẾT HÀNG)' : `(Tồn: ${p.stock})`}
+                            {batchCode ? `[${batchCode}] ` : ''}[{p.sku}] {p.name} - {formatCurrency(p.sellingPrice)} {isOutOfStock ? '❌ (HẾT HÀNG)' : `(Tồn: ${p.stock})`}
                           </Text>
                         </TouchableOpacity>
                       );
