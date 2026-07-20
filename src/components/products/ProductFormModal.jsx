@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView 
 import { useData } from '../../context/DataContext';
 import { COLORS } from '../../theme/colors';
 import { Package, Tag, DollarSign, Percent, Percent as ImageIcon, X, Check, Info } from 'lucide-react';
+import { formatCurrencyInput, parseCurrencyInput } from '../../utils/formatters';
 
 export const ProductFormModal = ({ visible, onClose, initialProduct = null }) => {
   const { batches, addProduct, updateProduct, generateNextSKU } = useData();
@@ -12,9 +13,9 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
   const [name, setName] = useState('');
   const [batchId, setBatchId] = useState('');
   const [image, setImage] = useState('');
-  const [costPrice, setCostPrice] = useState('');
+  const [costPrice, setCostPrice] = useState(100000);
   const [marginPercent, setMarginPercent] = useState('50');
-  const [sellingPrice, setSellingPrice] = useState('');
+  const [sellingPrice, setSellingPrice] = useState(150000);
   const [stock, setStock] = useState('10');
   const [isManualPrice, setIsManualPrice] = useState(false);
 
@@ -25,9 +26,9 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
       setName(initialProduct.name || '');
       setBatchId(initialProduct.batchId || '');
       setImage(initialProduct.image || '');
-      setCostPrice(String(initialProduct.costPrice || '0'));
+      setCostPrice(Number(initialProduct.costPrice || 0));
       setMarginPercent(String(initialProduct.marginPercent || '50'));
-      setSellingPrice(String(initialProduct.sellingPrice || '0'));
+      setSellingPrice(Number(initialProduct.sellingPrice || 0));
       setStock(String(initialProduct.stock || '0'));
       setIsManualPrice(true);
     } else {
@@ -37,11 +38,11 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
       setName('');
       setBatchId(batches.length > 0 ? batches[0].id : '');
       setImage('https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=400&q=80');
-      setCostPrice('100000');
+      setCostPrice(100000);
       setMarginPercent('50');
       setStock('10');
       setIsManualPrice(false);
-      setSellingPrice('150000');
+      setSellingPrice(150000);
     }
   }, [initialProduct, visible]);
 
@@ -68,11 +69,11 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
   };
 
   const recalculateSellingPrice = (costVal, marginVal) => {
-    const cost = parseFloat(costVal) || 0;
+    const cost = Number(costVal) || 0;
     const margin = parseFloat(marginVal) || 0;
     const rawPrice = cost * (1 + margin / 100);
     const rounded = Math.round(rawPrice / 1000) * 1000;
-    setSellingPrice(String(rounded));
+    setSellingPrice(rounded);
   };
 
   const handleSubmit = () => {
@@ -190,14 +191,14 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
 
             <View style={styles.grid2}>
               <View style={styles.col}>
-                <Text style={styles.label}>Giá gốc (VND):</Text>
+                <Text style={styles.label}>Giá gốc (Hiển thị VNĐ):</Text>
                 <TextInput
                   style={styles.input}
                   keyboardType="numeric"
-                  placeholder="100000"
+                  placeholder="0 VNĐ"
                   placeholderTextColor={COLORS.textMuted}
-                  value={costPrice}
-                  onChangeText={handleCostPriceChange}
+                  value={formatCurrencyInput(costPrice)}
+                  onChangeText={(val) => handleCostPriceChange(parseCurrencyInput(val))}
                 />
               </View>
 
@@ -216,7 +217,7 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
 
             <View style={{ marginTop: 12 }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Text style={styles.label}>Giá bán tự động / Sửa tay (VND):</Text>
+                <Text style={styles.label}>Giá bán tự động / Sửa tay (VNĐ):</Text>
                 {isManualPrice && (
                   <TouchableOpacity onPress={() => {
                     setIsManualPrice(false);
@@ -230,11 +231,11 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
               <TextInput
                 style={[styles.input, styles.priceInputHighlight]}
                 keyboardType="numeric"
-                placeholder="150000"
+                placeholder="0 VNĐ"
                 placeholderTextColor={COLORS.textMuted}
-                value={sellingPrice}
+                value={formatCurrencyInput(sellingPrice)}
                 onChangeText={(val) => {
-                  setSellingPrice(val);
+                  setSellingPrice(parseCurrencyInput(val));
                   setIsManualPrice(true);
                 }}
               />

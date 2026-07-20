@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { broadcastRealtimeEvent } from '../services/firebase';
+import { db, collection, onSnapshot, doc, setDoc, deleteDoc, broadcastRealtimeEvent } from '../services/firebase';
 
 const DataContext = createContext();
 
@@ -13,177 +13,74 @@ const safeParse = (key, fallback) => {
   }
 };
 
-const INITIAL_BATCHES = [
-  {
-    id: 'batch_1',
-    code: 'LÔ-01',
-    name: 'Đợt nhập Tháng 7 (Hàng Hè)',
-    importDate: '2026-07-01',
-    totalCapital: 15000000,
-    notes: 'Nhập trang sức bạc và quần áo hè hot trend'
-  },
-  {
-    id: 'batch_2',
-    code: 'LÔ-02',
-    name: 'Đợt nhập Đồ Order Hàn Quốc',
-    importDate: '2026-07-10',
-    totalCapital: 25000000,
-    notes: 'Đợt hàng quần áo thiết kế & phụ kiện cao cấp'
-  }
-];
-
-const INITIAL_PRODUCTS = [
-  {
-    id: 'prod_1',
-    sku: 'TS001',
-    name: 'Dây chuyền Bạc Ý S925 Cỏ 4 Lá',
-    category: 'TS',
-    batchId: 'batch_1',
-    image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=400&q=80',
-    costPrice: 150000,
-    marginPercent: 60,
-    sellingPrice: 240000,
-    stock: 20,
-    soldCount: 8
-  },
-  {
-    id: 'prod_2',
-    sku: 'TS002',
-    name: 'Bông tai Pearl Vintage mạ vàng 18K',
-    category: 'TS',
-    batchId: 'batch_1',
-    image: 'https://images.unsplash.com/photo-1630019852942-f89202989a59?w=400&q=80',
-    costPrice: 90000,
-    marginPercent: 80,
-    sellingPrice: 162000,
-    stock: 15,
-    soldCount: 5
-  },
-  {
-    id: 'prod_3',
-    sku: 'QA001',
-    name: 'Áo Blazer Oversize Dáng Hàn Quốc',
-    category: 'QA',
-    batchId: 'batch_2',
-    image: 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=400&q=80',
-    costPrice: 320000,
-    marginPercent: 50,
-    sellingPrice: 480000,
-    stock: 12,
-    soldCount: 4
-  },
-  {
-    id: 'prod_4',
-    sku: 'QA002',
-    name: 'Váy Linen Đốm Hoa Vintage',
-    category: 'QA',
-    batchId: 'batch_2',
-    image: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=400&q=80',
-    costPrice: 250000,
-    marginPercent: 55,
-    sellingPrice: 388000,
-    stock: 10,
-    soldCount: 3
-  }
-];
-
-const INITIAL_EXPENSES = [
-  {
-    id: 'exp_1',
-    date: '2026-07-02',
-    amount: 350000,
-    reason: 'In ấn bao bì xốp + Sticker logo thương hiệu',
-    category: 'Bao bì & In ấn'
-  },
-  {
-    id: 'exp_2',
-    date: '2026-07-05',
-    amount: 1200000,
-    reason: 'Phí chạy quảng cáo Facebook & Instagram đợt 1',
-    category: 'Quảng cáo'
-  },
-  {
-    id: 'exp_3',
-    date: '2026-07-12',
-    amount: 180000,
-    reason: 'Mua băng keo niêm phong & túi gói hàng',
-    category: 'Vật tư gói hàng'
-  }
-];
-
-const INITIAL_ORDERS = [
-  {
-    id: 'ord_1',
-    code: 'DH-1001',
-    createdDate: '2026-07-15 14:30',
-    customerName: 'Nguyễn Thị Mai',
-    customerPhone: '0987654321',
-    customerAddress: '123 Nguyễn Trãi, Quận 1, TP. Hồ Chí Minh',
-    platform: 'IG',
-    socialUsername: '@mainguyen_99',
-    orderType: 'Có sẵn',
-    items: [
-      {
-        productId: 'prod_1',
-        sku: 'TS001',
-        productName: 'Dây chuyền Bạc Ý S925 Cỏ 4 Lá',
-        batchId: 'batch_1',
-        quantity: 1,
-        unitPrice: 240000,
-        unitCost: 150000,
-        note: 'Tặng kèm hộp quà đỏ'
-      }
-    ],
-    shippingFee: 30000,
-    isFreeship: true,
-    paymentMethod: 'Chuyển khoản full',
-    depositAmount: 270000,
-    remainingDebt: 0,
-    sourceLink: '',
-    estimatedArrivalDate: '',
-    status: 'Đã giao',
-    orderNotes: 'Khách quen trên IG, giao giờ hành chính'
-  },
-  {
-    id: 'ord_2',
-    code: 'DH-1002',
-    createdDate: '2026-07-18 10:15',
-    customerName: 'Trần Minh Anh',
-    customerPhone: '0912345678',
-    customerAddress: '45 Lê Lợi, Phường Bến Nghé, Quận 1',
-    platform: 'FB',
-    socialUsername: 'Minh Anh Tran (Blue)',
-    orderType: 'Order',
-    items: [
-      {
-        productId: 'prod_3',
-        sku: 'QA001',
-        productName: 'Áo Blazer Oversize Dáng Hàn Quốc',
-        batchId: 'batch_2',
-        quantity: 1,
-        unitPrice: 480000,
-        unitCost: 320000,
-        note: 'Size M - Màu Be'
-      }
-    ],
-    shippingFee: 35000,
-    isFreeship: false,
-    paymentMethod: 'COD',
-    depositAmount: 200000,
-    remainingDebt: 315000,
-    sourceLink: 'https://taobao.com/item/67891234',
-    estimatedArrivalDate: '2026-07-25',
-    status: 'Đang giao',
-    orderNotes: 'Đã cọc 200k qua Vietcombank. Thu COD còn lại'
-  }
-];
+// Initial mock data defaults (Set to empty arrays [] for clean production startup)
+const INITIAL_BATCHES = [];
+const INITIAL_PRODUCTS = [];
+const INITIAL_EXPENSES = [];
+const INITIAL_ORDERS = [];
 
 export const DataProvider = ({ children }) => {
   const [batches, setBatches] = useState(() => safeParse('thanh_app_batches', INITIAL_BATCHES));
   const [products, setProducts] = useState(() => safeParse('thanh_app_products', INITIAL_PRODUCTS));
   const [orders, setOrders] = useState(() => safeParse('thanh_app_orders', INITIAL_ORDERS));
   const [expenses, setExpenses] = useState(() => safeParse('thanh_app_expenses', INITIAL_EXPENSES));
+  const [isCloudConnected, setIsCloudConnected] = useState(false);
 
+  // Firestore Realtime Subscription & Initial Sync
+  useEffect(() => {
+    let unsubs = [];
+    try {
+      if (db) {
+        // Subscribe to Batches
+        const unsubBatches = onSnapshot(collection(db, 'batches'), (snapshot) => {
+          if (!snapshot.empty) {
+            const list = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+            setBatches(list);
+            setIsCloudConnected(true);
+          }
+        }, (err) => console.warn("Firestore Batches listener warning:", err));
+        unsubs.push(unsubBatches);
+
+        // Subscribe to Products
+        const unsubProducts = onSnapshot(collection(db, 'products'), (snapshot) => {
+          if (!snapshot.empty) {
+            const list = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+            setProducts(list);
+            setIsCloudConnected(true);
+          }
+        }, (err) => console.warn("Firestore Products listener warning:", err));
+        unsubs.push(unsubProducts);
+
+        // Subscribe to Orders
+        const unsubOrders = onSnapshot(collection(db, 'orders'), (snapshot) => {
+          if (!snapshot.empty) {
+            const list = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+            setOrders(list);
+            setIsCloudConnected(true);
+          }
+        }, (err) => console.warn("Firestore Orders listener warning:", err));
+        unsubs.push(unsubOrders);
+
+        // Subscribe to Expenses
+        const unsubExpenses = onSnapshot(collection(db, 'expenses'), (snapshot) => {
+          if (!snapshot.empty) {
+            const list = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+            setExpenses(list);
+            setIsCloudConnected(true);
+          }
+        }, (err) => console.warn("Firestore Expenses listener warning:", err));
+        unsubs.push(unsubExpenses);
+      }
+    } catch (e) {
+      console.warn("Cloud Firestore initialization error, falling back to local:", e);
+    }
+
+    return () => {
+      unsubs.forEach(unsub => unsub && unsub());
+    };
+  }, []);
+
+  // Save to LocalStorage as secondary cache
   useEffect(() => {
     try { localStorage.setItem('thanh_app_batches', JSON.stringify(batches)); } catch (e) {}
   }, [batches]);
@@ -200,12 +97,13 @@ export const DataProvider = ({ children }) => {
     try { localStorage.setItem('thanh_app_expenses', JSON.stringify(expenses)); } catch (e) {}
   }, [expenses]);
 
+  // Tab Sync Fallback
   useEffect(() => {
     if (typeof window === 'undefined' || !window.BroadcastChannel) return;
     const channel = new BroadcastChannel('thanh_management_realtime_sync');
     channel.onmessage = (event) => {
       const { type } = event.data;
-      if (type === 'REFRESH_DATA') {
+      if (type === 'REFRESH_DATA' && !isCloudConnected) {
         setBatches(safeParse('thanh_app_batches', INITIAL_BATCHES));
         setProducts(safeParse('thanh_app_products', INITIAL_PRODUCTS));
         setOrders(safeParse('thanh_app_orders', INITIAL_ORDERS));
@@ -213,10 +111,26 @@ export const DataProvider = ({ children }) => {
       }
     };
     return () => channel.close();
-  }, []);
+  }, [isCloudConnected]);
 
   const notifyChange = () => {
     broadcastRealtimeEvent('REFRESH_DATA', {});
+  };
+
+  // Helper function to sync a item to Cloud Firestore if connected
+  const syncToCloud = async (collectionName, id, data, isDelete = false) => {
+    try {
+      if (db) {
+        const docRef = doc(db, collectionName, id);
+        if (isDelete) {
+          await deleteDoc(docRef);
+        } else {
+          await setDoc(docRef, data, { merge: true });
+        }
+      }
+    } catch (err) {
+      console.warn(`Firestore sync error on ${collectionName}/${id}:`, err);
+    }
   };
 
   const generateNextSKU = (category) => {
@@ -250,24 +164,34 @@ export const DataProvider = ({ children }) => {
       sellingPrice: Number(productData.sellingPrice) || 0
     };
     setProducts(prev => [newProduct, ...prev]);
+    syncToCloud('products', newProduct.id, newProduct);
     notifyChange();
     return newProduct;
   };
 
   const updateProduct = (id, updatedData) => {
-    setProducts(prev => prev.map(p => p.id === id ? { 
-      ...p, 
-      ...updatedData,
-      stock: Number(updatedData.stock),
-      costPrice: Number(updatedData.costPrice),
-      marginPercent: Number(updatedData.marginPercent),
-      sellingPrice: Number(updatedData.sellingPrice)
-    } : p));
+    let finalUpdated = null;
+    setProducts(prev => prev.map(p => {
+      if (p.id === id) {
+        finalUpdated = {
+          ...p,
+          ...updatedData,
+          stock: Number(updatedData.stock),
+          costPrice: Number(updatedData.costPrice),
+          marginPercent: Number(updatedData.marginPercent),
+          sellingPrice: Number(updatedData.sellingPrice)
+        };
+        return finalUpdated;
+      }
+      return p;
+    }));
+    if (finalUpdated) syncToCloud('products', id, finalUpdated);
     notifyChange();
   };
 
   const deleteProduct = (id) => {
     setProducts(prev => prev.filter(p => p.id !== id));
+    syncToCloud('products', id, null, true);
     notifyChange();
   };
 
@@ -278,20 +202,30 @@ export const DataProvider = ({ children }) => {
       totalCapital: Number(batchData.totalCapital) || 0
     };
     setBatches(prev => [newBatch, ...prev]);
+    syncToCloud('batches', newBatch.id, newBatch);
     notifyChange();
   };
 
   const updateBatch = (id, updatedData) => {
-    setBatches(prev => prev.map(b => b.id === id ? {
-      ...b,
-      ...updatedData,
-      totalCapital: Number(updatedData.totalCapital)
-    } : b));
+    let finalUpdated = null;
+    setBatches(prev => prev.map(b => {
+      if (b.id === id) {
+        finalUpdated = {
+          ...b,
+          ...updatedData,
+          totalCapital: Number(updatedData.totalCapital)
+        };
+        return finalUpdated;
+      }
+      return b;
+    }));
+    if (finalUpdated) syncToCloud('batches', id, finalUpdated);
     notifyChange();
   };
 
   const deleteBatch = (id) => {
     setBatches(prev => prev.filter(b => b.id !== id));
+    syncToCloud('batches', id, null, true);
     notifyChange();
   };
 
@@ -302,20 +236,30 @@ export const DataProvider = ({ children }) => {
       amount: Number(expenseData.amount) || 0
     };
     setExpenses(prev => [newExp, ...prev]);
+    syncToCloud('expenses', newExp.id, newExp);
     notifyChange();
   };
 
   const updateExpense = (id, updatedData) => {
-    setExpenses(prev => prev.map(e => e.id === id ? {
-      ...e,
-      ...updatedData,
-      amount: Number(updatedData.amount)
-    } : e));
+    let finalUpdated = null;
+    setExpenses(prev => prev.map(e => {
+      if (e.id === id) {
+        finalUpdated = {
+          ...e,
+          ...updatedData,
+          amount: Number(updatedData.amount)
+        };
+        return finalUpdated;
+      }
+      return e;
+    }));
+    if (finalUpdated) syncToCloud('expenses', id, finalUpdated);
     notifyChange();
   };
 
   const deleteExpense = (id) => {
     setExpenses(prev => prev.filter(e => e.id !== id));
+    syncToCloud('expenses', id, null, true);
     notifyChange();
   };
 
@@ -334,6 +278,7 @@ export const DataProvider = ({ children }) => {
     };
 
     setOrders(prev => [newOrder, ...prev]);
+    syncToCloud('orders', newOrder.id, newOrder);
 
     if (newOrder.status === 'Đã giao') {
       applyStockDeduction(newOrder.items, 'deduct');
@@ -349,8 +294,10 @@ export const DataProvider = ({ children }) => {
 
     const wasDelivered = oldOrder.status === 'Đã giao';
     const isNowDelivered = updatedData.status === 'Đã giao';
+    const finalOrder = { ...oldOrder, ...updatedData };
 
-    setOrders(prev => prev.map(o => o.id === id ? { ...o, ...updatedData } : o));
+    setOrders(prev => prev.map(o => o.id === id ? finalOrder : o));
+    syncToCloud('orders', id, finalOrder);
 
     if (!wasDelivered && isNowDelivered) {
       applyStockDeduction(updatedData.items || oldOrder.items, 'deduct');
@@ -367,6 +314,7 @@ export const DataProvider = ({ children }) => {
       applyStockDeduction(targetOrder.items, 'restore');
     }
     setOrders(prev => prev.filter(o => o.id !== id));
+    syncToCloud('orders', id, null, true);
     notifyChange();
   };
 
@@ -383,11 +331,13 @@ export const DataProvider = ({ children }) => {
 
           const newStock = Math.max(0, p.stock + deltaStock);
           const newSold = Math.max(0, p.soldCount + deltaSold);
-          return {
+          const updatedP = {
             ...p,
             stock: newStock,
             soldCount: newSold
           };
+          syncToCloud('products', updatedP.id, updatedP);
+          return updatedP;
         }
         return p;
       });
@@ -407,6 +357,7 @@ export const DataProvider = ({ children }) => {
       products,
       orders,
       expenses,
+      isCloudConnected,
       generateNextSKU,
       addProduct,
       updateProduct,

@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 
 import { useData } from '../../context/DataContext';
 import { COLORS } from '../../theme/colors';
 import { DollarSign, FileText, PieChart, Plus, Edit2, Trash2, Calendar, TrendingUp, Package, Users, ShieldAlert, Check } from 'lucide-react';
+import { formatCurrencyInput, parseCurrencyInput } from '../../utils/formatters';
 
 export const FinanceModule = () => {
   const { expenses, orders, products, batches, addExpense, updateExpense, deleteExpense } = useData();
@@ -12,7 +13,7 @@ export const FinanceModule = () => {
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [editingExpenseId, setEditingExpenseId] = useState(null);
   const [expDate, setExpDate] = useState('');
-  const [expAmount, setExpAmount] = useState('');
+  const [expAmount, setExpAmount] = useState(100000);
   const [expReason, setExpReason] = useState('');
   const [expCategory, setExpCategory] = useState('Bao bì & In ấn');
 
@@ -22,7 +23,7 @@ export const FinanceModule = () => {
   const startAddExpense = () => {
     setEditingExpenseId('NEW');
     setExpDate(new Date().toISOString().substring(0, 10));
-    setExpAmount('100000');
+    setExpAmount(100000);
     setExpReason('');
     setExpCategory('Bao bì & In ấn');
     setIsExpenseModalOpen(true);
@@ -31,7 +32,7 @@ export const FinanceModule = () => {
   const startEditExpense = (exp) => {
     setEditingExpenseId(exp.id);
     setExpDate(exp.date || '');
-    setExpAmount(String(exp.amount || '0'));
+    setExpAmount(Number(exp.amount || 0));
     setExpReason(exp.reason || '');
     setExpCategory(exp.category || 'Khác');
     setIsExpenseModalOpen(true);
@@ -66,7 +67,7 @@ export const FinanceModule = () => {
   };
 
   const formatCurrency = (val) => {
-    return (Number(val) || 0).toLocaleString('vi-VN') + ' đ';
+    return (Number(val) || 0).toLocaleString('vi-VN') + ' VNĐ';
   };
 
   const deliveredOrdersInMonth = orders.filter(o => {
@@ -340,23 +341,22 @@ export const FinanceModule = () => {
               {editingExpenseId === 'NEW' ? '➕ Ghi Khoản Chi Vận Hành Mới' : '✏️ Chỉnh Sửa Khoản Chi'}
             </Text>
 
-            <Text style={styles.inputLabel}>Ngày chi:</Text>
+            <Text style={styles.inputLabel}>Ngày chi (Bảng chọn datepicker):</Text>
             <TextInput
+              type="date"
               style={styles.largeInput}
-              placeholder="YYYY-MM-DD"
-              placeholderTextColor={COLORS.textMuted}
               value={expDate}
               onChangeText={setExpDate}
             />
 
-            <Text style={styles.inputLabel}>Số tiền (VND) *:</Text>
+            <Text style={styles.inputLabel}>Số tiền chi (Hiển thị trực tiếp VNĐ) *:</Text>
             <TextInput
               style={[styles.largeInput, { color: COLORS.danger, fontWeight: '800', fontSize: 16 }]}
               keyboardType="numeric"
-              placeholder="100000"
+              placeholder="0 VNĐ"
               placeholderTextColor={COLORS.textMuted}
-              value={expAmount}
-              onChangeText={setExpAmount}
+              value={formatCurrencyInput(expAmount)}
+              onChangeText={(val) => setExpAmount(parseCurrencyInput(val))}
             />
 
             <Text style={styles.inputLabel}>Danh mục chi phí:</Text>

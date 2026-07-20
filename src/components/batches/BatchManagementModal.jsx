@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 
 import { useData } from '../../context/DataContext';
 import { COLORS } from '../../theme/colors';
 import { Package, Plus, Edit2, Trash2, X, Check, Calendar, DollarSign } from 'lucide-react';
+import { formatCurrencyInput, parseCurrencyInput } from '../../utils/formatters';
 
 export const BatchManagementModal = ({ visible, onClose }) => {
   const { batches, products, addBatch, updateBatch, deleteBatch } = useData();
@@ -11,7 +12,7 @@ export const BatchManagementModal = ({ visible, onClose }) => {
   const [code, setCode] = useState('');
   const [name, setName] = useState('');
   const [importDate, setImportDate] = useState('');
-  const [totalCapital, setTotalCapital] = useState('');
+  const [totalCapital, setTotalCapital] = useState(0);
   const [notes, setNotes] = useState('');
 
   const startCreate = () => {
@@ -19,7 +20,7 @@ export const BatchManagementModal = ({ visible, onClose }) => {
     setCode(`LÔ-0${batches.length + 1}`);
     setName(`Đợt nhập tháng ${new Date().getMonth() + 1}`);
     setImportDate(new Date().toISOString().split('T')[0]);
-    setTotalCapital('10000000');
+    setTotalCapital(10000000);
     setNotes('');
   };
 
@@ -27,8 +28,8 @@ export const BatchManagementModal = ({ visible, onClose }) => {
     setEditingBatchId(batch.id);
     setCode(batch.code || '');
     setName(batch.name || '');
-    setImportDate(batch.importDate || '');
-    setTotalCapital(String(batch.totalCapital || '0'));
+    setImportDate(batch.importDate || new Date().toISOString().split('T')[0]);
+    setTotalCapital(Number(batch.totalCapital || 0));
     setNotes(batch.notes || '');
   };
 
@@ -70,7 +71,7 @@ export const BatchManagementModal = ({ visible, onClose }) => {
   };
 
   const formatCurrency = (val) => {
-    return (Number(val) || 0).toLocaleString('vi-VN') + ' đ';
+    return (Number(val) || 0).toLocaleString('vi-VN') + ' VNĐ';
   };
 
   if (!visible) return null;
@@ -108,11 +109,10 @@ export const BatchManagementModal = ({ visible, onClose }) => {
                 </View>
 
                 <View style={styles.col}>
-                  <Text style={styles.label}>Ngày Nhập Hàng:</Text>
+                  <Text style={styles.label}>Ngày Nhập Hàng (Bảng Chọn Datepicker):</Text>
                   <TextInput
+                    type="date"
                     style={styles.input}
-                    placeholder="YYYY-MM-DD"
-                    placeholderTextColor={COLORS.textMuted}
                     value={importDate}
                     onChangeText={setImportDate}
                   />
@@ -128,14 +128,14 @@ export const BatchManagementModal = ({ visible, onClose }) => {
                 onChangeText={setName}
               />
 
-              <Text style={styles.label}>Tổng Vốn Nhập Đợt Đó (VND) *:</Text>
+              <Text style={styles.label}>Tổng Vốn Nhập Đợt Đó (Hiển thị trực tiếp VNĐ) *:</Text>
               <TextInput
-                style={[styles.input, { borderColor: COLORS.accent, fontWeight: '700', color: COLORS.accent }]}
+                style={[styles.input, { borderColor: COLORS.accent, fontWeight: '800', color: COLORS.accent, fontSize: 16 }]}
                 keyboardType="numeric"
-                placeholder="20000000"
+                placeholder="0 VNĐ"
                 placeholderTextColor={COLORS.textMuted}
-                value={totalCapital}
-                onChangeText={setTotalCapital}
+                value={formatCurrencyInput(totalCapital)}
+                onChangeText={(val) => setTotalCapital(parseCurrencyInput(val))}
               />
 
               <Text style={styles.label}>Ghi Chú Đợt Nhập:</Text>

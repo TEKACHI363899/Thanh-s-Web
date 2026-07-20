@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 
 import { useData } from '../../context/DataContext';
 import { COLORS } from '../../theme/colors';
 import { ShoppingCart, User, Phone, MapPin, Share2, DollarSign, Truck, Calendar, Link as LinkIcon, Plus, Trash2, X, Check } from 'lucide-react';
+import { formatCurrencyInput, parseCurrencyInput } from '../../utils/formatters';
 
 export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
   const { products, batches, addOrder, updateOrder } = useData();
@@ -15,13 +16,13 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
 
   const [selectedItems, setSelectedItems] = useState([]);
 
-  const [shippingFee, setShippingFee] = useState('30000');
+  const [shippingFee, setShippingFee] = useState(30000);
   const [isFreeship, setIsFreeship] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('COD');
 
   const [orderType, setOrderType] = useState('Có sẵn');
   const [sourceLink, setSourceLink] = useState('');
-  const [depositAmount, setDepositAmount] = useState('0');
+  const [depositAmount, setDepositAmount] = useState(0);
   const [estimatedArrivalDate, setEstimatedArrivalDate] = useState('');
 
   const [status, setStatus] = useState('Chờ xử lý');
@@ -35,12 +36,12 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
       setPlatform(initialOrder.platform || 'IG');
       setSocialUsername(initialOrder.socialUsername || '');
       setSelectedItems(initialOrder.items || []);
-      setShippingFee(String(initialOrder.shippingFee || '0'));
+      setShippingFee(Number(initialOrder.shippingFee || 0));
       setIsFreeship(!!initialOrder.isFreeship);
       setPaymentMethod(initialOrder.paymentMethod || 'COD');
       setOrderType(initialOrder.orderType || 'Có sẵn');
       setSourceLink(initialOrder.sourceLink || '');
-      setDepositAmount(String(initialOrder.depositAmount || '0'));
+      setDepositAmount(Number(initialOrder.depositAmount || 0));
       setEstimatedArrivalDate(initialOrder.estimatedArrivalDate || '');
       setStatus(initialOrder.status || 'Chờ xử lý');
       setOrderNotes(initialOrder.orderNotes || '');
@@ -50,6 +51,15 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
       setCustomerAddress('');
       setPlatform('IG');
       setSocialUsername('');
+      setShippingFee(30000);
+      setIsFreeship(false);
+      setPaymentMethod('COD');
+      setOrderType('Có sẵn');
+      setSourceLink('');
+      setDepositAmount(0);
+      setEstimatedArrivalDate('');
+      setStatus('Chờ xử lý');
+      setOrderNotes('');
       setSelectedItems(products.length > 0 ? [{
         productId: products[0].id,
         sku: products[0].sku,
@@ -60,15 +70,6 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
         unitCost: products[0].costPrice,
         note: ''
       }] : []);
-      setShippingFee('30000');
-      setIsFreeship(false);
-      setPaymentMethod('COD');
-      setOrderType('Có sẵn');
-      setSourceLink('');
-      setDepositAmount('0');
-      setEstimatedArrivalDate('');
-      setStatus('Chờ xử lý');
-      setOrderNotes('');
     }
   }, [initialOrder, visible]);
 
@@ -137,7 +138,7 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
       platform,
       socialUsername,
       items: selectedItems,
-      shippingFee: Number(shippingFee) || 0,
+      shippingFee: actualShip,
       isFreeship,
       paymentMethod,
       orderType,
@@ -169,7 +170,7 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
       <View style={styles.modalContainer}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>
-            {initialOrder ? `✏️ Chỉnh Sửa Đơn Hàng ${initialOrder.code}` : '➕ Tạo Đơn Hàng Mới'}
+            {initialOrder ? `✏️ Chỉnh Sửa Đơn Hàng ${initialOrder.code}` : '➕ Tạo đơn hàng'}
           </Text>
           <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
             <X size={20} color={COLORS.textMuted} />
@@ -284,10 +285,10 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
                   <TextInput
                     style={[styles.input, { borderColor: COLORS.statusPending, fontWeight: '700', color: COLORS.statusPending }]}
                     keyboardType="numeric"
-                    placeholder="200000"
+                    placeholder="0"
                     placeholderTextColor={COLORS.textMuted}
-                    value={depositAmount}
-                    onChangeText={setDepositAmount}
+                    value={formatCurrencyInput(depositAmount)}
+                    onChangeText={(val) => setDepositAmount(parseCurrencyInput(val))}
                   />
                 </View>
 
@@ -301,8 +302,9 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
 
               <Text style={styles.label}>Ngày dự kiến hàng về kho:</Text>
               <TextInput
+                type="date"
                 style={styles.input}
-                placeholder="YYYY-MM-DD (Ví dụ: 2026-07-25)"
+                placeholder="YYYY-MM-DD"
                 placeholderTextColor={COLORS.textMuted}
                 value={estimatedArrivalDate}
                 onChangeText={setEstimatedArrivalDate}
@@ -361,10 +363,10 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
                   <TextInput
                     style={styles.input}
                     keyboardType="numeric"
-                    placeholder="150000"
+                    placeholder="0"
                     placeholderTextColor={COLORS.textMuted}
-                    value={String(item.unitPrice)}
-                    onChangeText={(val) => handleUpdateItem(index, 'unitPrice', val)}
+                    value={formatCurrencyInput(item.unitPrice)}
+                    onChangeText={(val) => handleUpdateItem(index, 'unitPrice', parseCurrencyInput(val))}
                   />
                 </View>
               </View>
@@ -387,10 +389,10 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
               <TextInput
                 style={styles.input}
                 keyboardType="numeric"
-                placeholder="30000"
+                placeholder="0"
                 placeholderTextColor={COLORS.textMuted}
-                value={shippingFee}
-                onChangeText={setShippingFee}
+                value={formatCurrencyInput(shippingFee)}
+                onChangeText={(val) => setShippingFee(parseCurrencyInput(val))}
                 editable={!isFreeship}
               />
               <TouchableOpacity 
@@ -491,7 +493,7 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
           <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit}>
             <Check size={18} color="#ffffff" style={{ marginRight: 6 }} />
             <Text style={styles.submitBtnText}>
-              {initialOrder ? 'Lưu Thay Đổi Đơn Hàng' : 'Tạo Đơn Hàng Mới'}
+              {initialOrder ? 'Lưu Thay Đổi Đơn Hàng' : ''}
             </Text>
           </TouchableOpacity>
         </View>

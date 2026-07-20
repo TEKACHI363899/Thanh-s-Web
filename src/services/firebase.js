@@ -19,14 +19,14 @@ import {
   createUserWithEmailAndPassword
 } from 'firebase/auth';
 
-// Standard Firebase Configuration (Can be replaced with your live Firebase keys)
+// Standard Firebase Configuration (environment variables for production, with fallback for demo mode)
 const firebaseConfig = {
-  apiKey: "AIzaSyDemoKeyForThanhManagementWeb2026",
-  authDomain: "thanh-management-web.firebaseapp.com",
-  projectId: "thanh-management-web",
-  storageBucket: "thanh-management-web.appspot.com",
-  messagingSenderId: "123456789012",
-  appId: "1:123456789012:web:demo1234567890"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDemoKeyForThanhManagementWeb2026",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "thanh-management-web.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "thanh-management-web",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "thanh-management-web.appspot.com",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "123456789012",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:123456789012:web:demo1234567890"
 };
 
 // Initialize Firebase

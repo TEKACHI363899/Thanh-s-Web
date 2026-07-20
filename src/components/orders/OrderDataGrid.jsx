@@ -47,7 +47,7 @@ export const OrderDataGrid = () => {
   };
 
   const formatCurrency = (val) => {
-    return (Number(val) || 0).toLocaleString('vi-VN') + ' đ';
+    return (Number(val) || 0).toLocaleString('vi-VN') + ' VNĐ';
   };
 
   const getStatusBadgeStyle = (st) => {
@@ -188,14 +188,13 @@ export const OrderDataGrid = () => {
           <View style={styles.trHeader}>
             <Text style={[styles.th, { width: 110 }]}>Mã Đơn</Text>
             <Text style={[styles.th, { width: 130 }]}>Ngày Tạo</Text>
-            <Text style={[styles.th, { width: 200 }]}>Tên Khách & SĐT</Text>
-            <Text style={[styles.th, { width: 140 }]}>Nền Tảng / Nick</Text>
-            <Text style={[styles.th, { width: 250 }]}>Sản Phẩm & Lô</Text>
-            <Text style={[styles.th, { width: 140 }]}>Tổng Tiền</Text>
-            <Text style={[styles.th, { width: 160 }]}>Trạng Thái (Đổi Trực Tiếp)</Text>
-            <Text style={[styles.th, { width: 130 }]}>Nợ / Cọc</Text>
-            <Text style={[styles.th, { width: 160 }]}>Ghi Chú</Text>
-            <Text style={[styles.th, { width: 130, textAlign: 'center' }]}>Thao Tác</Text>
+            <Text style={[styles.th, { width: 220 }]}>Tên Khách & SĐT</Text>
+            <Text style={[styles.th, { width: 270 }]}>Sản Phẩm & Lô</Text>
+            <Text style={[styles.th, { width: 160 }]}>Tổng Tiền</Text>
+            <Text style={[styles.th, { width: 180 }]}>Trạng Thái (Đổi Trực Tiếp)</Text>
+            <Text style={[styles.th, { width: 150 }]}>Nợ / Cọc</Text>
+            <Text style={[styles.th, { width: 180 }]}>Ghi Chú</Text>
+            <Text style={[styles.th, { width: 140, textAlign: 'center' }]}>Thao Tác</Text>
           </View>
 
           {/* Table Rows */}
@@ -229,29 +228,20 @@ export const OrderDataGrid = () => {
                   </View>
 
                   {/* Customer */}
-                  <View style={[styles.td, { width: 200 }]}>
+                  <View style={[styles.td, { width: 220 }]}>
                     <Text style={styles.customerName}>{ord.customerName}</Text>
                     {ord.customerPhone ? (
                       <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
-                        <Phone size={13} color={COLORS.textMuted} style={{ marginRight: 4 }} />
+                        <Phone size={14} color={COLORS.textMuted} style={{ marginRight: 6 }} />
                         <Text style={styles.customerPhone}>{ord.customerPhone}</Text>
                       </View>
                     ) : null}
                   </View>
 
-                  {/* Platform & Nickname */}
-                  <View style={[styles.td, { width: 140 }]}>
-                    <View style={styles.platformBadge}>
-                      <Globe size={12} color={COLORS.primaryLight} style={{ marginRight: 4 }} />
-                      <Text style={styles.platformText}>{ord.platform}</Text>
-                    </View>
-                    <Text style={styles.socialUser} numberOfLines={1}>{ord.socialUsername || 'N/A'}</Text>
-                  </View>
-
                   {/* Products */}
-                  <View style={[styles.td, { width: 250 }]}>
+                  <View style={[styles.td, { width: 270 }]}>
                     {ord.items.map((it, i) => (
-                      <Text key={i} style={styles.itemSummaryText} numberOfLines={1}>
+                      <Text key={i} style={styles.itemSummaryText} numberOfLines={2}>
                         • [{it.sku}] {it.productName} (x{it.quantity})
                       </Text>
                     ))}

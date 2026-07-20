@@ -62,10 +62,23 @@ export const TextInput = ({
   secureTextEntry, 
   multiline, 
   editable = true, 
+  type: customType,
   ...props 
 }) => {
+  const inputType = customType || (secureTextEntry ? 'password' : (keyboardType === 'numeric' ? 'text' : 'text'));
+
+  const baseInputStyle = {
+    fontFamily: 'inherit',
+    boxSizing: 'border-box',
+    color: '#f8fafc',
+    backgroundColor: 'transparent',
+    outline: 'none',
+    border: 'none',
+    colorScheme: 'dark'
+  };
+
   const mergedStyle = flattenStyle([
-    { fontFamily: 'inherit', boxSizing: 'border-box' },
+    baseInputStyle,
     style
   ]);
 
@@ -82,11 +95,9 @@ export const TextInput = ({
     );
   }
 
-  const type = secureTextEntry ? 'password' : 'text';
-
   return (
     <input
-      type={type}
+      type={inputType}
       value={value}
       onChange={(e) => onChangeText && onChangeText(e.target.value)}
       placeholder={placeholder}
