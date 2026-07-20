@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView 
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
 import { COLORS } from '../../theme/colors';
-import { Package, Tag, DollarSign, Percent, Percent as ImageIcon, X, Check, Info } from 'lucide-react';
+import { Package, Tag, DollarSign, Percent, X, Check, Info, Upload, Trash2, Image as ImageIcon } from 'lucide-react';
 import { formatCurrencyInput, parseCurrencyInput } from '../../utils/formatters';
 
 export const ProductFormModal = ({ visible, onClose, initialProduct = null }) => {
@@ -15,11 +15,71 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
   const [name, setName] = useState('');
   const [batchId, setBatchId] = useState('');
   const [image, setImage] = useState('');
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = React.useRef(null);
   const [costPrice, setCostPrice] = useState(0);
   const [marginPercent, setMarginPercent] = useState(30);
   const [sellingPrice, setSellingPrice] = useState(0);
   const [stock, setStock] = useState(1);
   const [isManualPrice, setIsManualPrice] = useState(false);
+
+  // Read file and convert to Base64
+  const handleFileRead = (file) => {
+    if (!file || !file.type.startsWith('image/')) {
+      alert('Vui lòng chọn hoặc kéo thả đúng tệp hình ảnh (PNG, JPG, WEBP)!');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setImage(e.target.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFileRead(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handlePaste = (e) => {
+    const items = (e.clipboardData || e.originalEvent?.clipboardData)?.items;
+    if (!items) return;
+    for (let index = 0; index < items.length; index++) {
+      const item = items[index];
+      if (item.type.indexOf('image') !== -1) {
+        e.preventDefault();
+        const blob = item.getAsFile();
+        handleFileRead(blob);
+        break;
+      }
+    }
+  };
+
+  // Attach global paste listener when modal is visible
+  useEffect(() => {
+    if (!visible) return;
+    const onPasteWindow = (e) => handlePaste(e);
+    window.addEventListener('paste', onPasteWindow);
+    return () => {
+      window.removeEventListener('paste', onPasteWindow);
+    };
+  }, [visible]);
 
   useEffect(() => {
     if (initialProduct) {
@@ -173,7 +233,87 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
             ))}
           </View>
 
-          <Text style={styles.label}>4. Chèn Link / Hình ảnh sản phẩm:</Text>
+          <Text style={styles.label}>4. Hình ảnh sản phẩm (Kéo thả tệp hoặc Dán Ctrl+V):</Text>
+          
+          <div
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onClick={() => fileInputRef.current && fileInputRef.current.click()}
+            style={{
+              border: isDragging ? `2px dashed ${COLORS.primaryLight}` : `2px dashed ${COLORS.cardBorder}`,
+              backgroundColor: isDragging ? 'rgba(59, 130, 246, 0.15)' : '#0f172a',
+              borderRadius: '12px',
+              padding: '16px',
+              textAlign: 'center',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              marginBottom: '10px'
+            }}
+          >
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/*"
+              style={{ display: 'none' }}
+              onChange={(e) => {
+                if (e.target.files && e.target.files[0]) {
+                  handleFileRead(e.target.files[0]);
+                }
+              }}
+            />
+
+            {image ? (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                <img
+                  src={image}
+                  alt="Product preview"
+                  style={{
+                    maxHeight: '160px',
+                    maxWidth: '100%',
+                    borderRadius: '8px',
+                    objectFit: 'cover',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+                  }}
+                />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ fontSize: '12px', color: COLORS.success, fontWeight: '600' }}>
+                    ✓ Đã tải ảnh thành công
+                  </span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setImage('');
+                    }}
+                    style={{
+                      backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                      border: '1px solid #ef4444',
+                      color: '#ef4444',
+                      borderRadius: '6px',
+                      padding: '4px 8px',
+                      fontSize: '12px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    🗑️ Xóa ảnh
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                <Upload size={28} color={COLORS.primaryLight} />
+                <p style={{ margin: 0, fontSize: '13px', fontWeight: '600', color: COLORS.textMain }}>
+                  Kéo & thả ảnh vào đây, hoặc <span style={{ color: COLORS.primaryLight }}>bấm để chọn tệp</span>
+                </p>
+                <p style={{ margin: 0, fontSize: '12px', color: COLORS.textMuted }}>
+                  💡 Mẹo: Chụp màn hình / Copy ảnh rồi bấm <strong style={{ color: COLORS.statusPending }}>Ctrl + V</strong> để dán trực tiếp
+                </p>
+              </div>
+            )}
+          </div>
+
+          <Text style={[styles.label, { fontSize: 12, color: COLORS.textMuted }]}>Hoặc chèn Link URL ảnh từ internet:</Text>
           <TextInput
             style={styles.input}
             placeholder="https://images.unsplash.com/..."
@@ -181,12 +321,6 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
             value={image}
             onChangeText={setImage}
           />
-          {image ? (
-            <View style={styles.imagePreviewContainer}>
-              <Image source={{ uri: image }} style={styles.previewImage} />
-              <Text style={styles.imageCaption}>Xem trước hình ảnh sản phẩm</Text>
-            </View>
-          ) : null}
 
           <View style={styles.priceSection}>
             <Text style={styles.sectionTitle}>💰 Thiết Lập Giá Cả & Lợi Nhuận</Text>
