@@ -114,9 +114,9 @@ export const ProductList = () => {
           style={[styles.switchTabBtn, activeSubTab === 'PRODUCTS' && styles.switchTabBtnActive]}
           onPress={() => setActiveSubTab('PRODUCTS')}
         >
-          <Package size={18} color={activeSubTab === 'PRODUCTS' ? '#ffffff' : COLORS.textMuted} style={{ marginRight: 8 }} />
+          <Package size={16} color={activeSubTab === 'PRODUCTS' ? '#ffffff' : COLORS.textMuted} style={{ marginRight: 6 }} />
           <Text style={[styles.switchTabText, activeSubTab === 'PRODUCTS' && styles.switchTabTextActive]}>
-            📦 Danh Sách Sản Phẩm ({products.length})
+            Danh Sách Sản Phẩm ({products.length})
           </Text>
         </TouchableOpacity>
 
@@ -124,9 +124,9 @@ export const ProductList = () => {
           style={[styles.switchTabBtn, activeSubTab === 'BATCHES' && styles.switchTabBtnActive]}
           onPress={() => setActiveSubTab('BATCHES')}
         >
-          <Layers size={18} color={activeSubTab === 'BATCHES' ? '#ffffff' : COLORS.textMuted} style={{ marginRight: 8 }} />
+          <Layers size={16} color={activeSubTab === 'BATCHES' ? '#ffffff' : COLORS.textMuted} style={{ marginRight: 6 }} />
           <Text style={[styles.switchTabText, activeSubTab === 'BATCHES' && styles.switchTabTextActive]}>
-            🏷️ Danh Sách Lô Hàng Nhập ({batches.length})
+            Danh Sách Lô Hàng Nhập ({batches.length})
           </Text>
         </TouchableOpacity>
       </View>

@@ -97,9 +97,9 @@ export const FinanceModule = () => {
       {/* Header Banner */}
       <View style={styles.headerRow}>
         <View style={{ flex: 1 }}>
-          <Text style={styles.mainTitle}>💰 Báo Cáo Tài Chính & Lợi Nhuận</Text>
+          <Text style={styles.mainTitle}>Báo Cáo Tài Chính & Lợi Nhuận</Text>
           <Text style={styles.subtitle}>
-            Tính lợi nhuận ròng chính xác để 2 Admin chia tiền • Ghi nhận sổ chi phí vận hành độc lập
+            Tính lợi nhuận ròng thực tế dựa trên dữ liệu đơn hàng và chi phí vận hành
           </Text>
         </View>
 
@@ -108,9 +108,9 @@ export const FinanceModule = () => {
             style={[styles.largeTabBtn, activeTab === 'PROFIT' && styles.largeTabBtnActive]}
             onPress={() => setActiveTab('PROFIT')}
           >
-            <TrendingUp size={18} color={activeTab === 'PROFIT' ? '#ffffff' : COLORS.textMuted} style={{ marginRight: 8 }} />
+            <TrendingUp size={16} color={activeTab === 'PROFIT' ? '#ffffff' : COLORS.textMuted} style={{ marginRight: 6 }} />
             <Text style={[styles.largeTabText, activeTab === 'PROFIT' && styles.largeTabTextActive]}>
-              Báo Cáo Lợi Nhuận Chia Tiền
+              Báo Cáo Lợi Nhuận
             </Text>
           </TouchableOpacity>
 
@@ -118,7 +118,7 @@ export const FinanceModule = () => {
             style={[styles.largeTabBtn, activeTab === 'EXPENSES' && styles.largeTabBtnActive]}
             onPress={() => setActiveTab('EXPENSES')}
           >
-            <FileText size={18} color={activeTab === 'EXPENSES' ? '#ffffff' : COLORS.textMuted} style={{ marginRight: 8 }} />
+            <FileText size={16} color={activeTab === 'EXPENSES' ? '#ffffff' : COLORS.textMuted} style={{ marginRight: 6 }} />
             <Text style={[styles.largeTabText, activeTab === 'EXPENSES' && styles.largeTabTextActive]}>
               Sổ Chi Phí Vận Hành ({expenses.length})
             </Text>
@@ -128,7 +128,7 @@ export const FinanceModule = () => {
             style={[styles.largeTabBtn, activeTab === 'BATCHES' && styles.largeTabBtnActive]}
             onPress={() => setActiveTab('BATCHES')}
           >
-            <Package size={18} color={activeTab === 'BATCHES' ? '#ffffff' : COLORS.textMuted} style={{ marginRight: 8 }} />
+            <Package size={16} color={activeTab === 'BATCHES' ? '#ffffff' : COLORS.textMuted} style={{ marginRight: 6 }} />
             <Text style={[styles.largeTabText, activeTab === 'BATCHES' && styles.largeTabTextActive]}>
               Báo Cáo Lô Hàng
             </Text>

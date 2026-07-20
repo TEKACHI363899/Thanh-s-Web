@@ -144,7 +144,7 @@ export const LoginModal = ({ visible, onClose }) => {
           {authMode === 'SIGNUP' && (
             <View style={styles.adminBadgeNotice}>
               <Text style={styles.adminBadgeNoticeText}>
-                👑 **Đặc Quyền**: Tất cả các tài khoản đăng ký mới sẽ tự động có **quyền Admin toàn năng** (xem/sửa kho, tạo đơn, quản lý tài chính song song).
+                
               </Text>
             </View>
           )}

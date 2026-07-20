@@ -90,9 +90,9 @@ export const OrderDataGrid = () => {
       {/* Top Banner Toolbar */}
       <View style={styles.topBanner}>
         <View style={{ flex: 1 }}>
-          <Text style={styles.mainTitle}>📊 Bảng Danh Sách Đơn Hàng & Data Grid</Text>
+          <Text style={styles.mainTitle}>Bảng Danh Sách Đơn Hàng</Text>
           <Text style={styles.subtitle}>
-            Tra cứu siêu tốc theo Tên, SĐT • Tự động trừ tồn kho sản phẩm từ thời điểm tạo đơn hàng
+            Tra cứu theo Tên, SĐT • Tự động trừ tồn kho sản phẩm từ thời điểm tạo đơn hàng
           </Text>
         </View>
 
@@ -103,7 +103,7 @@ export const OrderDataGrid = () => {
             setIsOrderModalOpen(true);
           }}
         >
-          <Plus size={22} color="#ffffff" style={{ marginRight: 8 }} />
+          <Plus size={18} color="#ffffff" style={{ marginRight: 6 }} />
           <Text style={styles.bigCreateOrderBtnText}>Tạo Đơn Hàng Mới</Text>
         </TouchableOpacity>
       </View>
@@ -137,7 +137,7 @@ export const OrderDataGrid = () => {
         </View>
 
         <View style={[styles.statCard, { borderColor: COLORS.danger }]}>
-          <Text style={[styles.statVal, { color: COLORS.danger, fontSize: 20 }]}>
+          <Text style={[styles.statVal, { color: COLORS.danger, fontSize: 18 }]}>
             {formatCurrency(orders.reduce((sum, o) => sum + (o.remainingDebt || 0), 0))}
           </Text>
           <Text style={styles.statLabel}>Tổng Nợ Khách Order</Text>
@@ -147,10 +147,10 @@ export const OrderDataGrid = () => {
       {/* Compact Filter Bar + Single Filter Button */}
       <View style={styles.filterBarRow}>
         <View style={styles.searchBox}>
-          <Search size={20} color={COLORS.primaryLight} style={{ marginRight: 10 }} />
+          <Search size={18} color={COLORS.primaryLight} style={{ marginRight: 8 }} />
           <TextInput
             style={styles.searchInput}
-            placeholder="🔍 Nhập Tên khách, SĐT hoặc Mã đơn để tìm nhanh..."
+            placeholder="Tìm Tên khách, SĐT hoặc Mã đơn..."
             placeholderTextColor={COLORS.textMuted}
             value={searchTerm}
             onChangeText={setSearchTerm}
@@ -167,7 +167,7 @@ export const OrderDataGrid = () => {
           style={[styles.filterTriggerBtn, activeFilterCount > 0 && styles.filterTriggerBtnActive]}
           onPress={() => setIsFilterModalOpen(true)}
         >
-          <Filter size={18} color={activeFilterCount > 0 ? '#ffffff' : COLORS.primaryLight} style={{ marginRight: 8 }} />
+          <Filter size={16} color={activeFilterCount > 0 ? '#ffffff' : COLORS.primaryLight} style={{ marginRight: 6 }} />
           <Text style={[styles.filterTriggerText, activeFilterCount > 0 && styles.filterTriggerTextActive]}>
             Bộ Lọc {activeFilterCount > 0 ? `(${activeFilterCount})` : ''}
           </Text>
@@ -175,146 +175,144 @@ export const OrderDataGrid = () => {
 
         {activeFilterCount > 0 && (
           <TouchableOpacity style={styles.resetFilterBtn} onPress={resetFilters}>
-            <RotateCcw size={16} color={COLORS.textMuted} style={{ marginRight: 4 }} />
+            <RotateCcw size={15} color={COLORS.textMuted} style={{ marginRight: 4 }} />
             <Text style={styles.resetFilterText}>Đặt lại</Text>
           </TouchableOpacity>
         )}
       </View>
 
-      {/* Data Grid Table View */}
-      <ScrollView style={styles.tableScrollView} horizontal showsHorizontalScrollIndicator={true}>
-        <View style={styles.table}>
-          {/* Table Header */}
-          <View style={styles.trHeader}>
-            <Text style={[styles.th, { width: 110 }]}>Mã Đơn</Text>
-            <Text style={[styles.th, { width: 130 }]}>Ngày Tạo</Text>
-            <Text style={[styles.th, { width: 220 }]}>Tên Khách & SĐT</Text>
-            <Text style={[styles.th, { width: 270 }]}>Sản Phẩm & Lô</Text>
-            <Text style={[styles.th, { width: 160 }]}>Tổng Tiền</Text>
-            <Text style={[styles.th, { width: 180 }]}>Trạng Thái (Đổi Trực Tiếp)</Text>
-            <Text style={[styles.th, { width: 150 }]}>Nợ / Cọc</Text>
-            <Text style={[styles.th, { width: 180 }]}>Ghi Chú</Text>
-            <Text style={[styles.th, { width: 140, textAlign: 'center' }]}>Thao Tác</Text>
-          </View>
-
-          {/* Table Rows */}
-          {filteredOrders.length === 0 ? (
-            <View style={styles.emptyBox}>
-              <FileText size={40} color={COLORS.textMuted} />
-              <Text style={styles.emptyText}>Không tìm thấy đơn hàng nào phù hợp với bộ lọc</Text>
+      {/* Data Grid Table Container (Both Vertical and Horizontal Scrollable) */}
+      <View style={styles.tableOuterScrollContainer}>
+        <ScrollView style={styles.tableScrollView} horizontal showsHorizontalScrollIndicator={true}>
+          <View style={styles.table}>
+            {/* Table Header */}
+            <View style={styles.trHeader}>
+              <Text style={[styles.th, { width: 110 }]}>Mã Đơn</Text>
+              <Text style={[styles.th, { width: 130 }]}>Ngày Tạo</Text>
+              <Text style={[styles.th, { width: 200 }]}>Tên Khách & SĐT</Text>
+              <Text style={[styles.th, { width: 260 }]}>Sản Phẩm & Lô</Text>
+              <Text style={[styles.th, { width: 150 }]}>Tổng Tiền</Text>
+              <Text style={[styles.th, { width: 170 }]}>Trạng Thái</Text>
+              <Text style={[styles.th, { width: 140 }]}>Nợ / Cọc</Text>
+              <Text style={[styles.th, { width: 160 }]}>Ghi Chú</Text>
+              <Text style={[styles.th, { width: 130, textAlign: 'center' }]}>Thao Tác</Text>
             </View>
-          ) : (
-            filteredOrders.map((ord, idx) => {
-              const stStyle = getStatusBadgeStyle(ord.status);
-              const StIcon = stStyle.icon;
-              const totalVal = ord.items.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0) + (ord.isFreeship ? 0 : ord.shippingFee);
 
-              return (
-                <View key={ord.id} style={[styles.tr, idx % 2 === 1 && styles.trEven]}>
-                  {/* Code */}
-                  <View style={[styles.td, { width: 110 }]}>
-                    <Text style={styles.codeText}>{ord.code}</Text>
-                    <View style={[
-                      styles.typeBadgeTag,
-                      ord.orderType === 'Order' ? styles.typeOrder : styles.typeInStock
-                    ]}>
-                      <Text style={styles.typeBadgeText}>{ord.orderType}</Text>
+            {/* Table Rows */}
+            {filteredOrders.length === 0 ? (
+              <View style={styles.emptyBox}>
+                <FileText size={36} color={COLORS.textMuted} />
+                <Text style={styles.emptyText}>Không tìm thấy đơn hàng nào phù hợp với bộ lọc</Text>
+              </View>
+            ) : (
+              filteredOrders.map((ord, idx) => {
+                const stStyle = getStatusBadgeStyle(ord.status);
+                const totalVal = ord.items.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0) + (ord.isFreeship ? 0 : ord.shippingFee);
+
+                return (
+                  <View key={ord.id} style={[styles.tr, idx % 2 === 1 && styles.trEven]}>
+                    {/* Code */}
+                    <View style={[styles.td, { width: 110 }]}>
+                      <Text style={styles.codeText}>{ord.code}</Text>
+                      <View style={[
+                        styles.typeBadgeTag,
+                        ord.orderType === 'Order' ? styles.typeOrder : styles.typeInStock
+                      ]}>
+                        <Text style={styles.typeBadgeText}>{ord.orderType}</Text>
+                      </View>
+                    </View>
+
+                    {/* Date */}
+                    <View style={[styles.td, { width: 130 }]}>
+                      <Text style={styles.dateText}>{ord.createdDate}</Text>
+                    </View>
+
+                    {/* Customer */}
+                    <View style={[styles.td, { width: 200 }]}>
+                      <Text style={styles.customerName} numberOfLines={1}>{ord.customerName}</Text>
+                      {ord.customerPhone ? (
+                        <Text style={styles.customerPhone} numberOfLines={1}>{ord.customerPhone}</Text>
+                      ) : null}
+                    </View>
+
+                    {/* Products (Compact max-height box to prevent row swelling) */}
+                    <View style={[styles.td, { width: 260, maxHeight: 52, overflowY: 'auto' }]}>
+                      {ord.items.map((it, i) => (
+                        <Text key={i} style={styles.itemSummaryText} numberOfLines={1}>
+                          • [{it.sku}] {it.productName} (x{it.quantity})
+                        </Text>
+                      ))}
+                    </View>
+
+                    {/* Total */}
+                    <View style={[styles.td, { width: 150 }]}>
+                      <Text style={styles.totalPriceText}>{formatCurrency(totalVal)}</Text>
+                      <Text style={styles.payMethodText}>{ord.paymentMethod}</Text>
+                    </View>
+
+                    {/* Interactive Status Dropdown */}
+                    <View style={[styles.td, { width: 170 }]}>
+                      <View style={[styles.statusDropdownContainer, { backgroundColor: stStyle.bg }]}>
+                        <select
+                          value={ord.status}
+                          onChange={(e) => setOrderStatus(ord.id, e.target.value)}
+                          style={{
+                            backgroundColor: 'transparent',
+                            border: 'none',
+                            color: stStyle.text,
+                            fontWeight: '700',
+                            fontSize: '13px',
+                            outline: 'none',
+                            cursor: 'pointer',
+                            paddingVertical: '2px',
+                            width: '100%'
+                          }}
+                        >
+                          <option value="Chờ xử lý" style={{ background: '#1e293b', color: '#f8fafc' }}>Chờ xử lý</option>
+                          <option value="Đã chốt" style={{ background: '#1e293b', color: '#f8fafc' }}>Đã chốt</option>
+                          <option value="Đang giao" style={{ background: '#1e293b', color: '#f8fafc' }}>Đang giao</option>
+                          <option value="Đã giao" style={{ background: '#1e293b', color: '#f8fafc' }}>Đã giao</option>
+                          <option value="Hoàn/Hủy" style={{ background: '#1e293b', color: '#f8fafc' }}>Hoàn/Hủy (Hoàn kho)</option>
+                        </select>
+                      </View>
+                    </View>
+
+                    {/* Debt / Deposit */}
+                    <View style={[styles.td, { width: 140 }]}>
+                      {ord.remainingDebt > 0 ? (
+                        <View>
+                          <Text style={styles.debtVal}>Nợ: {formatCurrency(ord.remainingDebt)}</Text>
+                          <Text style={styles.depositVal}>Cọc: {formatCurrency(ord.depositAmount)}</Text>
+                        </View>
+                      ) : (
+                        <Text style={styles.noDebtText}>Hết nợ</Text>
+                      )}
+                    </View>
+
+                    {/* Notes */}
+                    <View style={[styles.td, { width: 160 }]}>
+                      <Text style={styles.notesText} numberOfLines={1}>{ord.orderNotes || 'Không'}</Text>
+                    </View>
+
+                    {/* Actions: Edit & Delete Buttons */}
+                    <View style={[styles.td, { width: 130, flexDirection: 'row', justifyContent: 'center', gap: 6 }]}>
+                      <TouchableOpacity style={styles.bigEditBtn} onPress={() => handleEdit(ord)}>
+                        <Edit2 size={14} color={COLORS.primaryLight} style={{ marginRight: 2 }} />
+                        <Text style={{ color: COLORS.primaryLight, fontWeight: '700', fontSize: 12 }}>Sửa</Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity style={styles.bigDeleteBtn} onPress={() => handleDelete(ord)}>
+                        <Trash2 size={14} color={COLORS.danger} style={{ marginRight: 2 }} />
+                        <Text style={{ color: COLORS.danger, fontWeight: '700', fontSize: 12 }}>Xóa</Text>
+                      </TouchableOpacity>
                     </View>
                   </View>
-
-                  {/* Date */}
-                  <View style={[styles.td, { width: 130 }]}>
-                    <Text style={styles.dateText}>{ord.createdDate}</Text>
-                  </View>
-
-                  {/* Customer */}
-                  <View style={[styles.td, { width: 220 }]}>
-                    <Text style={styles.customerName}>{ord.customerName}</Text>
-                    {ord.customerPhone ? (
-                      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
-                        <Phone size={14} color={COLORS.textMuted} style={{ marginRight: 6 }} />
-                        <Text style={styles.customerPhone}>{ord.customerPhone}</Text>
-                      </View>
-                    ) : null}
-                  </View>
-
-                  {/* Products */}
-                  <View style={[styles.td, { width: 270 }]}>
-                    {ord.items.map((it, i) => (
-                      <Text key={i} style={styles.itemSummaryText} numberOfLines={2}>
-                        • [{it.sku}] {it.productName} (x{it.quantity})
-                      </Text>
-                    ))}
-                  </View>
-
-                  {/* Total */}
-                  <View style={[styles.td, { width: 160 }]}>
-                    <Text style={styles.totalPriceText}>{formatCurrency(totalVal)}</Text>
-                    <Text style={styles.payMethodText}>{ord.paymentMethod}</Text>
-                  </View>
-
-                  {/* Interactive Status Dropdown */}
-                  <View style={[styles.td, { width: 180 }]}>
-                    <View style={[styles.statusDropdownContainer, { backgroundColor: stStyle.bg }]}>
-                      <StIcon size={15} color={stStyle.text} style={{ marginRight: 6 }} />
-                      <select
-                        value={ord.status}
-                        onChange={(e) => setOrderStatus(ord.id, e.target.value)}
-                        style={{
-                          backgroundColor: 'transparent',
-                          border: 'none',
-                          color: stStyle.text,
-                          fontWeight: '800',
-                          fontSize: '13px',
-                          outline: 'none',
-                          cursor: 'pointer',
-                          paddingVertical: '4px'
-                        }}
-                      >
-                        <option value="Chờ xử lý" style={{ background: '#1e293b', color: '#f8fafc' }}>Chờ xử lý</option>
-                        <option value="Đã chốt" style={{ background: '#1e293b', color: '#f8fafc' }}>Đã chốt</option>
-                        <option value="Đang giao" style={{ background: '#1e293b', color: '#f8fafc' }}>Đang giao</option>
-                        <option value="Đã giao" style={{ background: '#1e293b', color: '#f8fafc' }}>Đã giao</option>
-                        <option value="Hoàn/Hủy" style={{ background: '#1e293b', color: '#f8fafc' }}>Hoàn/Hủy (Hoàn kho)</option>
-                      </select>
-                    </View>
-                  </View>
-
-                  {/* Debt / Deposit */}
-                  <View style={[styles.td, { width: 150 }]}>
-                    {ord.remainingDebt > 0 ? (
-                      <View>
-                        <Text style={styles.debtVal}>Nợ: {formatCurrency(ord.remainingDebt)}</Text>
-                        <Text style={styles.depositVal}>Cọc: {formatCurrency(ord.depositAmount)}</Text>
-                      </View>
-                    ) : (
-                      <Text style={styles.noDebtText}>✅ Hết nợ</Text>
-                    )}
-                  </View>
-
-                  {/* Notes */}
-                  <View style={[styles.td, { width: 180 }]}>
-                    <Text style={styles.notesText} numberOfLines={2}>{ord.orderNotes || 'Không'}</Text>
-                  </View>
-
-                  {/* Actions: Edit & Delete Buttons */}
-                  <View style={[styles.td, { width: 140, flexDirection: 'row', justifyContent: 'center', gap: 8 }]}>
-                    <TouchableOpacity style={styles.bigEditBtn} onPress={() => handleEdit(ord)}>
-                      <Edit2 size={16} color={COLORS.primaryLight} style={{ marginRight: 4 }} />
-                      <Text style={{ color: COLORS.primaryLight, fontWeight: '700', fontSize: 13 }}>Sửa</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={styles.bigDeleteBtn} onPress={() => handleDelete(ord)}>
-                      <Trash2 size={16} color={COLORS.danger} style={{ marginRight: 4 }} />
-                      <Text style={{ color: COLORS.danger, fontWeight: '700', fontSize: 13 }}>Xóa</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              );
-            })
-          )}
-        </View>
-      </ScrollView>
+                );
+              })
+            )}
+          </View>
+        </ScrollView>
+      </View>
 
       {/* UNIFIED FILTER MODAL POPUP */}
       {isFilterModalOpen && (
@@ -556,37 +554,43 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: COLORS.textMuted
   },
-  tableScrollView: {
+  tableOuterScrollContainer: {
     backgroundColor: COLORS.cardDark,
     borderRadius: 14,
     borderWidth: 1,
     borderColor: COLORS.cardBorder,
-    overflow: 'hidden'
+    overflow: 'hidden',
+    maxHeight: 'calc(100vh - 270px)',
+    overflowY: 'auto'
+  },
+  tableScrollView: {
+    overflowX: 'auto'
   },
   table: {
-    minWidth: 1380
+    minWidth: 1280
   },
   trHeader: {
     flexDirection: 'row',
     backgroundColor: '#162032',
     borderBottomWidth: 1.5,
     borderBottomColor: COLORS.cardBorder,
-    paddingVertical: 14,
+    paddingVertical: 12,
     paddingHorizontal: 12
   },
   th: {
     color: COLORS.textMuted,
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '800',
     textTransform: 'uppercase'
   },
   tr: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 14,
+    paddingVertical: 10,
     paddingHorizontal: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#1e293b'
+    borderBottomColor: '#1e293b',
+    minHeight: 52
   },
   trEven: {
     backgroundColor: '#172336'
