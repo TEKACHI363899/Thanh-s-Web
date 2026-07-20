@@ -563,7 +563,10 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
 
                 <TouchableOpacity
                   style={[styles.payChip, paymentMethod === 'Chuyển khoản full' && styles.payChipActive]}
-                  onPress={() => setPaymentMethod('Chuyển khoản full')}
+                  onPress={() => {
+                    setPaymentMethod('Chuyển khoản full');
+                    setDepositAmount(grandTotal);
+                  }}
                 >
                   <Text style={[styles.payChipText, paymentMethod === 'Chuyển khoản full' && styles.payChipTextActive]}>
                     💳 CK Full
@@ -571,6 +574,44 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
                 </TouchableOpacity>
               </View>
             </View>
+          </View>
+
+          {/* Deposit Amount Input Block for ALL Orders */}
+          <View style={{ marginTop: 12 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text style={styles.label}>Tiền khách cọc trước (VND):</Text>
+              <View style={{ flexDirection: 'row', gap: 6 }}>
+                <TouchableOpacity
+                  style={styles.quickDepositBtn}
+                  onPress={() => setDepositAmount(Math.round((subtotal * 0.3) / 1000) * 1000)}
+                >
+                  <Text style={styles.quickDepositBtnText}>Cọc 30%</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.quickDepositBtn}
+                  onPress={() => setDepositAmount(Math.round((subtotal * 0.5) / 1000) * 1000)}
+                >
+                  <Text style={styles.quickDepositBtnText}>Cọc 50%</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.quickDepositBtn}
+                  onPress={() => setDepositAmount(grandTotal)}
+                >
+                  <Text style={styles.quickDepositBtnText}>Full 100%</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <TextInput
+              style={[styles.input, { borderColor: COLORS.statusPending, fontWeight: '700', color: COLORS.statusPending, fontSize: 15, marginTop: 4 }]}
+              keyboardType="numeric"
+              placeholder="0 (Nhập số tiền khách cọc trước nếu có...)"
+              placeholderTextColor={COLORS.textMuted}
+              value={formatCurrencyInput(depositAmount)}
+              onChangeText={(val) => setDepositAmount(parseCurrencyInput(val))}
+            />
           </View>
 
           <Text style={styles.sectionHeader}>🔄 5. Trạng Thái Đơn Hàng & Ghi Chú</Text>
@@ -996,6 +1037,19 @@ const styles = StyleSheet.create({
   payChipTextActive: {
     color: COLORS.textMain,
     fontWeight: '700'
+  },
+  quickDepositBtn: {
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
+    borderWidth: 1,
+    borderColor: COLORS.statusPending,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6
+  },
+  quickDepositBtnText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: COLORS.statusPending
   },
   statusGrid: {
     flexDirection: 'row',
