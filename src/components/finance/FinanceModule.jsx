@@ -23,6 +23,23 @@ export const FinanceModule = () => {
 
   const [activeTab, setActiveTab] = useState('PROFIT');
 
+  const [capitalInputStr, setCapitalInputStr] = React.useState(() => {
+    return availableCapital ? formatCurrencyInput(availableCapital) : '';
+  });
+
+  React.useEffect(() => {
+    const num = parseCurrencyInput(capitalInputStr);
+    if (num !== availableCapital) {
+      setCapitalInputStr(availableCapital ? formatCurrencyInput(availableCapital) : '');
+    }
+  }, [availableCapital]);
+
+  const handleCapitalChange = (val) => {
+    setCapitalInputStr(val);
+    const parsed = parseCurrencyInput(val);
+    setAvailableCapital(parsed);
+  };
+
   const [isExpenseModalOpen, setIsExpenseModalOpen] = useState(false);
   const [editingExpenseId, setEditingExpenseId] = useState(null);
   const [expDate, setExpDate] = useState('');
@@ -167,7 +184,7 @@ export const FinanceModule = () => {
         </View>
       </View>
 
-      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+      <ScrollView style={{ flex: 1, overflowY: 'auto' }} showsVerticalScrollIndicator={true}>
         {activeTab === 'PROFIT' && (
           <View style={{ gap: 18 }}>
             {/* 1. CAPITAL BALANCE & ACTUAL CASH REMAINING */}
@@ -188,10 +205,14 @@ export const FinanceModule = () => {
                   <TextInput
                     style={styles.capitalInput}
                     keyboardType="numeric"
-                    placeholder="100.000.000 VNĐ"
+                    placeholder="Nhập số vốn (Ví dụ: 100.000.000)..."
                     placeholderTextColor={COLORS.textMuted}
-                    value={formatCurrencyInput(availableCapital)}
-                    onChangeText={(val) => setAvailableCapital(parseCurrencyInput(val))}
+                    value={capitalInputStr}
+                    onChangeText={handleCapitalChange}
+                    onBlur={() => {
+                      const parsed = parseCurrencyInput(capitalInputStr);
+                      setCapitalInputStr(parsed ? formatCurrencyInput(parsed) : '');
+                    }}
                   />
                   <Text style={styles.capitalInputSub}>Số vốn ban đầu / vốn đầu tư sẵn có</Text>
                 </View>
@@ -531,7 +552,9 @@ const styles = StyleSheet.create({
     padding: 18,
     backgroundColor: '#0f172a',
     maxWidth: '100%',
-    boxSizing: 'border-box'
+    boxSizing: 'border-box',
+    overflowY: 'auto',
+    maxHeight: '100vh'
   },
   headerRow: {
     flexDirection: 'row',

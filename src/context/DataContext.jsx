@@ -75,9 +75,9 @@ export const DataProvider = ({ children }) => {
   const [availableCapital, setAvailableCapitalState] = useState(() => {
     try {
       const saved = localStorage.getItem('thanh_app_available_capital');
-      if (saved !== null) return Number(saved);
+      if (saved !== null && saved !== '') return Number(saved);
     } catch (e) {}
-    return 100000000;
+    return 0;
   });
 
   const setAvailableCapital = (val) => {
