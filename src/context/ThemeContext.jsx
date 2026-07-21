@@ -5,7 +5,7 @@ export const THEMES = {
   dark: {
     id: 'dark',
     name: 'Theme Dark (Đêm Tối)',
-    desc: 'Nền tối Slate Navy sang trọng, hiện đại & dịu mắt',
+    desc: 'Nền tối Slate Navy sang trọng, hiện đại & chữ sáng sắc nét',
     previewBg: '#0f172a',
     previewAccent: '#3b82f6',
     colors: {
@@ -18,10 +18,10 @@ export const THEMES = {
       cardDark: '#1e293b',
       sidebarBg: '#162032',
       cardBorder: '#334155',
-      surfaceHover: '#334155',
-      textMain: '#f8fafc',
-      textMuted: '#94a3b8',
-      textSub: '#cbd5e1',
+      surfaceHover: '#2a3a52',
+      textMain: '#ffffff',
+      textMuted: '#cbd5e1',
+      textSub: '#e2e8f0',
       statusPending: '#f59e0b',
       statusConfirmed: '#3b82f6',
       statusShipping: '#8b5cf6',
@@ -53,7 +53,7 @@ export const THEMES = {
       cardDark: '#ffffff',
       sidebarBg: '#ffffff',
       cardBorder: '#cbd5e1',
-      surfaceHover: '#e2e8f0',
+      surfaceHover: '#f1f5f9',
       textMain: '#0f172a',
       textMuted: '#334155',
       textSub: '#1e293b',
@@ -110,7 +110,7 @@ export const THEMES = {
   kuromi: {
     id: 'kuromi',
     name: 'Theme Tím Kuromi (Mystic Violet)',
-    desc: 'Nền tím Kuromi huyền bí, mộng mơ & đậm chất nghệ thuật',
+    desc: 'Nền tím Kuromi mộng mơ, chữ sáng lung linh & nổi bật',
     previewBg: '#130b24',
     previewAccent: '#c084fc',
     colors: {
@@ -122,11 +122,11 @@ export const THEMES = {
       bgDark: '#130b24',
       cardDark: '#21153b',
       sidebarBg: '#1a0e30',
-      cardBorder: '#3c2763',
+      cardBorder: '#4c327a',
       surfaceHover: '#2e1c50',
-      textMain: '#f5f3ff',
-      textMuted: '#c4b5fd',
-      textSub: '#ddd6fe',
+      textMain: '#ffffff',
+      textMuted: '#e9d5ff',
+      textSub: '#f3e8ff',
       statusPending: '#f59e0b',
       statusConfirmed: '#a855f7',
       statusShipping: '#f43f5e',
@@ -162,7 +162,7 @@ const injectGlobalThemeStyle = (activeTheme) => {
       font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif !important;
     }
     
-    /* Comprehensive Background Overrides for RNWeb Elements */
+    /* Comprehensive Background Overrides for Cards & Grids */
     [style*="background-color: rgb(15, 23, 42)"],
     [style*="background-color: rgb(11, 19, 43)"],
     [style*="background-color: rgb(241, 245, 249)"] {
@@ -185,18 +185,39 @@ const injectGlobalThemeStyle = (activeTheme) => {
       background-color: ${surfaceHover} !important;
     }
 
-    /* Table Headers & Table Rows */
+    /* Table Headers & Rows */
     th, td {
       border-color: ${cardBorder} !important;
-    }
-
-    /* Comprehensive Text Overrides */
-    [style*="color: rgb(248, 250, 252)"],
-    [style*="color: rgb(241, 245, 249)"] {
       color: ${textMain} !important;
     }
 
-    [style*="color: rgb(148, 163, 184)"] {
+    /* Search Input & Form Element Backgrounds across Dark, Bright, Pink, Kuromi */
+    input, select, textarea {
+      background-color: ${isLight ? '#ffffff' : (activeTheme.id === 'kuromi' ? '#2e1c50' : '#1e293b')} !important;
+      color: ${textMain} !important;
+      border-color: ${cardBorder} !important;
+    }
+    input::placeholder, textarea::placeholder {
+      color: ${textMuted} !important;
+      opacity: 0.85;
+    }
+
+    /* Native Select Options */
+    option {
+      background-color: ${cardDark} !important;
+      color: ${textMain} !important;
+    }
+
+    /* Ultra-Bright Table Text Overrides for Dark & Kuromi themes */
+    [style*="color: rgb(248, 250, 252)"],
+    [style*="color: rgb(241, 245, 249)"],
+    [style*="color: rgb(255, 255, 255)"] {
+      color: ${textMain} !important;
+    }
+
+    [style*="color: rgb(148, 163, 184)"],
+    [style*="color: rgb(100, 116, 139)"],
+    [style*="color: rgb(156, 163, 175)"] {
       color: ${textMuted} !important;
     }
 
@@ -212,23 +233,6 @@ const injectGlobalThemeStyle = (activeTheme) => {
     [style*="border-left-color: rgb(51, 65, 85)"],
     [style*="border-right-color: rgb(51, 65, 85)"] {
       border-color: ${cardBorder} !important;
-    }
-
-    /* Form Inputs & Select Dropdowns in Light/Dark Themes */
-    input, select, textarea {
-      background-color: ${isLight ? '#ffffff' : bgDark} !important;
-      color: ${textMain} !important;
-      border-color: ${cardBorder} !important;
-    }
-    input::placeholder, textarea::placeholder {
-      color: ${textMuted} !important;
-      opacity: 0.8;
-    }
-
-    /* Native Select Options */
-    option {
-      background-color: ${cardDark} !important;
-      color: ${textMain} !important;
     }
 
     /* Custom Scrollbar */

@@ -531,7 +531,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     fontSize: 15,
-    color: '#f8fafc'
+    color: COLORS.textMain
   },
   clearIcon: {
     padding: 4

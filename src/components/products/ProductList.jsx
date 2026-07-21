@@ -153,7 +153,7 @@ export const ProductList = () => {
               <Search size={20} color={COLORS.primaryLight} style={{ marginRight: 10 }} />
               <TextInput
                 style={styles.searchInput}
-                placeholder="🔍 Tìm nhanh theo tên sản phẩm hoặc mã SKU..."
+                placeholder=" Tìm nhanh theo tên sản phẩm hoặc mã SKU..."
                 placeholderTextColor={COLORS.textMuted}
                 value={searchTerm}
                 onChangeText={setSearchTerm}
@@ -595,7 +595,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     fontSize: 15,
-    color: '#f8fafc'
+    color: COLORS.textMain
   },
   clearSearchIcon: {
     padding: 4
