@@ -338,7 +338,7 @@ export const OrderDataGrid = () => {
             <View style={styles.filterModalHeader}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <Filter size={20} color={COLORS.primaryLight} />
-                <Text style={styles.filterModalTitle}>⚡ Bộ Lọc Đơn Hàng Nâng Cao</Text>
+                <Text style={styles.filterModalTitle}>Bộ Lọc Đơn Hàng Nâng Cao</Text>
               </View>
               <TouchableOpacity onPress={() => setIsFilterModalOpen(false)} style={styles.closeBtn}>
                 <X size={20} color={COLORS.textMuted} />
