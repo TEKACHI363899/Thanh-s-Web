@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from '../common/RNBridge';
+import { View, Text, TouchableOpacity, StyleSheet, Image } from '../common/RNBridge';
 import { useTheme } from '../../context/ThemeContext';
 import { COLORS } from '../../theme/colors';
 import { 
@@ -57,7 +57,7 @@ export const Sidebar = ({
         {!collapsed && (
           <View style={styles.brandContainer}>
             <View style={styles.logoBadge}>
-              <ShoppingBag size={22} color="#ffffff" />
+              <Image source={{ uri: '/logo.jpg' }} style={styles.brandLogoImg} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.brandTitle}>THANH STORE</Text>
@@ -205,7 +205,14 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: COLORS.primary,
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+    overflow: 'hidden'
+  },
+  brandLogoImg: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    resizeMode: 'cover'
   },
   brandTitle: {
     fontSize: 15,
