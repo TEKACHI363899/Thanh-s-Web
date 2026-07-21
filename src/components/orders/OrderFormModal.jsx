@@ -171,47 +171,103 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
   const deposit = Number(depositAmount) || 0;
   const remainingDebt = Math.max(0, grandTotal - deposit);
 
+  // Step 1 Validation Helper
+  const validateStep1 = () => {
+    const trimmedName = customerName.trim();
+    if (!trimmedName) {
+      return { isValid: false, error: '⚠️ Vui lòng nhập Tên khách hàng!' };
+    }
+    if (/^\d+$/.test(trimmedName)) {
+      return { isValid: false, error: '⚠️ Tên khách hàng không thể chỉ chứa chữ số! Vui lòng nhập tên khách thực.' };
+    }
+    if (trimmedName.length < 2) {
+      return { isValid: false, error: '⚠️ Tên khách hàng quá ngắn (Tối thiểu 2 ký tự)!' };
+    }
+    if (customerPhone.trim() && !/^[0-9\s+.-]{8,15}$/.test(customerPhone.trim())) {
+      return { isValid: false, error: '⚠️ Số điện thoại không hợp lệ (Cần từ 8 - 15 chữ số)!' };
+    }
+    return { isValid: true, error: '' };
+  };
+
+  // Step 2 Validation Helper
+  const validateStep2 = () => {
+    if (selectedItems.length === 0) {
+      return { isValid: false, error: '⚠️ Đơn hàng cần chọn ít nhất 1 sản phẩm!' };
+    }
+    for (const item of selectedItems) {
+      if (!item.productId) {
+        return { isValid: false, error: '⚠️ Vui lòng chọn sản phẩm cho từng món hàng!' };
+      }
+      if (!item.quantity || item.quantity <= 0) {
+        return { isValid: false, error: '⚠️ Số lượng sản phẩm phải lớn hơn 0!' };
+      }
+      const p = products.find(prod => prod.id === item.productId);
+      if (p) {
+        const prevOrderedQty = initialOrder && initialOrder.items ? (initialOrder.items.find(it => it.productId === p.id)?.quantity || 0) : 0;
+        const maxAllowed = p.stock + prevOrderedQty;
+        if (item.quantity > maxAllowed) {
+          return { isValid: false, error: `⚠️ Sản phẩm "${p.name}" chỉ còn tồn kho ${maxAllowed} sản phẩm. Không thể tạo vượt quá tồn!` };
+        }
+      }
+    }
+    return { isValid: true, error: '' };
+  };
+
+  // Step 3 Validation Helper
+  const validateStep3 = () => {
+    if (shippingFee < 0) {
+      return { isValid: false, error: '⚠️ Phí vận chuyển không thể âm!' };
+    }
+    if (depositAmount < 0) {
+      return { isValid: false, error: '⚠️ Tiền cọc trước không thể âm!' };
+    }
+    return { isValid: true, error: '' };
+  };
+
+  // Computed Step Checkmarks & Validations
+  const step1Valid = validateStep1().isValid;
+  const step2Valid = step1Valid && validateStep2().isValid;
+  const step3Valid = step2Valid && validateStep3().isValid;
+  const step4Valid = step3Valid;
+
   const handleSubmit = () => {
     requireAdmin(() => {
-      if (!customerName.trim()) {
-        alert('Vui lòng nhập Tên khách hàng!');
+      const v1 = validateStep1();
+      if (!v1.isValid) {
+        alert(v1.error);
+        setCurrentStep(1);
         return;
       }
-      if (selectedItems.length === 0) {
-        alert('Đơn hàng cần có ít nhất 1 sản phẩm!');
+      const v2 = validateStep2();
+      if (!v2.isValid) {
+        alert(v2.error);
+        setCurrentStep(2);
         return;
       }
-
-      // Validate that no item exceeds available stock
-      for (const item of selectedItems) {
-        const p = products.find(prod => prod.id === item.productId);
-        if (p) {
-          const prevOrderedQty = initialOrder && initialOrder.items ? (initialOrder.items.find(it => it.productId === p.id)?.quantity || 0) : 0;
-          const maxAllowed = p.stock + prevOrderedQty;
-          if (item.quantity > maxAllowed) {
-            alert(`⚠️ Sản phẩm "${p.name}" (${p.sku}) chỉ còn tồn kho ${maxAllowed} sản phẩm. Không thể tạo đơn vượt tồn kho!`);
-            return;
-          }
-        }
+      const v3 = validateStep3();
+      if (!v3.isValid) {
+        alert(v3.error);
+        setCurrentStep(3);
+        return;
       }
 
       const payload = {
-        customerName,
-        customerPhone,
-        customerAddress,
+        customerName: customerName.trim(),
+        customerPhone: customerPhone.trim(),
+        customerAddress: customerAddress.trim(),
         platform,
-        socialUsername,
+        socialUsername: socialUsername.trim(),
         items: selectedItems,
         shippingFee: actualShip,
         isFreeship,
         paymentMethod,
         orderType,
-        sourceLink: orderType === 'Order' ? sourceLink : '',
+        sourceLink: '',
         depositAmount: deposit,
         remainingDebt: remainingDebt,
-        estimatedArrivalDate: orderType === 'Order' ? estimatedArrivalDate : '',
+        estimatedArrivalDate: '',
         status,
-        orderNotes
+        orderNotes: orderNotes.trim()
       };
 
       if (initialOrder) {
@@ -245,13 +301,13 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
         {/* Horizontal Step Progress Bar */}
         <View style={styles.wizardProgressBar}>
           {[
-            { id: 1, title: '1. Khách Hàng' },
-            { id: 2, title: '2. Chọn Sản Phẩm' },
-            { id: 3, title: '3. Ship & Thanh Toán' },
-            { id: 4, title: '4. Trạng Thái' }
+            { id: 1, title: '1. Khách Hàng', isComplete: step1Valid },
+            { id: 2, title: '2. Chọn Sản Phẩm', isComplete: step2Valid },
+            { id: 3, title: '3. Ship & Thanh Toán', isComplete: step3Valid },
+            { id: 4, title: '4. Trạng Thái', isComplete: step4Valid }
           ].map((s, idx, arr) => {
             const isCurrent = currentStep === s.id;
-            const isCompleted = currentStep > s.id;
+            const isCompleted = s.isComplete;
 
             return (
               <React.Fragment key={s.id}>
@@ -261,7 +317,24 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
                     isCurrent && styles.wizardStepBtnActive,
                     isCompleted && styles.wizardStepBtnCompleted
                   ]}
-                  onPress={() => setCurrentStep(s.id)}
+                  onPress={() => {
+                    // Check validation if trying to jump forward
+                    if (s.id > currentStep) {
+                      if (currentStep === 1) {
+                        const v1 = validateStep1();
+                        if (!v1.isValid) { alert(v1.error); return; }
+                      }
+                      if (currentStep === 2 || s.id > 2) {
+                        const v2 = validateStep2();
+                        if (!v2.isValid) { alert(v2.error); return; }
+                      }
+                      if (currentStep === 3 || s.id > 3) {
+                        const v3 = validateStep3();
+                        if (!v3.isValid) { alert(v3.error); return; }
+                      }
+                    }
+                    setCurrentStep(s.id);
+                  }}
                 >
                   <View style={[styles.wizardStepBadge, isCurrent && styles.wizardStepBadgeActive, isCompleted && styles.wizardStepBadgeCompleted]}>
                     <Text style={[styles.wizardStepBadgeText, (isCurrent || isCompleted) && { color: '#ffffff' }]}>
@@ -686,13 +759,17 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
             <TouchableOpacity 
               style={styles.wizardNextBtn} 
               onPress={() => {
-                if (currentStep === 1 && !customerName.trim()) {
-                  alert('Vui lòng nhập Tên khách hàng!');
-                  return;
+                if (currentStep === 1) {
+                  const v1 = validateStep1();
+                  if (!v1.isValid) { alert(v1.error); return; }
                 }
-                if (currentStep === 2 && selectedItems.length === 0) {
-                  alert('Đơn hàng cần chọn ít nhất 1 sản phẩm!');
-                  return;
+                if (currentStep === 2) {
+                  const v2 = validateStep2();
+                  if (!v2.isValid) { alert(v2.error); return; }
+                }
+                if (currentStep === 3) {
+                  const v3 = validateStep3();
+                  if (!v3.isValid) { alert(v3.error); return; }
                 }
                 setCurrentStep(currentStep + 1);
               }}
@@ -732,7 +809,8 @@ const styles = StyleSheet.create({
   modalContainer: {
     width: '100%',
     maxWidth: 760,
-    maxHeight: '92vh',
+    height: 640,
+    maxHeight: '90vh',
     backgroundColor: COLORS.cardDark,
     borderRadius: 16,
     borderWidth: 1,
@@ -750,7 +828,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: 14,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.cardBorder,
     backgroundColor: '#162032'
@@ -767,7 +845,8 @@ const styles = StyleSheet.create({
   },
   body: {
     padding: 20,
-    flex: 1
+    flex: 1,
+    overflowY: 'auto'
   },
   sectionHeader: {
     fontSize: 15,
