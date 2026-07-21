@@ -55,7 +55,7 @@ export const DataProvider = ({ children }) => {
     setExpenses(safeParse('thanh_app_expenses', INITIAL_EXPENSES, 'exp'));
   };
 
-  // Firestore Realtime Subscription & Initial Sync
+  // Firestore Realtime Subscription & Initial Sync with Hybrid Local Merge Guard
   useEffect(() => {
     let unsubs = [];
     try {
@@ -63,7 +63,11 @@ export const DataProvider = ({ children }) => {
         // Subscribe to Batches
         const unsubBatches = onSnapshot(collection(db, 'batches'), (snapshot) => {
           const list = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
-          setBatches(sanitizeList(list, 'batch'));
+          setBatches(prevLocal => {
+            const cloudIds = new Set(list.map(item => item.id));
+            const recentLocal = prevLocal.filter(item => !cloudIds.has(item.id) && item._createdAt && (Date.now() - item._createdAt < 120000));
+            return sanitizeList([...list, ...recentLocal], 'batch');
+          });
           setIsCloudConnected(true);
         }, (err) => console.warn("Firestore Batches listener warning:", err));
         unsubs.push(unsubBatches);
@@ -71,7 +75,11 @@ export const DataProvider = ({ children }) => {
         // Subscribe to Products
         const unsubProducts = onSnapshot(collection(db, 'products'), (snapshot) => {
           const list = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
-          setProducts(sanitizeList(list, 'prod'));
+          setProducts(prevLocal => {
+            const cloudIds = new Set(list.map(item => item.id));
+            const recentLocal = prevLocal.filter(item => !cloudIds.has(item.id) && item._createdAt && (Date.now() - item._createdAt < 120000));
+            return sanitizeList([...list, ...recentLocal], 'prod');
+          });
           setIsCloudConnected(true);
         }, (err) => console.warn("Firestore Products listener warning:", err));
         unsubs.push(unsubProducts);
@@ -79,7 +87,11 @@ export const DataProvider = ({ children }) => {
         // Subscribe to Orders
         const unsubOrders = onSnapshot(collection(db, 'orders'), (snapshot) => {
           const list = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
-          setOrders(sanitizeList(list, 'ord'));
+          setOrders(prevLocal => {
+            const cloudIds = new Set(list.map(item => item.id));
+            const recentLocal = prevLocal.filter(item => !cloudIds.has(item.id) && item._createdAt && (Date.now() - item._createdAt < 120000));
+            return sanitizeList([...list, ...recentLocal], 'ord');
+          });
           setIsCloudConnected(true);
         }, (err) => console.warn("Firestore Orders listener warning:", err));
         unsubs.push(unsubOrders);
@@ -87,7 +99,11 @@ export const DataProvider = ({ children }) => {
         // Subscribe to Expenses
         const unsubExpenses = onSnapshot(collection(db, 'expenses'), (snapshot) => {
           const list = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
-          setExpenses(sanitizeList(list, 'exp'));
+          setExpenses(prevLocal => {
+            const cloudIds = new Set(list.map(item => item.id));
+            const recentLocal = prevLocal.filter(item => !cloudIds.has(item.id) && item._createdAt && (Date.now() - item._createdAt < 120000));
+            return sanitizeList([...list, ...recentLocal], 'exp');
+          });
           setIsCloudConnected(true);
         }, (err) => console.warn("Firestore Expenses listener warning:", err));
         unsubs.push(unsubExpenses);
@@ -200,7 +216,8 @@ export const DataProvider = ({ children }) => {
       stock: Number(productData.stock) || 0,
       costPrice: Number(productData.costPrice) || 0,
       marginPercent: Number(productData.marginPercent) || 0,
-      sellingPrice: Number(productData.sellingPrice) || 0
+      sellingPrice: Number(productData.sellingPrice) || 0,
+      _createdAt: Date.now()
     };
     setProducts(prev => [newProduct, ...prev.filter(p => p.id !== uniqueId)]);
     syncToCloud('products', newProduct.id, newProduct);
@@ -239,7 +256,8 @@ export const DataProvider = ({ children }) => {
     const newBatch = {
       ...batchData,
       id: uniqueId,
-      totalCapital: Number(batchData.totalCapital) || 0
+      totalCapital: Number(batchData.totalCapital) || 0,
+      _createdAt: Date.now()
     };
     setBatches(prev => [newBatch, ...prev.filter(b => b.id !== uniqueId)]);
     syncToCloud('batches', newBatch.id, newBatch);
@@ -274,7 +292,8 @@ export const DataProvider = ({ children }) => {
     const newExp = {
       ...expenseData,
       id: uniqueId,
-      amount: Number(expenseData.amount) || 0
+      amount: Number(expenseData.amount) || 0,
+      _createdAt: Date.now()
     };
     setExpenses(prev => [newExp, ...prev.filter(e => e.id !== uniqueId)]);
     syncToCloud('expenses', newExp.id, newExp);
@@ -316,7 +335,8 @@ export const DataProvider = ({ children }) => {
       createdDate: orderData.createdDate || nowStr,
       shippingFee: Number(orderData.shippingFee) || 0,
       depositAmount: Number(orderData.depositAmount) || 0,
-      remainingDebt: Number(orderData.remainingDebt) || 0
+      remainingDebt: Number(orderData.remainingDebt) || 0,
+      _createdAt: Date.now()
     };
 
     setOrders(prev => [newOrder, ...prev.filter(o => o.id !== uniqueId)]);
