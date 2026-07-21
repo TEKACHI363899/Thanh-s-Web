@@ -40,7 +40,7 @@ export const THEMES = {
   bright: {
     id: 'bright',
     name: 'Theme Bright (Trắng Đen)',
-    desc: 'Nền sáng tối giản, độ tương phản chữ đen đậm cao nét',
+    desc: 'Nền sáng tối giản, độ tương phản chữ đen đậm sắc nét',
     previewBg: '#f8fafc',
     previewAccent: '#0f172a',
     colors: {
@@ -49,14 +49,14 @@ export const THEMES = {
       primaryLight: '#3b82f6',
       accent: '#7c3aed',
       accentHover: '#6d28d9',
-      bgDark: '#f1f5f9',
+      bgDark: '#f8fafc',
       cardDark: '#ffffff',
       sidebarBg: '#ffffff',
       cardBorder: '#cbd5e1',
       surfaceHover: '#e2e8f0',
       textMain: '#0f172a',
-      textMuted: '#475569',
-      textSub: '#334155',
+      textMuted: '#334155',
+      textSub: '#1e293b',
       statusPending: '#d97706',
       statusConfirmed: '#2563eb',
       statusShipping: '#7c3aed',
@@ -75,7 +75,7 @@ export const THEMES = {
   pink: {
     id: 'pink',
     name: 'Theme Hồng (Sweetie Pink)',
-    desc: 'Nền hồng pastel ngọt ngào, nổi bật cho shop thời trang',
+    desc: 'Nền hồng pastel ngọt ngào, chữ hồng đô sang trọng',
     previewBg: '#fff1f2',
     previewAccent: '#f43f5e',
     colors: {
@@ -152,7 +152,8 @@ const injectGlobalThemeStyle = (activeTheme) => {
     document.head.appendChild(styleEl);
   }
 
-  const { bgDark, cardDark, sidebarBg, cardBorder, surfaceHover, textMain, textMuted, primary } = activeTheme.colors;
+  const { bgDark, cardDark, sidebarBg, cardBorder, surfaceHover, textMain, textMuted, textSub, primary } = activeTheme.colors;
+  const isLight = activeTheme.id === 'bright' || activeTheme.id === 'pink';
 
   styleEl.innerHTML = `
     html, body, #root {
@@ -161,7 +162,7 @@ const injectGlobalThemeStyle = (activeTheme) => {
       font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif !important;
     }
     
-    /* Global Background Overrides for RNWeb Elements */
+    /* Comprehensive Background Overrides for RNWeb Elements */
     [style*="background-color: rgb(15, 23, 42)"],
     [style*="background-color: rgb(11, 19, 43)"],
     [style*="background-color: rgb(241, 245, 249)"] {
@@ -173,12 +174,25 @@ const injectGlobalThemeStyle = (activeTheme) => {
     }
 
     [style*="background-color: rgb(30, 41, 59)"],
-    [style*="background-color: rgb(28, 37, 65)"] {
+    [style*="background-color: rgb(28, 37, 65)"],
+    [style*="background-color: rgb(17, 28, 46)"],
+    [style*="background-color: rgb(17, 24, 39)"],
+    [style*="background-color: rgb(31, 41, 55)"] {
       background-color: ${cardDark} !important;
     }
 
-    /* Global Text Overrides */
-    [style*="color: rgb(248, 250, 252)"] {
+    [style*="background-color: rgb(51, 65, 85)"] {
+      background-color: ${surfaceHover} !important;
+    }
+
+    /* Table Headers & Table Rows */
+    th, td {
+      border-color: ${cardBorder} !important;
+    }
+
+    /* Comprehensive Text Overrides */
+    [style*="color: rgb(248, 250, 252)"],
+    [style*="color: rgb(241, 245, 249)"] {
       color: ${textMain} !important;
     }
 
@@ -186,12 +200,35 @@ const injectGlobalThemeStyle = (activeTheme) => {
       color: ${textMuted} !important;
     }
 
+    [style*="color: rgb(203, 213, 225)"],
+    [style*="color: rgb(226, 232, 240)"] {
+      color: ${textSub} !important;
+    }
+
     /* Border Overrides */
     [style*="border-color: rgb(51, 65, 85)"],
     [style*="border-bottom-color: rgb(51, 65, 85)"],
     [style*="border-top-color: rgb(51, 65, 85)"],
+    [style*="border-left-color: rgb(51, 65, 85)"],
     [style*="border-right-color: rgb(51, 65, 85)"] {
       border-color: ${cardBorder} !important;
+    }
+
+    /* Form Inputs & Select Dropdowns in Light/Dark Themes */
+    input, select, textarea {
+      background-color: ${isLight ? '#ffffff' : bgDark} !important;
+      color: ${textMain} !important;
+      border-color: ${cardBorder} !important;
+    }
+    input::placeholder, textarea::placeholder {
+      color: ${textMuted} !important;
+      opacity: 0.8;
+    }
+
+    /* Native Select Options */
+    option {
+      background-color: ${cardDark} !important;
+      color: ${textMain} !important;
     }
 
     /* Custom Scrollbar */

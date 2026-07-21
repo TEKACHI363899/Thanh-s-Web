@@ -5,7 +5,7 @@ import { COLORS } from '../../theme/colors';
 import { Settings, X, Check, Palette, Moon, Sun, Heart, Sparkles } from 'lucide-react';
 
 export const SettingsModal = ({ visible, onClose }) => {
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, colors } = useTheme();
 
   if (!visible) return null;
 
@@ -18,25 +18,25 @@ export const SettingsModal = ({ visible, onClose }) => {
 
   return (
     <View style={styles.overlay}>
-      <View style={styles.modalContainer}>
+      <View style={[styles.modalContainer, { backgroundColor: colors.cardDark, borderColor: colors.cardBorder }]}>
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { borderColor: colors.cardBorder, backgroundColor: colors.sidebarBg || colors.cardDark }]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Settings size={22} color={COLORS.primaryLight} />
-            <Text style={styles.headerTitle}>Cài Đặt Hệ Thống & Giao Diện</Text>
+            <Settings size={20} color={colors.primary} />
+            <Text style={[styles.headerTitle, { color: colors.textMain }]}>Cài Đặt Theme Giao Diện</Text>
           </View>
           <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-            <X size={20} color={COLORS.textMuted} />
+            <X size={18} color={colors.textMuted} />
           </TouchableOpacity>
         </View>
 
         <ScrollView style={styles.body} showsVerticalScrollIndicator={false}>
           <View style={styles.sectionHeaderBox}>
-            <Palette size={18} color={COLORS.accent} />
-            <Text style={styles.sectionTitle}>🎨 Chọn Giao Diện & Tông Màu (Theme)</Text>
+            <Palette size={16} color={colors.accent || colors.primary} />
+            <Text style={[styles.sectionTitle, { color: colors.textMain }]}>🎨 Chọn Giao Diện Hệ Thống</Text>
           </View>
-          <Text style={styles.sectionSub}>
-            Tùy chỉnh phong cách hiển thị theo sở thích của shop. Thay đổi sẽ được lưu tự động!
+          <Text style={[styles.sectionSub, { color: colors.textMuted }]}>
+            Chọn 1 trong 4 tông màu bên dưới. Hệ thống sẽ lưu tự động vào máy của bạn!
           </Text>
 
           {/* Theme Selector Grid */}
@@ -50,41 +50,41 @@ export const SettingsModal = ({ visible, onClose }) => {
                   key={t.id}
                   style={[
                     styles.themeCard,
-                    isSelected && styles.themeCardActive
+                    { backgroundColor: isSelected ? 'rgba(59, 130, 246, 0.08)' : (colors.bgDark || '#0f172a'), borderColor: isSelected ? colors.primary : colors.cardBorder }
                   ]}
                   onPress={() => setTheme(t.id)}
                 >
                   <View style={styles.themeCardHeader}>
                     <View style={styles.themeTitleRow}>
-                      <IconComp size={18} color={isSelected ? COLORS.primaryLight : COLORS.textMuted} />
-                      <Text style={[styles.themeName, isSelected && styles.themeNameActive]}>
+                      <IconComp size={16} color={isSelected ? colors.primary : colors.textMuted} />
+                      <Text style={[styles.themeName, { color: isSelected ? colors.primary : colors.textMain }]}>
                         {t.name}
                       </Text>
                     </View>
                     {isSelected && (
-                      <View style={styles.activeBadge}>
-                        <Check size={12} color="#ffffff" style={{ marginRight: 4 }} />
-                        <Text style={styles.activeBadgeText}>Đã chọn</Text>
+                      <View style={[styles.activeBadge, { backgroundColor: colors.primary }]}>
+                        <Check size={10} color="#ffffff" style={{ marginRight: 3 }} />
+                        <Text style={styles.activeBadgeText}>Đang dùng</Text>
                       </View>
                     )}
                   </View>
 
-                  <Text style={styles.themeDesc}>{t.desc}</Text>
+                  <Text style={[styles.themeDesc, { color: colors.textMuted }]}>{t.desc}</Text>
 
                   {/* 2-Color Swatch Preview Box */}
-                  <View style={styles.swatchPreviewContainer}>
-                    <Text style={styles.swatchLabel}>Preview màu sắc:</Text>
+                  <View style={[styles.swatchPreviewContainer, { borderColor: colors.cardBorder }]}>
+                    <Text style={[styles.swatchLabel, { color: colors.textMuted }]}>Màu xem trước:</Text>
                     <View style={styles.swatchRow}>
                       {/* Box 1: Nền / Frame */}
                       <View style={styles.swatchItem}>
                         <View style={[styles.colorBox, { backgroundColor: t.previewBg }]} />
-                        <Text style={styles.boxLabel}>Nền / Khung</Text>
+                        <Text style={[styles.boxLabel, { color: colors.textMuted }]}>Nền</Text>
                       </View>
 
                       {/* Box 2: Điểm Nhấn / Accent */}
                       <View style={styles.swatchItem}>
                         <View style={[styles.colorBox, { backgroundColor: t.previewAccent }]} />
-                        <Text style={styles.boxLabel}>Nút / Điểm nhấn</Text>
+                        <Text style={[styles.boxLabel, { color: colors.textMuted }]}>Điểm nhấn</Text>
                       </View>
                     </View>
                   </View>
@@ -92,12 +92,12 @@ export const SettingsModal = ({ visible, onClose }) => {
                   <TouchableOpacity
                     style={[
                       styles.applyBtn,
-                      isSelected && styles.applyBtnActive
+                      { backgroundColor: isSelected ? colors.primary : 'transparent', borderColor: isSelected ? colors.primary : colors.cardBorder }
                     ]}
                     onPress={() => setTheme(t.id)}
                   >
-                    <Text style={[styles.applyBtnText, isSelected && styles.applyBtnTextActive]}>
-                      {isSelected ? '✓ Đang Sử Dụng' : 'Áp Dụng Theme Này'}
+                    <Text style={[styles.applyBtnText, { color: isSelected ? '#ffffff' : colors.textMain }]}>
+                      {isSelected ? '✓ Đang Sử Dụng' : 'Áp Dụng Theme'}
                     </Text>
                   </TouchableOpacity>
                 </TouchableOpacity>
@@ -106,9 +106,9 @@ export const SettingsModal = ({ visible, onClose }) => {
           </View>
         </ScrollView>
 
-        <View style={styles.footer}>
-          <TouchableOpacity style={styles.closeModalBtn} onPress={onClose}>
-            <Text style={styles.closeModalBtnText}>Đóng Cài Đặt</Text>
+        <View style={[styles.footer, { borderColor: colors.cardBorder }]}>
+          <TouchableOpacity style={[styles.closeModalBtn, { backgroundColor: colors.surfaceHover || '#334155' }]} onPress={onClose}>
+            <Text style={[styles.closeModalBtnText, { color: colors.textMain }]}>Đóng Cài Đặt</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -123,81 +123,71 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.75)',
-    backdropFilter: 'blur(4px)',
+    backgroundColor: 'rgba(15, 23, 42, 0.75)',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 9999,
     padding: 16
   },
   modalContainer: {
-    backgroundColor: COLORS.cardDark,
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: COLORS.cardBorder,
     width: '100%',
-    maxWidth: 680,
-    maxHeight: '90vh',
+    maxWidth: 580,
+    height: 540,
+    maxHeight: '88vh',
     display: 'flex',
     flexDirection: 'column',
-    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.5)'
+    overflow: 'hidden'
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.cardBorder
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: COLORS.textMain
+    fontSize: 16,
+    fontWeight: '800'
   },
   closeBtn: {
-    padding: 4
+    padding: 4,
+    borderRadius: 6
   },
   body: {
-    padding: 20,
-    flex: 1
+    padding: 16,
+    flex: 1,
+    overflowY: 'auto'
   },
   sectionHeaderBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 6,
     marginBottom: 4
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: COLORS.textMain
+    fontSize: 15,
+    fontWeight: '800'
   },
   sectionSub: {
-    fontSize: 13,
-    color: COLORS.textMuted,
-    marginBottom: 16
+    fontSize: 12,
+    marginBottom: 12
   },
   themeGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-    gap: 14,
-    marginBottom: 10
+    gridTemplateColumns: 'repeat(2, 1fr)',
+    gap: 10
   },
   themeCard: {
-    backgroundColor: '#0f172a',
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: COLORS.cardBorder,
-    padding: 14,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    padding: 10,
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-between',
-    gap: 10
-  },
-  themeCardActive: {
-    borderColor: COLORS.primary,
-    backgroundColor: 'rgba(59, 130, 246, 0.1)'
+    gap: 8
   },
   themeCardHeader: {
     flexDirection: 'row',
@@ -207,106 +197,84 @@ const styles = StyleSheet.create({
   themeTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8
+    gap: 6
   },
   themeName: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: COLORS.textMain
-  },
-  themeNameActive: {
-    color: COLORS.primaryLight
+    fontSize: 13,
+    fontWeight: '700'
   },
   activeBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 12
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 10
   },
   activeBadgeText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
     color: '#ffffff'
   },
   themeDesc: {
-    fontSize: 12,
-    color: COLORS.textMuted,
-    lineHeight: 16
+    fontSize: 11,
+    lineHeight: 14
   },
   swatchPreviewContainer: {
-    backgroundColor: 'rgba(15, 23, 42, 0.6)',
-    padding: 10,
-    borderRadius: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+    padding: 8,
+    borderRadius: 6,
     borderWidth: 1,
-    borderColor: COLORS.cardBorder,
-    marginTop: 4
+    marginTop: 2
   },
   swatchLabel: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600',
-    color: COLORS.textSub,
-    marginBottom: 6
+    marginBottom: 4
   },
   swatchRow: {
     flexDirection: 'row',
-    gap: 16
+    gap: 12
   },
   swatchItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8
+    gap: 6
   },
   colorBox: {
-    width: 24,
-    height: 24,
-    borderRadius: 6,
+    width: 18,
+    height: 18,
+    borderRadius: 4,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+    borderColor: 'rgba(0, 0, 0, 0.2)'
   },
   boxLabel: {
-    fontSize: 11,
-    color: COLORS.textMuted
+    fontSize: 10
   },
   applyBtn: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    backgroundColor: '#1e293b',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 6,
     borderWidth: 1,
-    borderColor: COLORS.cardBorder,
     alignItems: 'center',
-    marginTop: 4
-  },
-  applyBtnActive: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary
+    marginTop: 2
   },
   applyBtnText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: COLORS.textSub
-  },
-  applyBtnTextActive: {
-    color: '#ffffff'
+    fontSize: 11,
+    fontWeight: '700'
   },
   footer: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     borderTopWidth: 1,
-    borderTopColor: COLORS.cardBorder,
     alignItems: 'flex-end'
   },
   closeModalBtn: {
-    backgroundColor: '#334155',
-    paddingHorizontal: 16,
+    paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 8
+    borderRadius: 6
   },
   closeModalBtnText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#ffffff'
+    fontSize: 12,
+    fontWeight: '700'
   }
 });
