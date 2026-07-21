@@ -26,6 +26,14 @@ export const DataProvider = ({ children }) => {
   const [expenses, setExpenses] = useState(() => safeParse('thanh_app_expenses', INITIAL_EXPENSES));
   const [isCloudConnected, setIsCloudConnected] = useState(false);
 
+  // Manual Full Data Reload Helper (Forces instant sync from LocalStorage / Firestore)
+  const refreshAllData = () => {
+    setBatches(safeParse('thanh_app_batches', INITIAL_BATCHES));
+    setProducts(safeParse('thanh_app_products', INITIAL_PRODUCTS));
+    setOrders(safeParse('thanh_app_orders', INITIAL_ORDERS));
+    setExpenses(safeParse('thanh_app_expenses', INITIAL_EXPENSES));
+  };
+
   // Firestore Realtime Subscription & Initial Sync
   useEffect(() => {
     let unsubs = [];
@@ -33,41 +41,33 @@ export const DataProvider = ({ children }) => {
       if (db) {
         // Subscribe to Batches
         const unsubBatches = onSnapshot(collection(db, 'batches'), (snapshot) => {
-          if (!snapshot.empty) {
-            const list = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
-            setBatches(list);
-            setIsCloudConnected(true);
-          }
+          const list = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+          setBatches(list);
+          setIsCloudConnected(true);
         }, (err) => console.warn("Firestore Batches listener warning:", err));
         unsubs.push(unsubBatches);
 
         // Subscribe to Products
         const unsubProducts = onSnapshot(collection(db, 'products'), (snapshot) => {
-          if (!snapshot.empty) {
-            const list = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
-            setProducts(list);
-            setIsCloudConnected(true);
-          }
+          const list = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+          setProducts(list);
+          setIsCloudConnected(true);
         }, (err) => console.warn("Firestore Products listener warning:", err));
         unsubs.push(unsubProducts);
 
         // Subscribe to Orders
         const unsubOrders = onSnapshot(collection(db, 'orders'), (snapshot) => {
-          if (!snapshot.empty) {
-            const list = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
-            setOrders(list);
-            setIsCloudConnected(true);
-          }
+          const list = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+          setOrders(list);
+          setIsCloudConnected(true);
         }, (err) => console.warn("Firestore Orders listener warning:", err));
         unsubs.push(unsubOrders);
 
         // Subscribe to Expenses
         const unsubExpenses = onSnapshot(collection(db, 'expenses'), (snapshot) => {
-          if (!snapshot.empty) {
-            const list = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
-            setExpenses(list);
-            setIsCloudConnected(true);
-          }
+          const list = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+          setExpenses(list);
+          setIsCloudConnected(true);
         }, (err) => console.warn("Firestore Expenses listener warning:", err));
         unsubs.push(unsubExpenses);
       }
@@ -97,21 +97,38 @@ export const DataProvider = ({ children }) => {
     try { localStorage.setItem('thanh_app_expenses', JSON.stringify(expenses)); } catch (e) {}
   }, [expenses]);
 
-  // Tab Sync Fallback
+  // Realtime Tab Sync & Cross-Window Storage Event Listener
   useEffect(() => {
-    if (typeof window === 'undefined' || !window.BroadcastChannel) return;
-    const channel = new BroadcastChannel('thanh_management_realtime_sync');
-    channel.onmessage = (event) => {
-      const { type } = event.data;
-      if (type === 'REFRESH_DATA' && !isCloudConnected) {
-        setBatches(safeParse('thanh_app_batches', INITIAL_BATCHES));
+    const handleStorageChange = (e) => {
+      if (e.key === 'thanh_app_products') {
         setProducts(safeParse('thanh_app_products', INITIAL_PRODUCTS));
+      } else if (e.key === 'thanh_app_batches') {
+        setBatches(safeParse('thanh_app_batches', INITIAL_BATCHES));
+      } else if (e.key === 'thanh_app_orders') {
         setOrders(safeParse('thanh_app_orders', INITIAL_ORDERS));
+      } else if (e.key === 'thanh_app_expenses') {
         setExpenses(safeParse('thanh_app_expenses', INITIAL_EXPENSES));
       }
     };
-    return () => channel.close();
-  }, [isCloudConnected]);
+
+    window.addEventListener('storage', handleStorageChange);
+
+    if (typeof window !== 'undefined' && window.BroadcastChannel) {
+      const channel = new BroadcastChannel('thanh_management_realtime_sync');
+      channel.onmessage = (event) => {
+        const { type } = event.data;
+        if (type === 'REFRESH_DATA') {
+          refreshAllData();
+        }
+      };
+      return () => {
+        window.removeEventListener('storage', handleStorageChange);
+        channel.close();
+      };
+    }
+
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   const notifyChange = () => {
     broadcastRealtimeEvent('REFRESH_DATA', {});
@@ -354,6 +371,40 @@ export const DataProvider = ({ children }) => {
     }
   };
 
+  // Full System Data Export & Import Helper (Backup JSON)
+  const exportBackupJSON = () => {
+    const backupData = {
+      version: '1.0.0',
+      exportedAt: new Date().toISOString(),
+      batches,
+      products,
+      orders,
+      expenses
+    };
+    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `THANH_STORE_DATA_BACKUP_${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const importBackupJSON = (jsonData) => {
+    try {
+      const parsed = typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData;
+      if (parsed.batches) setBatches(parsed.batches);
+      if (parsed.products) setProducts(parsed.products);
+      if (parsed.orders) setOrders(parsed.orders);
+      if (parsed.expenses) setExpenses(parsed.expenses);
+      notifyChange();
+      return true;
+    } catch (e) {
+      console.error("Error importing backup JSON:", e);
+      return false;
+    }
+  };
+
   return (
     <DataContext.Provider value={{
       batches,
@@ -361,6 +412,9 @@ export const DataProvider = ({ children }) => {
       orders,
       expenses,
       isCloudConnected,
+      refreshAllData,
+      exportBackupJSON,
+      importBackupJSON,
       generateNextSKU,
       addProduct,
       updateProduct,

@@ -2,13 +2,24 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from '../common/RNBridge';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useData } from '../../context/DataContext';
 import { COLORS } from '../../theme/colors';
-import { Radio, ShieldCheck, ChevronDown, LogOut, Menu, User, UserCheck } from 'lucide-react';
+import { Radio, ShieldCheck, ChevronDown, LogOut, Menu, User, UserCheck, RefreshCw } from 'lucide-react';
 
 export const Header = ({ activeTab, onToggleSidebar, onOpenAuthModal }) => {
   const { currentUser, logoutAdmin } = useAuth();
   const { colors } = useTheme();
+  const { refreshAllData } = useData();
   const [showAdminMenu, setShowAdminMenu] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleManualRefresh = () => {
+    setIsRefreshing(true);
+    refreshAllData();
+    setTimeout(() => {
+      setIsRefreshing(false);
+    }, 600);
+  };
 
   const getTitle = () => {
     switch (activeTab) {
@@ -33,8 +44,20 @@ export const Header = ({ activeTab, onToggleSidebar, onOpenAuthModal }) => {
         <Text style={[styles.viewTitle, { color: colors.textMain }]}>{getTitle()}</Text>
       </View>
 
-      {/* Right: Realtime Status & User Profile Icon Button */}
+      {/* Right: Realtime Status, Sync Button & User Profile Icon Button */}
       <View style={styles.rightSection}>
+        {/* Manual Data Refresh Button */}
+        <TouchableOpacity 
+          style={[styles.refreshDataBtn, { backgroundColor: colors.surfaceHover || '#1e293b', borderColor: colors.cardBorder }]}
+          onPress={handleManualRefresh}
+          title="Bấm để tải lại dữ liệu mới nhất từ Cloud / Máy khác"
+        >
+          <RefreshCw size={14} color={colors.primary} style={{ marginRight: 6, transform: isRefreshing ? [{ rotate: '180deg' }] : [] }} />
+          <Text style={[styles.refreshDataText, { color: colors.textMain }]}>
+            {isRefreshing ? 'Đang Tải...' : 'Đồng Bộ Nhanh'}
+          </Text>
+        </TouchableOpacity>
+
         {/* Realtime Live Online Badge or Read-Only Badge */}
         {currentUser ? (
           <View style={styles.onlineStatusBadge}>
@@ -153,7 +176,19 @@ const styles = StyleSheet.create({
   rightSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12
+    gap: 10
+  },
+  refreshDataBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1
+  },
+  refreshDataText: {
+    fontSize: 12,
+    fontWeight: '700'
   },
   onlineStatusBadge: {
     flexDirection: 'row',
