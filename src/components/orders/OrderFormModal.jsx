@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
 import { COLORS } from '../../theme/colors';
-import { ShoppingCart, User, Phone, MapPin, Share2, DollarSign, Truck, Calendar, Link as LinkIcon, Plus, Trash2, X, Check, Search, ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
+import { ShoppingCart, User, Phone, MapPin, Share2, DollarSign, Truck, Calendar, Link as LinkIcon, Plus, Trash2, X, Check, Search, ChevronLeft, ChevronRight, ArrowRight, AlertCircle } from 'lucide-react';
 import { formatCurrencyInput, parseCurrencyInput } from '../../utils/formatters';
 
 export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
@@ -32,6 +32,8 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
 
   // 4-Step Wizard Navigation State
   const [currentStep, setCurrentStep] = useState(1);
+  const [stepErrorMsg, setStepErrorMsg] = useState('');
+  const [showValidation, setShowValidation] = useState(false);
 
   // Search & Filter state for picking products from warehouse
   const [prodSearchTerm, setProdSearchTerm] = useState('');
@@ -40,6 +42,8 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
 
   useEffect(() => {
     setCurrentStep(1); // Reset to Step 1 on open
+    setStepErrorMsg('');
+    setShowValidation(false);
     if (initialOrder) {
       setCustomerName(initialOrder.customerName || '');
       setCustomerPhone(initialOrder.customerPhone || '');
@@ -171,21 +175,28 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
   const deposit = Number(depositAmount) || 0;
   const remainingDebt = Math.max(0, grandTotal - deposit);
 
+  // Field Error Getters
+  const getCustomerNameError = () => {
+    const trimmed = customerName.trim();
+    if (!trimmed) return 'Tên khách hàng không được để trống!';
+    if (/^\d+$/.test(trimmed)) return 'Tên khách hàng không thể chỉ là chữ số!';
+    if (trimmed.length < 2) return 'Tên khách hàng quá ngắn (Cần ít nhất 2 ký tự)!';
+    return '';
+  };
+
+  const getCustomerPhoneError = () => {
+    if (customerPhone.trim() && !/^[0-9\s+.-]{8,15}$/.test(customerPhone.trim())) {
+      return 'Số điện thoại không hợp lệ (Cần từ 8 - 15 chữ số)!';
+    }
+    return '';
+  };
+
   // Step 1 Validation Helper
   const validateStep1 = () => {
-    const trimmedName = customerName.trim();
-    if (!trimmedName) {
-      return { isValid: false, error: '⚠️ Vui lòng nhập Tên khách hàng!' };
-    }
-    if (/^\d+$/.test(trimmedName)) {
-      return { isValid: false, error: '⚠️ Tên khách hàng không thể chỉ chứa chữ số! Vui lòng nhập tên khách thực.' };
-    }
-    if (trimmedName.length < 2) {
-      return { isValid: false, error: '⚠️ Tên khách hàng quá ngắn (Tối thiểu 2 ký tự)!' };
-    }
-    if (customerPhone.trim() && !/^[0-9\s+.-]{8,15}$/.test(customerPhone.trim())) {
-      return { isValid: false, error: '⚠️ Số điện thoại không hợp lệ (Cần từ 8 - 15 chữ số)!' };
-    }
+    const nameErr = getCustomerNameError();
+    if (nameErr) return { isValid: false, error: `⚠️ ${nameErr}` };
+    const phoneErr = getCustomerPhoneError();
+    if (phoneErr) return { isValid: false, error: `⚠️ ${phoneErr}` };
     return { isValid: true, error: '' };
   };
 
@@ -206,7 +217,7 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
         const prevOrderedQty = initialOrder && initialOrder.items ? (initialOrder.items.find(it => it.productId === p.id)?.quantity || 0) : 0;
         const maxAllowed = p.stock + prevOrderedQty;
         if (item.quantity > maxAllowed) {
-          return { isValid: false, error: `⚠️ Sản phẩm "${p.name}" chỉ còn tồn kho ${maxAllowed} sản phẩm. Không thể tạo vượt quá tồn!` };
+          return { isValid: false, error: `⚠️ Sản phẩm "${p.name}" chỉ còn tồn kho ${maxAllowed} sản phẩm!` };
         }
       }
     }
@@ -216,10 +227,10 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
   // Step 3 Validation Helper
   const validateStep3 = () => {
     if (shippingFee < 0) {
-      return { isValid: false, error: '⚠️ Phí vận chuyển không thể âm!' };
+      return { isValid: false, error: '⚠️ Phí vận chuyển không thể là số âm!' };
     }
     if (depositAmount < 0) {
-      return { isValid: false, error: '⚠️ Tiền cọc trước không thể âm!' };
+      return { isValid: false, error: '⚠️ Tiền cọc trước không thể là số âm!' };
     }
     return { isValid: true, error: '' };
   };
@@ -232,21 +243,22 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
 
   const handleSubmit = () => {
     requireAdmin(() => {
+      setShowValidation(true);
       const v1 = validateStep1();
       if (!v1.isValid) {
-        alert(v1.error);
+        setStepErrorMsg(v1.error);
         setCurrentStep(1);
         return;
       }
       const v2 = validateStep2();
       if (!v2.isValid) {
-        alert(v2.error);
+        setStepErrorMsg(v2.error);
         setCurrentStep(2);
         return;
       }
       const v3 = validateStep3();
       if (!v3.isValid) {
-        alert(v3.error);
+        setStepErrorMsg(v3.error);
         setCurrentStep(3);
         return;
       }
@@ -320,19 +332,21 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
                   onPress={() => {
                     // Check validation if trying to jump forward
                     if (s.id > currentStep) {
+                      setShowValidation(true);
                       if (currentStep === 1) {
                         const v1 = validateStep1();
-                        if (!v1.isValid) { alert(v1.error); return; }
+                        if (!v1.isValid) { setStepErrorMsg(v1.error); return; }
                       }
                       if (currentStep === 2 || s.id > 2) {
                         const v2 = validateStep2();
-                        if (!v2.isValid) { alert(v2.error); return; }
+                        if (!v2.isValid) { setStepErrorMsg(v2.error); return; }
                       }
                       if (currentStep === 3 || s.id > 3) {
                         const v3 = validateStep3();
-                        if (!v3.isValid) { alert(v3.error); return; }
+                        if (!v3.isValid) { setStepErrorMsg(v3.error); return; }
                       }
                     }
+                    setStepErrorMsg('');
                     setCurrentStep(s.id);
                   }}
                 >
@@ -361,28 +375,55 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
           {currentStep === 1 && (
             <View>
               <Text style={styles.sectionHeader}>👤 1. Thông Tin Khách Hàng</Text>
+              
+              {/* Red Error Banner */}
+              {stepErrorMsg ? (
+                <View style={styles.inlineErrorBanner}>
+                  <AlertCircle size={16} color="#ef4444" style={{ marginRight: 8 }} />
+                  <Text style={styles.inlineErrorBannerText}>{stepErrorMsg}</Text>
+                </View>
+              ) : null}
+
               <View style={styles.grid2}>
                 <View style={styles.col}>
                   <Text style={styles.label}>Tên khách hàng *:</Text>
                   <TextInput
-                    style={styles.input}
+                    style={[
+                      styles.input,
+                      showValidation && getCustomerNameError() ? styles.inputErrorHighlight : null
+                    ]}
                     placeholder="Ví dụ: Nguyễn Thị Mai"
                     placeholderTextColor={COLORS.textMuted}
                     value={customerName}
-                    onChangeText={setCustomerName}
+                    onChangeText={(text) => {
+                      setCustomerName(text);
+                      if (stepErrorMsg) setStepErrorMsg('');
+                    }}
                   />
+                  {showValidation && getCustomerNameError() ? (
+                    <Text style={styles.fieldErrorText}>❌ {getCustomerNameError()}</Text>
+                  ) : null}
                 </View>
 
                 <View style={styles.col}>
                   <Text style={styles.label}>Số điện thoại:</Text>
                   <TextInput
-                    style={styles.input}
+                    style={[
+                      styles.input,
+                      showValidation && getCustomerPhoneError() ? styles.inputErrorHighlight : null
+                    ]}
                     keyboardType="phone-pad"
                     placeholder="0987654321"
                     placeholderTextColor={COLORS.textMuted}
                     value={customerPhone}
-                    onChangeText={setCustomerPhone}
+                    onChangeText={(text) => {
+                      setCustomerPhone(text);
+                      if (stepErrorMsg) setStepErrorMsg('');
+                    }}
                   />
+                  {showValidation && getCustomerPhoneError() ? (
+                    <Text style={styles.fieldErrorText}>❌ {getCustomerPhoneError()}</Text>
+                  ) : null}
                 </View>
               </View>
 
@@ -430,6 +471,13 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
           {/* STEP 2: Chọn Sản Phẩm Từ Các Lô Hàng */}
           {currentStep === 2 && (
             <View>
+              {stepErrorMsg ? (
+                <View style={styles.inlineErrorBanner}>
+                  <AlertCircle size={16} color="#ef4444" style={{ marginRight: 8 }} />
+                  <Text style={styles.inlineErrorBannerText}>{stepErrorMsg}</Text>
+                </View>
+              ) : null}
+
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                 <Text style={styles.sectionHeader}>📦 2. Chọn Sản Phẩm Từ Các Lô Hàng</Text>
                 <TouchableOpacity style={styles.addItemBtn} onPress={handleAddItem}>
@@ -1340,5 +1388,33 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontWeight: '700',
     fontSize: 13
+  },
+  inlineErrorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(239, 68, 68, 0.12)',
+    borderWidth: 1,
+    borderColor: '#ef4444',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 14
+  },
+  inlineErrorBannerText: {
+    color: '#ef4444',
+    fontSize: 13,
+    fontWeight: '700',
+    flex: 1
+  },
+  inputErrorHighlight: {
+    borderColor: '#ef4444',
+    backgroundColor: 'rgba(239, 68, 68, 0.08)'
+  },
+  fieldErrorText: {
+    color: '#ef4444',
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: 4,
+    marginBottom: 4
   }
 });
