@@ -214,7 +214,7 @@ export const OrderDataGrid = () => {
                 const totalVal = ord.items.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0) + (ord.isFreeship ? 0 : ord.shippingFee);
 
                 return (
-                  <View key={ord.id} style={[styles.tr, idx % 2 === 1 && styles.trEven]}>
+                  <View key={ord.id} style={styles.tr}>
                     {/* Code */}
                     <View style={[styles.td, { width: 110 }]}>
                       <Text style={styles.codeText}>{ord.code}</Text>

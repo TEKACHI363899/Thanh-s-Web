@@ -208,7 +208,7 @@ export const ProductList = () => {
                 </View>
               ) : (
                 filteredProducts.map((prod, index) => (
-                  <View key={prod.id} style={[styles.tr, index % 2 === 1 && styles.trEven]}>
+                  <View key={prod.id} style={styles.tr}>
                     <View style={[styles.td, { width: 100 }]}>
                       <View style={[
                         styles.skuBadge,
