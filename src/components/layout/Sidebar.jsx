@@ -8,10 +8,19 @@ import {
   ChevronLeft, 
   ChevronRight, 
   Boxes,
-  PlusCircle
+  PlusCircle,
+  Settings
 } from 'lucide-react';
 
-export const Sidebar = ({ activeTab, setActiveTab, collapsed, setCollapsed, onOpenBatchModal, onOpenOrderModal }) => {
+export const Sidebar = ({ 
+  activeTab, 
+  setActiveTab, 
+  collapsed, 
+  setCollapsed, 
+  onOpenBatchModal, 
+  onOpenOrderModal,
+  onOpenSettingsModal 
+}) => {
   const menuItems = [
     {
       id: 'ORDERS',
@@ -115,18 +124,38 @@ export const Sidebar = ({ activeTab, setActiveTab, collapsed, setCollapsed, onOp
         })}
       </View>
 
-      {/* Quick Batch Management Button in Sidebar */}
-      {!collapsed && (
-        <View style={styles.sidebarFooter}>
+      {/* Footer Actions in Sidebar */}
+      <View style={styles.sidebarFooter}>
+        {!collapsed ? (
+          <>
+            <TouchableOpacity 
+              style={styles.batchQuickBtn}
+              onPress={onOpenBatchModal}
+            >
+              <Boxes size={18} color={COLORS.accent} style={{ marginRight: 8 }} />
+              <Text style={styles.batchQuickText}>📦 Quản Lý Lô Hàng</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.settingsQuickBtn}
+              onPress={onOpenSettingsModal}
+            >
+              <Settings size={18} color={COLORS.primaryLight} style={{ marginRight: 8 }} />
+              <Text style={styles.settingsQuickText}>⚙️ Cài Đặt Theme</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
           <TouchableOpacity 
-            style={styles.batchQuickBtn}
-            onPress={onOpenBatchModal}
+            style={[styles.menuItem, styles.menuItemCollapsed, { marginTop: 'auto' }]}
+            onPress={onOpenSettingsModal}
+            title="Cài đặt Theme"
           >
-            <Boxes size={20} color={COLORS.accent} style={{ marginRight: 8 }} />
-            <Text style={styles.batchQuickText}>📦 Quản Lý Lô Hàng</Text>
+            <View style={[styles.iconWrapper, { backgroundColor: 'rgba(59, 130, 246, 0.15)' }]}>
+              <Settings size={20} color={COLORS.primaryLight} />
+            </View>
           </TouchableOpacity>
-        </View>
-      )}
+        )}
+      </View>
     </View>
   );
 };
@@ -271,14 +300,15 @@ const styles = StyleSheet.create({
   sidebarFooter: {
     padding: 14,
     borderTopWidth: 1,
-    borderTopColor: COLORS.cardBorder
+    borderTopColor: COLORS.cardBorder,
+    gap: 8
   },
   batchQuickBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(139, 92, 246, 0.15)',
-    paddingVertical: 12,
+    paddingVertical: 10,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: COLORS.accent
@@ -286,6 +316,21 @@ const styles = StyleSheet.create({
   batchQuickText: {
     color: COLORS.accent,
     fontWeight: '700',
-    fontSize: 14
+    fontSize: 13
+  },
+  settingsQuickBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(59, 130, 246, 0.15)',
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.primary
+  },
+  settingsQuickText: {
+    color: COLORS.primaryLight,
+    fontWeight: '700',
+    fontSize: 13
   }
 });

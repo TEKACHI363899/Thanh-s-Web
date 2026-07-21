@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, StyleSheet } from './components/common/RNBridge';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { DataProvider } from './context/DataContext';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { Header } from './components/layout/Header';
 import { Sidebar } from './components/layout/Sidebar';
 import { OrderDataGrid } from './components/orders/OrderDataGrid';
@@ -10,9 +11,11 @@ import { FinanceModule } from './components/finance/FinanceModule';
 import { LoginModal } from './components/auth/LoginModal';
 import { BatchManagementModal } from './components/batches/BatchManagementModal';
 import { OrderFormModal } from './components/orders/OrderFormModal';
+import { SettingsModal } from './components/settings/SettingsModal';
 
 export const AppContent = () => {
   const { isAuthModalOpen, openAuthModal, closeAuthModal, requireAdmin } = useAuth();
+  const { themeObj } = useTheme();
 
   // Main Navigation State
   const [activeTab, setActiveTab] = useState('ORDERS');
@@ -21,6 +24,7 @@ export const AppContent = () => {
   // Global Modals State
   const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
   const handleOpenBatchModal = () => {
     requireAdmin(() => setIsBatchModalOpen(true), 'Vui lòng đăng nhập Admin để quản lý lô hàng!');
@@ -31,7 +35,7 @@ export const AppContent = () => {
   };
 
   return (
-    <View style={styles.appWrapper}>
+    <View style={[styles.appWrapper, { backgroundColor: themeObj.colors.bgDark }]}>
       {/* Collapsible Sidebar */}
       <Sidebar 
         activeTab={activeTab} 
@@ -40,6 +44,7 @@ export const AppContent = () => {
         setCollapsed={setCollapsed}
         onOpenBatchModal={handleOpenBatchModal}
         onOpenOrderModal={handleOpenOrderModal}
+        onOpenSettingsModal={() => setIsSettingsModalOpen(true)}
       />
 
       {/* Main Content Workspace */}
@@ -72,17 +77,24 @@ export const AppContent = () => {
         visible={isOrderModalOpen}
         onClose={() => setIsOrderModalOpen(false)}
       />
+
+      <SettingsModal
+        visible={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+      />
     </View>
   );
 };
 
 export default function App() {
   return (
-    <AuthProvider>
-      <DataProvider>
-        <AppContent />
-      </DataProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <DataProvider>
+          <AppContent />
+        </DataProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 
