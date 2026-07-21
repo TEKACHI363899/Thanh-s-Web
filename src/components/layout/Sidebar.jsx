@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from '../common/RNBridge';
+import { useTheme } from '../../context/ThemeContext';
 import { COLORS } from '../../theme/colors';
 import { 
   ShoppingBag, 
@@ -21,30 +22,36 @@ export const Sidebar = ({
   onOpenOrderModal,
   onOpenSettingsModal 
 }) => {
+  const { colors } = useTheme();
+
   const menuItems = [
     {
       id: 'ORDERS',
       label: 'Bảng Đơn Hàng',
       badge: 'Chính',
       icon: ShoppingBag,
-      color: COLORS.primaryLight
+      color: colors.primaryLight
     },
     {
       id: 'PRODUCTS',
       label: 'Sản Phẩm & Tồn Kho',
       icon: Package,
-      color: COLORS.categoryQA
+      color: colors.categoryQA
     },
     {
       id: 'FINANCE',
       label: 'Tài Chính & Lợi Nhuận',
       icon: TrendingUp,
-      color: COLORS.success
+      color: colors.success
     }
   ];
 
   return (
-    <View style={[styles.sidebar, collapsed ? styles.sidebarCollapsed : styles.sidebarExpanded]}>
+    <View style={[
+      styles.sidebar, 
+      collapsed ? styles.sidebarCollapsed : styles.sidebarExpanded,
+      { backgroundColor: colors.sidebarBg || colors.cardDark, borderColor: colors.cardBorder }
+    ]}>
       {/* Sidebar Top Header with Brand & Collapse Toggle */}
       <View style={styles.sidebarHeader}>
         {!collapsed && (

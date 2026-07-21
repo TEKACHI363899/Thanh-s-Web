@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from '../common/RNBridge';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import { COLORS } from '../../theme/colors';
 import { Radio, ShieldCheck, ChevronDown, LogOut, Menu } from 'lucide-react';
 
 export const Header = ({ activeTab, onToggleSidebar, onOpenAuthModal }) => {
   const { currentUser, logoutAdmin } = useAuth();
+  const { colors } = useTheme();
   const [showAdminMenu, setShowAdminMenu] = useState(false);
 
   const getTitle = () => {
@@ -22,13 +24,13 @@ export const Header = ({ activeTab, onToggleSidebar, onOpenAuthModal }) => {
   };
 
   return (
-    <View style={styles.headerContainer}>
+    <View style={[styles.headerContainer, { backgroundColor: colors.cardDark, borderColor: colors.cardBorder }]}>
       {/* Left: View Title */}
       <View style={styles.leftSection}>
         <TouchableOpacity style={styles.menuToggleMobile} onPress={onToggleSidebar}>
-          <Menu size={22} color={COLORS.textMain} />
+          <Menu size={22} color={colors.textMain} />
         </TouchableOpacity>
-        <Text style={styles.viewTitle}>{getTitle()}</Text>
+        <Text style={[styles.viewTitle, { color: colors.textMain }]}>{getTitle()}</Text>
       </View>
 
       {/* Right: Realtime Status & Active Admin Profile */}

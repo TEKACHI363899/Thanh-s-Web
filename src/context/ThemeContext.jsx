@@ -4,8 +4,8 @@ import { COLORS } from '../theme/colors';
 export const THEMES = {
   dark: {
     id: 'dark',
-    name: 'Theme Dark (Mặc Định)',
-    desc: 'Nền tối Slate Navy sang trọng & hiện đại',
+    name: 'Theme Dark (Đêm Tối)',
+    desc: 'Nền tối Slate Navy sang trọng, hiện đại & dịu mắt',
     previewBg: '#0f172a',
     previewAccent: '#3b82f6',
     colors: {
@@ -16,6 +16,7 @@ export const THEMES = {
       accentHover: '#7c3aed',
       bgDark: '#0f172a',
       cardDark: '#1e293b',
+      sidebarBg: '#162032',
       cardBorder: '#334155',
       surfaceHover: '#334155',
       textMain: '#f8fafc',
@@ -39,7 +40,7 @@ export const THEMES = {
   bright: {
     id: 'bright',
     name: 'Theme Bright (Trắng Đen)',
-    desc: 'Nền sáng tối giản, tương phản cao chữ rõ nét',
+    desc: 'Nền sáng tối giản, độ tương phản chữ đen đậm cao nét',
     previewBg: '#f8fafc',
     previewAccent: '#0f172a',
     colors: {
@@ -50,6 +51,7 @@ export const THEMES = {
       accentHover: '#6d28d9',
       bgDark: '#f1f5f9',
       cardDark: '#ffffff',
+      sidebarBg: '#ffffff',
       cardBorder: '#cbd5e1',
       surfaceHover: '#e2e8f0',
       textMain: '#0f172a',
@@ -73,7 +75,7 @@ export const THEMES = {
   pink: {
     id: 'pink',
     name: 'Theme Hồng (Sweetie Pink)',
-    desc: 'Gam màu hồng pastel quyến rũ & ngọt ngào',
+    desc: 'Nền hồng pastel ngọt ngào, nổi bật cho shop thời trang',
     previewBg: '#fff1f2',
     previewAccent: '#f43f5e',
     colors: {
@@ -84,12 +86,13 @@ export const THEMES = {
       accentHover: '#db2777',
       bgDark: '#fff1f2',
       cardDark: '#ffffff',
+      sidebarBg: '#ffe4e6',
       cardBorder: '#fecdd3',
       surfaceHover: '#ffe4e6',
       textMain: '#881337',
       textMuted: '#9f1239',
       textSub: '#be123c',
-      statusPending: '#f59e0b',
+      statusPending: '#d97706',
       statusConfirmed: '#f43f5e',
       statusShipping: '#ec4899',
       statusDelivered: '#10b981',
@@ -107,8 +110,8 @@ export const THEMES = {
   kuromi: {
     id: 'kuromi',
     name: 'Theme Tím Kuromi (Mystic Violet)',
-    desc: 'Tím mộng mơ, cá tính huyền bí phong cách Kuromi',
-    previewBg: '#181028',
+    desc: 'Nền tím Kuromi huyền bí, mộng mơ & đậm chất nghệ thuật',
+    previewBg: '#130b24',
     previewAccent: '#c084fc',
     colors: {
       primary: '#a855f7',
@@ -118,6 +121,7 @@ export const THEMES = {
       accentHover: '#e11d48',
       bgDark: '#130b24',
       cardDark: '#21153b',
+      sidebarBg: '#1a0e30',
       cardBorder: '#3c2763',
       surfaceHover: '#2e1c50',
       textMain: '#f5f3ff',
@@ -140,6 +144,66 @@ export const THEMES = {
   }
 };
 
+const injectGlobalThemeStyle = (activeTheme) => {
+  let styleEl = document.getElementById('dynamic-theme-style');
+  if (!styleEl) {
+    styleEl = document.createElement('style');
+    styleEl.id = 'dynamic-theme-style';
+    document.head.appendChild(styleEl);
+  }
+
+  const { bgDark, cardDark, sidebarBg, cardBorder, surfaceHover, textMain, textMuted, primary } = activeTheme.colors;
+
+  styleEl.innerHTML = `
+    html, body, #root {
+      background-color: ${bgDark} !important;
+      color: ${textMain} !important;
+      font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif !important;
+    }
+    
+    /* Global Background Overrides for RNWeb Elements */
+    [style*="background-color: rgb(15, 23, 42)"],
+    [style*="background-color: rgb(11, 19, 43)"],
+    [style*="background-color: rgb(241, 245, 249)"] {
+      background-color: ${bgDark} !important;
+    }
+
+    [style*="background-color: rgb(22, 32, 50)"] {
+      background-color: ${sidebarBg} !important;
+    }
+
+    [style*="background-color: rgb(30, 41, 59)"],
+    [style*="background-color: rgb(28, 37, 65)"] {
+      background-color: ${cardDark} !important;
+    }
+
+    /* Global Text Overrides */
+    [style*="color: rgb(248, 250, 252)"] {
+      color: ${textMain} !important;
+    }
+
+    [style*="color: rgb(148, 163, 184)"] {
+      color: ${textMuted} !important;
+    }
+
+    /* Border Overrides */
+    [style*="border-color: rgb(51, 65, 85)"],
+    [style*="border-bottom-color: rgb(51, 65, 85)"],
+    [style*="border-top-color: rgb(51, 65, 85)"],
+    [style*="border-right-color: rgb(51, 65, 85)"] {
+      border-color: ${cardBorder} !important;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar-track {
+      background: ${bgDark} !important;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: ${primary} !important;
+    }
+  `;
+};
+
 const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
@@ -155,16 +219,8 @@ export const ThemeProvider = ({ children }) => {
 
   useEffect(() => {
     const activeTheme = THEMES[theme] || THEMES.dark;
-    // Update global COLORS object in place
     Object.assign(COLORS, activeTheme.colors);
-    
-    // Set CSS variables on body for smooth styling
-    const root = document.documentElement;
-    Object.entries(activeTheme.colors).forEach(([key, value]) => {
-      root.style.setProperty(`--${key}`, value);
-    });
-    document.body.style.backgroundColor = activeTheme.colors.bgDark;
-    document.body.style.color = activeTheme.colors.textMain;
+    injectGlobalThemeStyle(activeTheme);
   }, [theme]);
 
   const activeThemeObj = THEMES[theme] || THEMES.dark;
