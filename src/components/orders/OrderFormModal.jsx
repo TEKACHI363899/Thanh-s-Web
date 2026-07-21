@@ -163,23 +163,34 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
     const trimmed = customerName.trim();
     if (!trimmed) return 'Tên khách hàng không được để trống!';
     if (/^\d+$/.test(trimmed)) return 'Tên khách hàng không thể chỉ là chữ số!';
-    if (trimmed.length < 2) return 'Tên khách hàng quá ngắn (Cần ít nhất 2 ký tự)!';
+    if (trimmed.length < 2) return 'Tên khách hàng phải từ 2 ký tự trở lên!';
     return '';
   };
 
   const getCustomerPhoneError = () => {
-    if (customerPhone.trim() && !/^[0-9\s+.-]{8,15}$/.test(customerPhone.trim())) {
+    const trimmed = customerPhone.trim();
+    if (!trimmed) return 'Số điện thoại không được để trống!';
+    if (!/^[0-9\s+.-]{8,15}$/.test(trimmed)) {
       return 'Số điện thoại không hợp lệ (Cần từ 8 - 15 chữ số)!';
     }
     return '';
   };
 
-  // Step 1 Validation Helper
+  const getCustomerAddressError = () => {
+    const trimmed = customerAddress.trim();
+    if (!trimmed) return 'Địa chỉ giao hàng không được để trống!';
+    if (trimmed.length < 4) return 'Địa chỉ quá ngắn (Cần nhập chi tiết từ 4 ký tự trở lên)!';
+    return '';
+  };
+
+  // Step 1 Validation Helper (Requires Name, Phone, and Address)
   const validateStep1 = () => {
     const nameErr = getCustomerNameError();
     if (nameErr) return { isValid: false, error: `⚠️ ${nameErr}` };
     const phoneErr = getCustomerPhoneError();
     if (phoneErr) return { isValid: false, error: `⚠️ ${phoneErr}` };
+    const addrErr = getCustomerAddressError();
+    if (addrErr) return { isValid: false, error: `⚠️ ${addrErr}` };
     return { isValid: true, error: '' };
   };
 
@@ -427,14 +438,23 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
                 </View>
               </View>
 
-              <Text style={styles.label}>Địa chỉ giao hàng:</Text>
+              <Text style={styles.label}>Địa chỉ giao hàng *:</Text>
               <TextInput
-                style={styles.input}
+                style={[
+                  styles.input,
+                  showValidation && getCustomerAddressError() ? styles.inputErrorHighlight : null
+                ]}
                 placeholder="Số nhà, Tên đường, Phường/Xã, Quận/Huyện, TP..."
                 placeholderTextColor={COLORS.textMuted}
                 value={customerAddress}
-                onChangeText={setCustomerAddress}
+                onChangeText={(text) => {
+                  setCustomerAddress(text);
+                  if (stepErrorMsg) setStepErrorMsg('');
+                }}
               />
+              {showValidation && getCustomerAddressError() ? (
+                <Text style={styles.fieldErrorText}>❌ {getCustomerAddressError()}</Text>
+              ) : null}
 
               <View style={styles.grid2}>
                 <View style={styles.col}>
@@ -469,168 +489,212 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
           )}
 
           {/* STEP 2: Chọn Sản Phẩm Từ Các Lô Hàng */}
-          {currentStep === 2 && (
-            <View>
-              {stepErrorMsg ? (
-                <View style={styles.inlineErrorBanner}>
-                  <AlertCircle size={16} color="#ef4444" style={{ marginRight: 8 }} />
-                  <Text style={styles.inlineErrorBannerText}>{stepErrorMsg}</Text>
-                </View>
-              ) : null}
+          {currentStep === 2 && (() => {
+            const term = prodSearchTerm.toLowerCase().trim();
+            const filteredWarehouseProducts = products.filter(p => {
+              const matchesSearch = !term || p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term);
+              const matchesCat = prodCatFilter === 'ALL' || p.category === prodCatFilter;
+              const matchesBatch = prodBatchFilter === 'ALL' || p.batchId === prodBatchFilter;
+              return matchesSearch && matchesCat && matchesBatch;
+            });
 
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                <Text style={styles.sectionHeader}>📦 2. Chọn Sản Phẩm Từ Các Lô Hàng</Text>
-                <TouchableOpacity style={styles.addItemBtn} onPress={handleAddItem}>
-                  <Plus size={14} color="#ffffff" style={{ marginRight: 4 }} />
-                  <Text style={styles.addItemBtnText}>Thêm Món Mới</Text>
-                </TouchableOpacity>
-              </View>
+            return (
+              <View>
+                {stepErrorMsg ? (
+                  <View style={styles.inlineErrorBanner}>
+                    <AlertCircle size={16} color="#ef4444" style={{ marginRight: 8 }} />
+                    <Text style={styles.inlineErrorBannerText}>{stepErrorMsg}</Text>
+                  </View>
+                ) : null}
 
-              {/* Search & Filter Toolbar for Product Selection */}
-              <View style={styles.pickerFilterToolbar}>
-                <View style={styles.pickerSearchInputBox}>
-                  <Search size={16} color={COLORS.primaryLight} style={{ marginRight: 8 }} />
-                  <TextInput
-                    style={styles.pickerSearchInput}
-                    placeholder="🔍 Nhập Tên sản phẩm hoặc Mã SKU để lọc tìm..."
-                    placeholderTextColor={COLORS.textMuted}
-                    value={prodSearchTerm}
-                    onChangeText={setProdSearchTerm}
-                  />
-                  {prodSearchTerm ? (
-                    <TouchableOpacity onPress={() => setProdSearchTerm('')}>
-                      <X size={14} color={COLORS.textMuted} />
-                    </TouchableOpacity>
-                  ) : null}
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <Text style={styles.sectionHeader}>📦 2. Chọn Sản Phẩm Từ Các Lô Hàng Khả Dụng</Text>
+                  <Text style={{ fontSize: 12, color: COLORS.primaryLight, fontWeight: '700' }}>
+                    Tìm thấy: {filteredWarehouseProducts.length} sản phẩm
+                  </Text>
                 </View>
 
-                <View style={styles.pickerFilterChipsRow}>
-                  {['ALL', 'TS', 'QA'].map(cat => (
-                    <TouchableOpacity
-                      key={cat}
-                      style={[styles.pickerFilterChip, prodCatFilter === cat && styles.pickerFilterChipActive]}
-                      onPress={() => setProdCatFilter(cat)}
-                    >
-                      <Text style={[styles.pickerFilterChipText, prodCatFilter === cat && styles.pickerFilterChipTextActive]}>
-                        {cat === 'ALL' ? 'Tất cả loại' : (cat === 'TS' ? 'Trang Sức (TS)' : 'Quần Áo (QA)')}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+                {/* Search & Filter Toolbar */}
+                <View style={styles.pickerFilterToolbar}>
+                  <View style={styles.pickerSearchInputBox}>
+                    <Search size={16} color={COLORS.primaryLight} style={{ marginRight: 8 }} />
+                    <TextInput
+                      style={styles.pickerSearchInput}
+                      placeholder="🔍 Nhập Tên sản phẩm hoặc Mã SKU để lọc tìm..."
+                      placeholderTextColor={COLORS.textMuted}
+                      value={prodSearchTerm}
+                      onChangeText={setProdSearchTerm}
+                    />
+                    {prodSearchTerm ? (
+                      <TouchableOpacity onPress={() => setProdSearchTerm('')}>
+                        <X size={14} color={COLORS.textMuted} />
+                      </TouchableOpacity>
+                    ) : null}
+                  </View>
 
-                  <select
-                    value={prodBatchFilter}
-                    onChange={(e) => setProdBatchFilter(e.target.value)}
-                    style={styles.pickerBatchSelect}
-                  >
-                    <option value="ALL" style={{ background: '#1e293b', color: '#f8fafc' }}>📦 Tất cả Lô Hàng</option>
-                    {batches.map(b => (
-                      <option key={b.id} value={b.id} style={{ background: '#1e293b', color: '#f8fafc' }}>
-                        [{b.code}] {b.name}
-                      </option>
+                  <View style={styles.pickerFilterChipsRow}>
+                    {['ALL', 'TS', 'QA'].map(cat => (
+                      <TouchableOpacity
+                        key={cat}
+                        style={[styles.pickerFilterChip, prodCatFilter === cat && styles.pickerFilterChipActive]}
+                        onPress={() => setProdCatFilter(cat)}
+                      >
+                        <Text style={[styles.pickerFilterChipText, prodCatFilter === cat && styles.pickerFilterChipTextActive]}>
+                          {cat === 'ALL' ? 'Tất cả loại' : (cat === 'TS' ? 'Trang Sức (TS)' : 'Quần Áo (QA)')}
+                        </Text>
+                      </TouchableOpacity>
                     ))}
-                  </select>
+
+                    <select
+                      value={prodBatchFilter}
+                      onChange={(e) => setProdBatchFilter(e.target.value)}
+                      style={styles.pickerBatchSelect}
+                    >
+                      <option value="ALL" style={{ background: '#1e293b', color: '#f8fafc' }}>📦 Tất cả Lô Hàng</option>
+                      {batches.map(b => (
+                        <option key={b.id} value={b.id} style={{ background: '#1e293b', color: '#f8fafc' }}>
+                          [{b.code}] {b.name}
+                        </option>
+                      ))}
+                    </select>
+                  </View>
                 </View>
-              </View>
 
-              {selectedItems.map((item, index) => {
-                const term = prodSearchTerm.toLowerCase().trim();
-                const filteredPickerProducts = products.filter(p => {
-                  const matchesSearch = !term || p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term);
-                  const matchesCat = prodCatFilter === 'ALL' || p.category === prodCatFilter;
-                  const matchesBatch = prodBatchFilter === 'ALL' || p.batchId === prodBatchFilter;
-                  const isSelected = item.productId === p.id;
-                  return isSelected || (matchesSearch && matchesCat && matchesBatch);
-                });
+                {/* Warehouse Product Chips Grid */}
+                <View style={styles.selectProductBox}>
+                  {filteredWarehouseProducts.length === 0 ? (
+                    <Text style={styles.pickerEmptyText}>Không tìm thấy sản phẩm nào phù hợp với bộ lọc...</Text>
+                  ) : (
+                    filteredWarehouseProducts.map(p => {
+                      const isOutOfStock = p.stock <= 0;
+                      const selectedCount = selectedItems.filter(it => it.productId === p.id).reduce((sum, it) => sum + (Number(it.quantity) || 1), 0);
+                      const isSelected = selectedCount > 0;
+                      const batchObj = batches.find(b => b.id === p.batchId);
+                      const batchCode = batchObj ? batchObj.code : '';
 
-                return (
-                  <View key={index} style={styles.itemCard}>
-                    <View style={styles.itemRow1}>
-                      <Text style={styles.itemIndex}>Món #{index + 1}:</Text>
-                      {selectedItems.length > 1 && (
+                      return (
+                        <TouchableOpacity
+                          key={p.id}
+                          disabled={isOutOfStock}
+                          style={[
+                            styles.prodChip,
+                            isSelected && styles.prodChipActive,
+                            isOutOfStock && styles.prodChipDisabled
+                          ]}
+                          onPress={() => {
+                            if (isOutOfStock) {
+                              setStepErrorMsg(`⚠️ Sản phẩm "${p.name}" (${p.sku}) đã HẾT HÀNG trong kho (Tồn: 0)!`);
+                              return;
+                            }
+                            // Add item to order or increase quantity
+                            setSelectedItems(prev => {
+                              const existingIdx = prev.findIndex(it => it.productId === p.id);
+                              if (existingIdx >= 0) {
+                                const copy = [...prev];
+                                copy[existingIdx] = {
+                                  ...copy[existingIdx],
+                                  quantity: copy[existingIdx].quantity + 1
+                                };
+                                return copy;
+                              } else {
+                                return [...prev, {
+                                  productId: p.id,
+                                  sku: p.sku,
+                                  productName: p.name,
+                                  batchId: p.batchId,
+                                  quantity: 1,
+                                  unitPrice: p.sellingPrice,
+                                  unitCost: p.costPrice,
+                                  note: ''
+                                }];
+                              }
+                            });
+                            if (stepErrorMsg) setStepErrorMsg('');
+                          }}
+                        >
+                          <Text style={[
+                            styles.prodChipText,
+                            isSelected && styles.prodChipTextActive,
+                            isOutOfStock && styles.prodChipTextDisabled
+                          ]}>
+                            {isSelected ? `✓ (${selectedCount}) ` : '+ '}
+                            {batchCode ? `[${batchCode}] ` : ''}[{p.sku}] {p.name} - {formatCurrency(p.sellingPrice)} {isOutOfStock ? '❌ (HẾT)' : `(Tồn: ${p.stock})`}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })
+                  )}
+                </View>
+
+                {/* Selected Order Items List Header */}
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 14, marginBottom: 8 }}>
+                  <Text style={[styles.sectionHeader, { color: COLORS.success }]}>
+                    🛒 Danh Sách Món Đã Chọn ({selectedItems.length} sản phẩm)
+                  </Text>
+                  {selectedItems.length > 0 && (
+                    <TouchableOpacity style={styles.addItemBtn} onPress={handleAddItem}>
+                      <Plus size={14} color="#ffffff" style={{ marginRight: 4 }} />
+                      <Text style={styles.addItemBtnText}>Thêm Món Khác</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+
+                {selectedItems.length === 0 ? (
+                  <View style={styles.emptySelectedBox}>
+                    <Text style={styles.emptySelectedText}>
+                      🛒 Chưa chọn sản phẩm nào cho đơn hàng. Vui lòng bấm chọn các sản phẩm từ Danh sách kho ở trên!
+                    </Text>
+                  </View>
+                ) : (
+                  selectedItems.map((item, index) => (
+                    <View key={index} style={styles.itemCard}>
+                      <View style={styles.itemRow1}>
+                        <Text style={styles.itemIndex}>Món #{index + 1}: [{item.sku}] {item.productName}</Text>
                         <TouchableOpacity onPress={() => handleRemoveItem(index)}>
                           <Trash2 size={16} color={COLORS.danger} />
                         </TouchableOpacity>
-                      )}
-                    </View>
-
-                    <View style={styles.selectProductBox}>
-                      {filteredPickerProducts.length === 0 ? (
-                        <Text style={styles.pickerEmptyText}>Không tìm thấy sản phẩm phù hợp với bộ lọc...</Text>
-                      ) : (
-                        filteredPickerProducts.map(p => {
-                          const isOutOfStock = p.stock <= 0;
-                          const isSelected = item.productId === p.id;
-                          const batchObj = batches.find(b => b.id === p.batchId);
-                          const batchCode = batchObj ? batchObj.code : '';
-                          return (
-                            <TouchableOpacity
-                              key={p.id}
-                              disabled={isOutOfStock && !isSelected}
-                              style={[
-                                styles.prodChip,
-                                isSelected && styles.prodChipActive,
-                                isOutOfStock && !isSelected && styles.prodChipDisabled
-                              ]}
-                              onPress={() => {
-                                if (isOutOfStock && !isSelected) {
-                                  alert(`⚠️ Sản phẩm "${p.name}" (${p.sku}) đã HẾT HÀNG trong kho (Tồn: 0). Vui lòng chọn sản phẩm khác hoặc tạo lô hàng mới!`);
-                                  return;
-                                }
-                                handleUpdateItem(index, 'productId', p.id);
-                              }}
-                            >
-                              <Text style={[
-                                styles.prodChipText,
-                                isSelected && styles.prodChipTextActive,
-                                isOutOfStock && !isSelected && styles.prodChipTextDisabled
-                              ]}>
-                                {batchCode ? `[${batchCode}] ` : ''}[{p.sku}] {p.name} - {formatCurrency(p.sellingPrice)} {isOutOfStock ? '❌ (HẾT HÀNG)' : `(Tồn: ${p.stock})`}
-                              </Text>
-                            </TouchableOpacity>
-                          );
-                        })
-                      )}
-                    </View>
-
-                    <View style={styles.grid3}>
-                      <View style={{ flex: 1 }}>
-                        <Text style={styles.label}>Số lượng:</Text>
-                        <TextInput
-                          style={styles.input}
-                          keyboardType="numeric"
-                          placeholder="1"
-                          placeholderTextColor={COLORS.textMuted}
-                          value={String(item.quantity)}
-                          onChangeText={(val) => handleUpdateItem(index, 'quantity', val)}
-                        />
                       </View>
 
-                      <View style={{ flex: 2 }}>
-                        <Text style={styles.label}>Đơn giá bán (VND):</Text>
-                        <TextInput
-                          style={styles.input}
-                          keyboardType="numeric"
-                          placeholder="0"
-                          placeholderTextColor={COLORS.textMuted}
-                          value={formatCurrencyInput(item.unitPrice)}
-                          onChangeText={(val) => handleUpdateItem(index, 'unitPrice', parseCurrencyInput(val))}
-                        />
-                      </View>
-                    </View>
+                      <View style={styles.grid3}>
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.label}>Số lượng:</Text>
+                          <TextInput
+                            style={styles.input}
+                            keyboardType="numeric"
+                            placeholder="1"
+                            placeholderTextColor={COLORS.textMuted}
+                            value={String(item.quantity)}
+                            onChangeText={(val) => handleUpdateItem(index, 'quantity', val)}
+                          />
+                        </View>
 
-                    <Text style={styles.label}>Ghi chú món này:</Text>
-                    <TextInput
-                      style={styles.input}
-                      placeholder="Ghi chú size, màu sắc, gói quà..."
-                      placeholderTextColor={COLORS.textMuted}
-                      value={item.note}
-                      onChangeText={(val) => handleUpdateItem(index, 'note', val)}
-                    />
-                  </View>
-                );
-              })}
-            </View>
-          )}
+                        <View style={{ flex: 2 }}>
+                          <Text style={styles.label}>Đơn giá bán (VND):</Text>
+                          <TextInput
+                            style={styles.input}
+                            keyboardType="numeric"
+                            placeholder="0"
+                            placeholderTextColor={COLORS.textMuted}
+                            value={formatCurrencyInput(item.unitPrice)}
+                            onChangeText={(val) => handleUpdateItem(index, 'unitPrice', parseCurrencyInput(val))}
+                          />
+                        </View>
+                      </View>
+
+                      <Text style={styles.label}>Ghi chú món này:</Text>
+                      <TextInput
+                        style={styles.input}
+                        placeholder="Ghi chú size, màu sắc, gói quà..."
+                        placeholderTextColor={COLORS.textMuted}
+                        value={item.note}
+                        onChangeText={(val) => handleUpdateItem(index, 'note', val)}
+                      />
+                    </View>
+                  ))
+                )}
+              </View>
+            );
+          })()}
 
           {/* STEP 3: Vận Chuyển & Thanh Toán */}
           {currentStep === 3 && (
@@ -1402,5 +1466,21 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginTop: 4,
     marginBottom: 4
+  },
+  emptySelectedBox: {
+    backgroundColor: '#162032',
+    padding: 16,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: COLORS.cardBorder,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10
+  },
+  emptySelectedText: {
+    color: COLORS.textMuted,
+    fontSize: 13,
+    fontWeight: '600',
+    textAlign: 'center'
   }
 });
