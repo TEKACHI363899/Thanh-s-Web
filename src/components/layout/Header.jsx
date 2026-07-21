@@ -4,13 +4,20 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useData } from '../../context/DataContext';
 import { COLORS } from '../../theme/colors';
-import { Radio, ShieldCheck, ChevronDown, LogOut, Menu, User, UserCheck, RefreshCw } from 'lucide-react';
+import { Radio, ShieldCheck, ChevronDown, LogOut, Menu, User, UserCheck, RefreshCw, Store, Check } from 'lucide-react';
 
 export const Header = ({ activeTab, onToggleSidebar, onOpenAuthModal }) => {
   const { currentUser, logoutAdmin } = useAuth();
   const { colors } = useTheme();
-  const { refreshAllData } = useData();
+  const { 
+    activeShopId, 
+    switchShop, 
+    availableShops, 
+    refreshAllData 
+  } = useData();
+
   const [showAdminMenu, setShowAdminMenu] = useState(false);
+  const [showShopMenu, setShowShopMenu] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleManualRefresh = () => {
@@ -19,6 +26,13 @@ export const Header = ({ activeTab, onToggleSidebar, onOpenAuthModal }) => {
     setTimeout(() => {
       setIsRefreshing(false);
     }, 600);
+  };
+
+  const handleShopSwitch = (shopId) => {
+    const success = switchShop(shopId, currentUser?.email);
+    if (success) {
+      setShowShopMenu(false);
+    }
   };
 
   const getTitle = () => {
@@ -34,14 +48,79 @@ export const Header = ({ activeTab, onToggleSidebar, onOpenAuthModal }) => {
     }
   };
 
+  const activeShopObj = (availableShops || []).find(s => s.id === activeShopId) || { id: 'shop_1', name: 'Shop 1 (Chính)' };
+  const canSwitchShop = currentUser?.email === 'thanhdatglory@gmail.com';
+
   return (
     <View style={[styles.headerContainer, { backgroundColor: colors.cardDark, borderColor: colors.cardBorder }]}>
-      {/* Left: View Title */}
+      {/* Left: View Title & Shop Switcher Button */}
       <View style={styles.leftSection}>
         <TouchableOpacity style={styles.menuToggleMobile} onPress={onToggleSidebar}>
           <Menu size={22} color={colors.textMain} />
         </TouchableOpacity>
+        
         <Text style={[styles.viewTitle, { color: colors.textMain }]}>{getTitle()}</Text>
+
+        {/* SHOP SWITCHER DROPDOWN BUTTON (RIGHT NEXT TO BRAND LOGO / TITLE) */}
+        <View style={{ position: 'relative', marginLeft: 8 }}>
+          <TouchableOpacity
+            style={[
+              styles.shopBadgeBtn,
+              { 
+                backgroundColor: activeShopId === 'shop_2' ? 'rgba(245, 158, 11, 0.15)' : 'rgba(59, 130, 246, 0.15)',
+                borderColor: activeShopId === 'shop_2' ? COLORS.statusPending : COLORS.primaryLight
+              }
+            ]}
+            onPress={() => {
+              if (!canSwitchShop) {
+                alert('Chỉ tài khoản thanhdatglory@gmail.com mới có quyền chuyển đổi giữa các Cửa hàng!');
+                return;
+              }
+              setShowShopMenu(!showShopMenu);
+            }}
+            title={canSwitchShop ? "Bấm để đổi Cửa hàng" : "Chỉ thanhdatglory@gmail.com mới được chuyển Shop"}
+          >
+            <Store size={14} color={activeShopId === 'shop_2' ? COLORS.statusPending : COLORS.primaryLight} style={{ marginRight: 6 }} />
+            <Text style={[
+              styles.shopBadgeText,
+              { color: activeShopId === 'shop_2' ? COLORS.statusPending : COLORS.primaryLight }
+            ]}>
+              {activeShopObj.name}
+            </Text>
+            {canSwitchShop && (
+              <ChevronDown size={13} color={activeShopId === 'shop_2' ? COLORS.statusPending : COLORS.primaryLight} style={{ marginLeft: 4 }} />
+            )}
+          </TouchableOpacity>
+
+          {/* SHOP SWITCHER POPUP MENU */}
+          {showShopMenu && (
+            <View style={[styles.shopDropdownMenu, { backgroundColor: colors.cardDark, borderColor: colors.cardBorder }]}>
+              <Text style={styles.shopDropdownHeader}>CHUYỂN ĐỔI CỬA HÀNG</Text>
+
+              {(availableShops || []).map(s => (
+                <TouchableOpacity
+                  key={s.id}
+                  style={[
+                    styles.shopOptionItem,
+                    activeShopId === s.id && styles.shopOptionActive
+                  ]}
+                  onPress={() => handleShopSwitch(s.id)}
+                >
+                  <Store size={16} color={activeShopId === s.id ? COLORS.primaryLight : COLORS.textMuted} style={{ marginRight: 8 }} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.shopOptionName, activeShopId === s.id && styles.shopOptionNameActive]}>
+                      {s.name}
+                    </Text>
+                    <Text style={styles.shopOptionSub}>
+                      {s.isPrimary ? 'Dữ liệu Shop 1 chính' : 'Dữ liệu Shop 2 biệt lập 100%'}
+                    </Text>
+                  </View>
+                  {activeShopId === s.id && <Check size={16} color={COLORS.success} />}
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+        </View>
       </View>
 
       {/* Right: Realtime Status, Sync Button & User Profile Icon Button */}
@@ -173,6 +252,65 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: COLORS.textMain
   },
+
+  /* Shop Switcher Button Styles */
+  shopBadgeBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 18,
+    borderWidth: 1.5,
+    cursor: 'pointer'
+  },
+  shopBadgeText: {
+    fontSize: 12,
+    fontWeight: '800'
+  },
+  shopDropdownMenu: {
+    position: 'absolute',
+    top: 36,
+    left: 0,
+    width: 220,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    padding: 10,
+    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
+    zIndex: 99999
+  },
+  shopDropdownHeader: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: COLORS.textMuted,
+    marginBottom: 8,
+    paddingBottom: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.cardBorder
+  },
+  shopOptionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+    borderRadius: 8,
+    marginBottom: 4
+  },
+  shopOptionActive: {
+    backgroundColor: 'rgba(59, 130, 246, 0.15)'
+  },
+  shopOptionName: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.textMain
+  },
+  shopOptionNameActive: {
+    color: COLORS.primaryLight,
+    fontWeight: '800'
+  },
+  shopOptionSub: {
+    fontSize: 10,
+    color: COLORS.textMuted
+  },
+
   rightSection: {
     flexDirection: 'row',
     alignItems: 'center',

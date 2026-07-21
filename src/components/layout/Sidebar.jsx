@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from '../common/RNBridge';
 import { useTheme } from '../../context/ThemeContext';
+import { useData } from '../../context/DataContext';
+import { useAuth } from '../../context/AuthContext';
 import { COLORS } from '../../theme/colors';
 import { 
   ShoppingBag, 
@@ -10,7 +12,8 @@ import {
   ChevronRight, 
   Boxes,
   PlusCircle,
-  Settings
+  Settings,
+  Store
 } from 'lucide-react';
 
 export const Sidebar = ({ 
@@ -23,6 +26,20 @@ export const Sidebar = ({
   onOpenSettingsModal 
 }) => {
   const { colors } = useTheme();
+  const { currentUser } = useAuth();
+  const { activeShopId, switchShop, availableShops } = useData();
+
+  const activeShopObj = (availableShops || []).find(s => s.id === activeShopId) || { id: 'shop_1', name: 'Shop 1 (Chính)' };
+  const canSwitchShop = currentUser?.email === 'thanhdatglory@gmail.com';
+
+  const handleToggleShop = () => {
+    if (!canSwitchShop) {
+      alert('Chỉ tài khoản thanhdatglory@gmail.com mới có quyền chuyển đổi giữa các Cửa hàng!');
+      return;
+    }
+    const nextShop = activeShopId === 'shop_1' ? 'shop_2' : 'shop_1';
+    switchShop(nextShop, currentUser?.email);
+  };
 
   const menuItems = [
     {
@@ -61,7 +78,27 @@ export const Sidebar = ({
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.brandTitle}>Kax Leth</Text>
-              <Text style={styles.brandSub}>Quản Lý Bán Hàng</Text>
+              
+              {/* COMPACT ACTIVE SHOP BADGE NEXT TO LOGO BRAND */}
+              <TouchableOpacity 
+                style={[
+                  styles.shopSubTag,
+                  { 
+                    backgroundColor: activeShopId === 'shop_2' ? 'rgba(245, 158, 11, 0.15)' : 'rgba(59, 130, 246, 0.15)',
+                    borderColor: activeShopId === 'shop_2' ? COLORS.statusPending : COLORS.primaryLight
+                  }
+                ]}
+                onPress={handleToggleShop}
+                title={canSwitchShop ? "Bấm để đổi Cửa hàng" : "Chỉ thanhdatglory@gmail.com mới được chuyển Shop"}
+              >
+                <Store size={11} color={activeShopId === 'shop_2' ? COLORS.statusPending : COLORS.primaryLight} style={{ marginRight: 4 }} />
+                <Text style={[
+                  styles.shopSubTagText,
+                  { color: activeShopId === 'shop_2' ? COLORS.statusPending : COLORS.primaryLight }
+                ]}>
+                  {activeShopObj.name}
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
         )}
@@ -220,131 +257,134 @@ const styles = StyleSheet.create({
     color: COLORS.textMain,
     letterSpacing: 0.5
   },
-  brandSub: {
-    fontSize: 11,
-    color: COLORS.textMuted
+  shopSubTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 10,
+    borderWidth: 1,
+    marginTop: 2,
+    alignSelf: 'flex-start',
+    cursor: 'pointer'
+  },
+  shopSubTagText: {
+    fontSize: 10,
+    fontWeight: '800'
   },
   toggleBtn: {
-    padding: 8,
+    padding: 6,
     borderRadius: 8,
-    backgroundColor: '#0f172a',
-    borderWidth: 1,
-    borderColor: COLORS.cardBorder
+    backgroundColor: '#0f172a'
   },
   quickCreateBtn: {
-    margin: 14,
-    backgroundColor: COLORS.primary,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8
+    backgroundColor: COLORS.primary,
+    marginHorizontal: 16,
+    marginTop: 16,
+    marginBottom: 8,
+    paddingVertical: 12,
+    borderRadius: 12,
+    boxShadow: '0 4px 12px rgba(59, 130, 246, 0.4)'
   },
   quickCreateText: {
     color: '#ffffff',
-    fontWeight: '800',
-    fontSize: 15
+    fontSize: 14,
+    fontWeight: '800'
   },
   menuSection: {
+    flex: 1,
     paddingHorizontal: 12,
-    marginTop: 10,
-    flex: 1
+    paddingTop: 12
   },
   sectionTitle: {
     fontSize: 11,
     fontWeight: '800',
     color: COLORS.textMuted,
-    letterSpacing: 1,
     marginBottom: 10,
-    paddingLeft: 6
+    paddingHorizontal: 8,
+    letterSpacing: 0.5
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderRadius: 12,
-    marginBottom: 8,
-    gap: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    marginBottom: 4,
     backgroundColor: 'transparent'
+  },
+  menuItemActive: {
+    backgroundColor: 'rgba(59, 130, 246, 0.12)'
   },
   menuItemCollapsed: {
     justifyContent: 'center',
     paddingHorizontal: 0
   },
-  menuItemActive: {
-    backgroundColor: 'rgba(59, 130, 246, 0.18)',
-    borderWidth: 1,
-    borderColor: COLORS.primary
-  },
   iconWrapper: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: '#0f172a',
+    width: 34,
+    height: 34,
+    borderRadius: 8,
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+    marginRight: 12
   },
   menuLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: COLORS.textSub
+    color: COLORS.textMuted
   },
   menuLabelActive: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: COLORS.textMain
+    color: COLORS.textMain,
+    fontWeight: '800'
   },
   badgeTag: {
     backgroundColor: COLORS.primary,
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 6
+    borderRadius: 10
   },
   badgeText: {
+    color: '#ffffff',
     fontSize: 10,
-    fontWeight: '800',
-    color: '#ffffff'
+    fontWeight: '800'
   },
   sidebarFooter: {
-    padding: 14,
+    padding: 16,
     borderTopWidth: 1,
     borderTopColor: COLORS.cardBorder,
-    gap: 8
+    gap: 10
   },
   batchQuickBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(139, 92, 246, 0.15)',
+    backgroundColor: '#0f172a',
     paddingVertical: 10,
+    paddingHorizontal: 12,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: COLORS.accent
+    borderColor: COLORS.cardBorder
   },
   batchQuickText: {
     color: COLORS.accent,
-    fontWeight: '700',
-    fontSize: 13
+    fontSize: 13,
+    fontWeight: '700'
   },
   settingsQuickBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(59, 130, 246, 0.15)',
+    backgroundColor: '#0f172a',
     paddingVertical: 10,
+    paddingHorizontal: 12,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: COLORS.primary
+    borderColor: COLORS.cardBorder
   },
   settingsQuickText: {
-    color: COLORS.primaryLight,
-    fontWeight: '700',
-    fontSize: 13
+    color: COLORS.textMain,
+    fontSize: 13,
+    fontWeight: '700'
   }
 });

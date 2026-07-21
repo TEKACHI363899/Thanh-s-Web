@@ -28,6 +28,12 @@ const DEFAULT_CUSTOM_CATEGORIES = [
   { code: 'QA', name: 'Quần Áo', prefix: 'QA', icon: '👔' }
 ];
 
+// Available Shops Metadata
+export const AVAILABLE_SHOPS = [
+  { id: 'shop_1', name: 'Shop 1 (Chính)', isPrimary: true },
+  { id: 'shop_2', name: 'Shop 2', isPrimary: false }
+];
+
 // Unique ID Generator (Combines prefix, timestamp, and random string to prevent ID collisions forever)
 const generateUniqueId = (prefix) => {
   const randomPart = Math.random().toString(36).substring(2, 9);
@@ -66,15 +72,40 @@ const INITIAL_EXPENSES = [];
 const INITIAL_ORDERS = [];
 
 export const DataProvider = ({ children }) => {
-  const [batches, setBatches] = useState(() => safeParse('thanh_app_batches', INITIAL_BATCHES, 'batch'));
-  const [products, setProducts] = useState(() => safeParse('thanh_app_products', INITIAL_PRODUCTS, 'prod'));
-  const [orders, setOrders] = useState(() => safeParse('thanh_app_orders', INITIAL_ORDERS, 'ord'));
-  const [expenses, setExpenses] = useState(() => safeParse('thanh_app_expenses', INITIAL_EXPENSES, 'exp'));
+  // Active Shop State (Defaults to 'shop_1')
+  const [activeShopId, setActiveShopId] = useState(() => {
+    try {
+      const saved = localStorage.getItem('thanh_app_active_shop_id');
+      if (saved === 'shop_2') return 'shop_2';
+    } catch (e) {}
+    return 'shop_1';
+  });
+
+  // Helper getters for shop-isolated storage keys and cloud collection names
+  const getShopStorageKey = (baseKey, shopId = activeShopId) => {
+    if (shopId === 'shop_2') {
+      return baseKey.replace('thanh_app_', 'thanh_app_shop_2_');
+    }
+    return baseKey;
+  };
+
+  const getShopCollectionName = (baseCol, shopId = activeShopId) => {
+    if (shopId === 'shop_2') {
+      return `${baseCol}_shop_2`;
+    }
+    return baseCol;
+  };
+
+  const [batches, setBatches] = useState(() => safeParse(getShopStorageKey('thanh_app_batches', activeShopId), INITIAL_BATCHES, 'batch'));
+  const [products, setProducts] = useState(() => safeParse(getShopStorageKey('thanh_app_products', activeShopId), INITIAL_PRODUCTS, 'prod'));
+  const [orders, setOrders] = useState(() => safeParse(getShopStorageKey('thanh_app_orders', activeShopId), INITIAL_ORDERS, 'ord'));
+  const [expenses, setExpenses] = useState(() => safeParse(getShopStorageKey('thanh_app_expenses', activeShopId), INITIAL_EXPENSES, 'exp'));
   const [isCloudConnected, setIsCloudConnected] = useState(false);
 
   const [availableCapital, setAvailableCapitalState] = useState(() => {
     try {
-      const saved = localStorage.getItem('thanh_app_available_capital');
+      const key = getShopStorageKey('thanh_app_available_capital', activeShopId);
+      const saved = localStorage.getItem(key);
       if (saved !== null && saved !== '') return Number(saved);
     } catch (e) {}
     return 0;
@@ -84,14 +115,16 @@ export const DataProvider = ({ children }) => {
     const num = Number(val) || 0;
     setAvailableCapitalState(num);
     try {
-      localStorage.setItem('thanh_app_available_capital', num.toString());
+      const key = getShopStorageKey('thanh_app_available_capital');
+      localStorage.setItem(key, num.toString());
     } catch (e) {}
     notifyChange();
   };
 
   const [customCategories, setCustomCategories] = useState(() => {
     try {
-      const saved = localStorage.getItem('thanh_app_custom_categories');
+      const key = getShopStorageKey('thanh_app_custom_categories', activeShopId);
+      const saved = localStorage.getItem(key);
       if (saved) return JSON.parse(saved);
     } catch (e) {}
     return DEFAULT_CUSTOM_CATEGORIES;
@@ -99,9 +132,55 @@ export const DataProvider = ({ children }) => {
 
   useEffect(() => {
     try {
-      localStorage.setItem('thanh_app_custom_categories', JSON.stringify(customCategories));
+      const key = getShopStorageKey('thanh_app_custom_categories');
+      localStorage.setItem(key, JSON.stringify(customCategories));
     } catch (e) {}
-  }, [customCategories]);
+  }, [customCategories, activeShopId]);
+
+  // Shop Switcher Function with Strict Authorization (Only thanhdatglory@gmail.com)
+  const switchShop = (targetShopId, currentUserEmail) => {
+    if (currentUserEmail !== 'thanhdatglory@gmail.com') {
+      alert('Chỉ tài khoản thanhdatglory@gmail.com mới có quyền chuyển đổi giữa các Cửa hàng!');
+      return false;
+    }
+
+    if (targetShopId !== 'shop_1' && targetShopId !== 'shop_2') return false;
+
+    setActiveShopId(targetShopId);
+    try {
+      localStorage.setItem('thanh_app_active_shop_id', targetShopId);
+    } catch (e) {}
+
+    // Instantly load target shop's isolated datasets
+    const batchKey = targetShopId === 'shop_2' ? 'thanh_app_shop_2_batches' : 'thanh_app_batches';
+    const prodKey = targetShopId === 'shop_2' ? 'thanh_app_shop_2_products' : 'thanh_app_products';
+    const ordKey = targetShopId === 'shop_2' ? 'thanh_app_shop_2_orders' : 'thanh_app_orders';
+    const expKey = targetShopId === 'shop_2' ? 'thanh_app_shop_2_expenses' : 'thanh_app_expenses';
+    const catKey = targetShopId === 'shop_2' ? 'thanh_app_shop_2_custom_categories' : 'thanh_app_custom_categories';
+    const capKey = targetShopId === 'shop_2' ? 'thanh_app_shop_2_available_capital' : 'thanh_app_available_capital';
+
+    setBatches(safeParse(batchKey, INITIAL_BATCHES, 'batch'));
+    setProducts(safeParse(prodKey, INITIAL_PRODUCTS, 'prod'));
+    setOrders(safeParse(ordKey, INITIAL_ORDERS, 'ord'));
+    setExpenses(safeParse(expKey, INITIAL_EXPENSES, 'exp'));
+
+    try {
+      const savedCats = localStorage.getItem(catKey);
+      setCustomCategories(savedCats ? JSON.parse(savedCats) : DEFAULT_CUSTOM_CATEGORIES);
+    } catch (e) {
+      setCustomCategories(DEFAULT_CUSTOM_CATEGORIES);
+    }
+
+    try {
+      const savedCap = localStorage.getItem(capKey);
+      setAvailableCapitalState(savedCap !== null && savedCap !== '' ? Number(savedCap) : 0);
+    } catch (e) {
+      setAvailableCapitalState(0);
+    }
+
+    notifyChange();
+    return true;
+  };
 
   const addCustomCategory = (categoryName, customPrefixInput) => {
     const prefix = (customPrefixInput || generatePrefixFromCategoryName(categoryName)).toUpperCase().trim();
@@ -123,7 +202,8 @@ export const DataProvider = ({ children }) => {
     setCustomCategories(prev => {
       const updated = prev.filter(c => c.code !== categoryCode && c.prefix !== categoryCode);
       try {
-        localStorage.setItem('thanh_app_custom_categories', JSON.stringify(updated));
+        const key = getShopStorageKey('thanh_app_custom_categories');
+        localStorage.setItem(key, JSON.stringify(updated));
       } catch (e) {}
       return updated;
     });
@@ -132,19 +212,24 @@ export const DataProvider = ({ children }) => {
 
   // Manual Full Data Reload Helper
   const refreshAllData = () => {
-    setBatches(safeParse('thanh_app_batches', INITIAL_BATCHES, 'batch'));
-    setProducts(safeParse('thanh_app_products', INITIAL_PRODUCTS, 'prod'));
-    setOrders(safeParse('thanh_app_orders', INITIAL_ORDERS, 'ord'));
-    setExpenses(safeParse('thanh_app_expenses', INITIAL_EXPENSES, 'exp'));
+    setBatches(safeParse(getShopStorageKey('thanh_app_batches'), INITIAL_BATCHES, 'batch'));
+    setProducts(safeParse(getShopStorageKey('thanh_app_products'), INITIAL_PRODUCTS, 'prod'));
+    setOrders(safeParse(getShopStorageKey('thanh_app_orders'), INITIAL_ORDERS, 'ord'));
+    setExpenses(safeParse(getShopStorageKey('thanh_app_expenses'), INITIAL_EXPENSES, 'exp'));
   };
 
-  // Firestore Realtime Subscription & Initial Sync with Hybrid Local Merge Guard
+  // Firestore Realtime Subscription for Active Shop
   useEffect(() => {
     let unsubs = [];
     try {
       if (db) {
-        // Subscribe to Batches
-        const unsubBatches = onSnapshot(collection(db, 'batches'), (snapshot) => {
+        const colBatches = getShopCollectionName('batches');
+        const colProducts = getShopCollectionName('products');
+        const colOrders = getShopCollectionName('orders');
+        const colExpenses = getShopCollectionName('expenses');
+
+        // Subscribe to Batches for active shop
+        const unsubBatches = onSnapshot(collection(db, colBatches), (snapshot) => {
           const list = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
           setBatches(prevLocal => {
             const cloudIds = new Set(list.map(item => item.id));
@@ -152,11 +237,11 @@ export const DataProvider = ({ children }) => {
             return sanitizeList([...list, ...recentLocal], 'batch');
           });
           setIsCloudConnected(true);
-        }, (err) => console.warn("Firestore Batches listener warning:", err));
+        }, (err) => console.warn(`Firestore ${colBatches} listener warning:`, err));
         unsubs.push(unsubBatches);
 
-        // Subscribe to Products
-        const unsubProducts = onSnapshot(collection(db, 'products'), (snapshot) => {
+        // Subscribe to Products for active shop
+        const unsubProducts = onSnapshot(collection(db, colProducts), (snapshot) => {
           const list = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
           setProducts(prevLocal => {
             const cloudIds = new Set(list.map(item => item.id));
@@ -164,11 +249,11 @@ export const DataProvider = ({ children }) => {
             return sanitizeList([...list, ...recentLocal], 'prod');
           });
           setIsCloudConnected(true);
-        }, (err) => console.warn("Firestore Products listener warning:", err));
+        }, (err) => console.warn(`Firestore ${colProducts} listener warning:`, err));
         unsubs.push(unsubProducts);
 
-        // Subscribe to Orders
-        const unsubOrders = onSnapshot(collection(db, 'orders'), (snapshot) => {
+        // Subscribe to Orders for active shop
+        const unsubOrders = onSnapshot(collection(db, colOrders), (snapshot) => {
           const list = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
           setOrders(prevLocal => {
             const cloudIds = new Set(list.map(item => item.id));
@@ -176,11 +261,11 @@ export const DataProvider = ({ children }) => {
             return sanitizeList([...list, ...recentLocal], 'ord');
           });
           setIsCloudConnected(true);
-        }, (err) => console.warn("Firestore Orders listener warning:", err));
+        }, (err) => console.warn(`Firestore ${colOrders} listener warning:`, err));
         unsubs.push(unsubOrders);
 
-        // Subscribe to Expenses
-        const unsubExpenses = onSnapshot(collection(db, 'expenses'), (snapshot) => {
+        // Subscribe to Expenses for active shop
+        const unsubExpenses = onSnapshot(collection(db, colExpenses), (snapshot) => {
           const list = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
           setExpenses(prevLocal => {
             const cloudIds = new Set(list.map(item => item.id));
@@ -188,7 +273,7 @@ export const DataProvider = ({ children }) => {
             return sanitizeList([...list, ...recentLocal], 'exp');
           });
           setIsCloudConnected(true);
-        }, (err) => console.warn("Firestore Expenses listener warning:", err));
+        }, (err) => console.warn(`Firestore ${colExpenses} listener warning:`, err));
         unsubs.push(unsubExpenses);
       }
     } catch (e) {
@@ -198,40 +283,51 @@ export const DataProvider = ({ children }) => {
     return () => {
       unsubs.forEach(unsub => unsub && unsub());
     };
-  }, []);
+  }, [activeShopId]);
 
-  // Save to LocalStorage as secondary cache
+  // Save to LocalStorage using isolated shop keys
   useEffect(() => {
-    try { localStorage.setItem('thanh_app_batches', JSON.stringify(batches)); } catch (e) {}
-  }, [batches]);
-
-  useEffect(() => {
-    try { localStorage.setItem('thanh_app_products', JSON.stringify(products)); } catch (e) {}
-  }, [products]);
+    try { localStorage.setItem(getShopStorageKey('thanh_app_batches'), JSON.stringify(batches)); } catch (e) {}
+  }, [batches, activeShopId]);
 
   useEffect(() => {
-    try { localStorage.setItem('thanh_app_orders', JSON.stringify(orders)); } catch (e) {}
-  }, [orders]);
+    try { localStorage.setItem(getShopStorageKey('thanh_app_products'), JSON.stringify(products)); } catch (e) {}
+  }, [products, activeShopId]);
 
   useEffect(() => {
-    try { localStorage.setItem('thanh_app_expenses', JSON.stringify(expenses)); } catch (e) {}
-  }, [expenses]);
+    try { localStorage.setItem(getShopStorageKey('thanh_app_orders'), JSON.stringify(orders)); } catch (e) {}
+  }, [orders, activeShopId]);
+
+  useEffect(() => {
+    try { localStorage.setItem(getShopStorageKey('thanh_app_expenses'), JSON.stringify(expenses)); } catch (e) {}
+  }, [expenses, activeShopId]);
 
   // Realtime Tab Sync & Cross-Window Storage Event Listener
   useEffect(() => {
     const handleStorageChange = (e) => {
-      if (e.key === 'thanh_app_products') {
-        setProducts(safeParse('thanh_app_products', INITIAL_PRODUCTS, 'prod'));
-      } else if (e.key === 'thanh_app_batches') {
-        setBatches(safeParse('thanh_app_batches', INITIAL_BATCHES, 'batch'));
-      } else if (e.key === 'thanh_app_orders') {
-        setOrders(safeParse('thanh_app_orders', INITIAL_ORDERS, 'ord'));
-      } else if (e.key === 'thanh_app_expenses') {
-        setExpenses(safeParse('thanh_app_expenses', INITIAL_EXPENSES, 'exp'));
-      } else if (e.key === 'thanh_app_custom_categories') {
+      const pKey = getShopStorageKey('thanh_app_products');
+      const bKey = getShopStorageKey('thanh_app_batches');
+      const oKey = getShopStorageKey('thanh_app_orders');
+      const eKey = getShopStorageKey('thanh_app_expenses');
+      const cKey = getShopStorageKey('thanh_app_custom_categories');
+      const capKey = getShopStorageKey('thanh_app_available_capital');
+
+      if (e.key === pKey) {
+        setProducts(safeParse(pKey, INITIAL_PRODUCTS, 'prod'));
+      } else if (e.key === bKey) {
+        setBatches(safeParse(bKey, INITIAL_BATCHES, 'batch'));
+      } else if (e.key === oKey) {
+        setOrders(safeParse(oKey, INITIAL_ORDERS, 'ord'));
+      } else if (e.key === eKey) {
+        setExpenses(safeParse(eKey, INITIAL_EXPENSES, 'exp'));
+      } else if (e.key === cKey) {
         try { setCustomCategories(JSON.parse(e.newValue)); } catch (err) {}
-      } else if (e.key === 'thanh_app_available_capital') {
+      } else if (e.key === capKey) {
         try { setAvailableCapitalState(Number(e.newValue)); } catch (err) {}
+      } else if (e.key === 'thanh_app_active_shop_id') {
+        if (e.newValue === 'shop_1' || e.newValue === 'shop_2') {
+          setActiveShopId(e.newValue);
+        }
       }
     };
 
@@ -252,17 +348,18 @@ export const DataProvider = ({ children }) => {
     }
 
     return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+  }, [activeShopId]);
 
   const notifyChange = () => {
     broadcastRealtimeEvent('REFRESH_DATA', {});
   };
 
   // Helper function to sync a item to Cloud Firestore if connected
-  const syncToCloud = async (collectionName, id, data, isDelete = false) => {
+  const syncToCloud = async (collectionBaseName, id, data, isDelete = false) => {
     try {
       if (db && id) {
-        const docRef = doc(db, collectionName, id);
+        const targetCol = getShopCollectionName(collectionBaseName);
+        const docRef = doc(db, targetCol, id);
         if (isDelete) {
           await deleteDoc(docRef);
         } else {
@@ -270,7 +367,7 @@ export const DataProvider = ({ children }) => {
         }
       }
     } catch (err) {
-      console.warn(`Firestore sync error on ${collectionName}/${id}:`, err);
+      console.warn(`Firestore sync error on ${collectionBaseName}/${id}:`, err);
     }
   };
 
@@ -427,7 +524,7 @@ export const DataProvider = ({ children }) => {
 
   const addOrder = (orderData) => {
     const uniqueId = generateUniqueId('ord');
-    const newOrderCode = 'DH-' + (1000 + orders.length + 1);
+    const newOrderCode = (activeShopId === 'shop_2' ? 'S2-' : 'DH-') + (1000 + orders.length + 1);
     const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 16);
 
     const newOrder = {
@@ -522,6 +619,7 @@ export const DataProvider = ({ children }) => {
   const exportBackupJSON = () => {
     const backupData = {
       version: '1.0.0',
+      activeShopId,
       exportedAt: new Date().toISOString(),
       batches,
       products,
@@ -534,7 +632,7 @@ export const DataProvider = ({ children }) => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `THANH_STORE_DATA_BACKUP_${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `THANH_STORE_${activeShopId.toUpperCase()}_BACKUP_${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -558,6 +656,9 @@ export const DataProvider = ({ children }) => {
 
   return (
     <DataContext.Provider value={{
+      activeShopId,
+      switchShop,
+      availableShops: AVAILABLE_SHOPS,
       batches,
       products,
       orders,
