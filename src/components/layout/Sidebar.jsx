@@ -60,7 +60,7 @@ export const Sidebar = ({
               <Image source={{ uri: '/logo.jpg' }} style={styles.brandLogoImg} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.brandTitle}>THANH STORE</Text>
+              <Text style={styles.brandTitle}>Kax Leth</Text>
               <Text style={styles.brandSub}>Quản Lý Bán Hàng</Text>
             </View>
           </View>
