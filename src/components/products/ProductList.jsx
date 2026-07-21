@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image 
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
 import { COLORS } from '../../theme/colors';
-import { Plus, Search, Filter, Layers, Edit2, Trash2, Tag, ChevronDown, CheckCircle, Package, AlertTriangle, X, RotateCcw, ArrowRight, DollarSign, BarChart2, Calendar, FileText } from 'lucide-react';
+import { Plus, Search, Filter, Layers, Edit2, Trash2, Tag, ChevronDown, CheckCircle, Package, AlertTriangle, X, RotateCcw, ArrowRight, DollarSign, BarChart2, Calendar, FileText, Check } from 'lucide-react';
 import { ProductFormModal } from './ProductFormModal';
 import { BatchManagementModal } from '../batches/BatchManagementModal';
 
