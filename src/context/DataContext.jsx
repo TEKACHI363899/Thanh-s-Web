@@ -72,6 +72,23 @@ export const DataProvider = ({ children }) => {
   const [expenses, setExpenses] = useState(() => safeParse('thanh_app_expenses', INITIAL_EXPENSES, 'exp'));
   const [isCloudConnected, setIsCloudConnected] = useState(false);
 
+  const [availableCapital, setAvailableCapitalState] = useState(() => {
+    try {
+      const saved = localStorage.getItem('thanh_app_available_capital');
+      if (saved !== null) return Number(saved);
+    } catch (e) {}
+    return 100000000;
+  });
+
+  const setAvailableCapital = (val) => {
+    const num = Number(val) || 0;
+    setAvailableCapitalState(num);
+    try {
+      localStorage.setItem('thanh_app_available_capital', num.toString());
+    } catch (e) {}
+    notifyChange();
+  };
+
   const [customCategories, setCustomCategories] = useState(() => {
     try {
       const saved = localStorage.getItem('thanh_app_custom_categories');
@@ -213,6 +230,8 @@ export const DataProvider = ({ children }) => {
         setExpenses(safeParse('thanh_app_expenses', INITIAL_EXPENSES, 'exp'));
       } else if (e.key === 'thanh_app_custom_categories') {
         try { setCustomCategories(JSON.parse(e.newValue)); } catch (err) {}
+      } else if (e.key === 'thanh_app_available_capital') {
+        try { setAvailableCapitalState(Number(e.newValue)); } catch (err) {}
       }
     };
 
@@ -508,7 +527,8 @@ export const DataProvider = ({ children }) => {
       products,
       orders,
       expenses,
-      customCategories
+      customCategories,
+      availableCapital
     };
     const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -527,6 +547,7 @@ export const DataProvider = ({ children }) => {
       if (parsed.orders) setOrders(sanitizeList(parsed.orders, 'ord'));
       if (parsed.expenses) setExpenses(sanitizeList(parsed.expenses, 'exp'));
       if (parsed.customCategories) setCustomCategories(parsed.customCategories);
+      if (parsed.availableCapital) setAvailableCapital(parsed.availableCapital);
       notifyChange();
       return true;
     } catch (e) {
@@ -544,6 +565,8 @@ export const DataProvider = ({ children }) => {
       customCategories,
       addCustomCategory,
       deleteCustomCategory,
+      availableCapital,
+      setAvailableCapital,
       isCloudConnected,
       refreshAllData,
       exportBackupJSON,

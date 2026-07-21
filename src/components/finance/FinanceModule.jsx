@@ -7,7 +7,18 @@ import { DollarSign, FileText, PieChart, Plus, Edit2, Trash2, Calendar, Trending
 import { formatCurrencyInput, parseCurrencyInput } from '../../utils/formatters';
 
 export const FinanceModule = () => {
-  const { expenses, orders, products, batches, addExpense, updateExpense, deleteExpense } = useData();
+  const { 
+    expenses, 
+    orders, 
+    products, 
+    batches, 
+    availableCapital, 
+    setAvailableCapital, 
+    addExpense, 
+    updateExpense, 
+    deleteExpense 
+  } = useData();
+
   const { requireAdmin } = useAuth();
 
   const [activeTab, setActiveTab] = useState('PROFIT');
@@ -22,7 +33,7 @@ export const FinanceModule = () => {
   const currentMonthStr = new Date().toISOString().substring(0, 7);
   const [selectedMonth, setSelectedMonth] = useState(currentMonthStr);
 
-  const handleOpenAddExpense = () => {
+  const startAddExpense = () => {
     requireAdmin(() => {
       setEditingExpenseId('NEW');
       setExpDate(new Date().toISOString().substring(0, 10));
@@ -39,7 +50,7 @@ export const FinanceModule = () => {
       setExpDate(exp.date || '');
       setExpAmount(Number(exp.amount || 0));
       setExpReason(exp.reason || '');
-      setExpCategory(exp.category || 'Khác');
+      setExpCategory(exp.category || 'Chi phí khác');
       setIsExpenseModalOpen(true);
     }, 'Vui lòng đăng nhập Admin để sửa khoản chi!');
   };
@@ -80,6 +91,17 @@ export const FinanceModule = () => {
     return (Number(val) || 0).toLocaleString('vi-VN') + ' VNĐ';
   };
 
+  // Capital Balance & Real Cash Calculations
+  const totalCapitalInvestedAllBatches = batches.reduce((sum, b) => sum + (Number(b.totalCapital) || 0), 0);
+  const actualCashRemaining = Number(availableCapital || 0) - totalCapitalInvestedAllBatches;
+
+  // Expected Inventory Revenue & Profit Calculations
+  const expectedInventoryRevenue = products.reduce((sum, p) => sum + (Number(p.sellingPrice) || 0) * (Number(p.stock) || 0), 0);
+  const expectedInventoryCost = products.reduce((sum, p) => sum + (Number(p.costPrice) || 0) * (Number(p.stock) || 0), 0);
+  const expectedInventoryProfit = expectedInventoryRevenue - expectedInventoryCost;
+  const totalProductsInInventory = products.reduce((sum, p) => sum + (Number(p.stock) || 0), 0);
+
+  // Delivered Orders Calculations in Selected Month
   const deliveredOrdersInMonth = orders.filter(o => {
     const isDelivered = o.status === 'Đã giao';
     const isMonth = o.createdDate && o.createdDate.startsWith(selectedMonth);
@@ -88,7 +110,7 @@ export const FinanceModule = () => {
 
   const totalDeliveredRevenue = deliveredOrdersInMonth.reduce((sum, o) => {
     const itemsTotal = o.items.reduce((s, it) => s + (it.unitPrice * it.quantity), 0);
-    return sum + itemsTotal; // Doanh thu thuần = 100% tiền hàng, KHÔNG tính phí ship thu hộ shipper
+    return sum + itemsTotal;
   }, 0);
 
   const totalCostOfGoodsSold = deliveredOrdersInMonth.reduce((sum, o) => {
@@ -108,7 +130,7 @@ export const FinanceModule = () => {
         <View style={{ flex: 1 }}>
           <Text style={styles.mainTitle}>Báo Cáo Tài Chính & Lợi Nhuận</Text>
           <Text style={styles.subtitle}>
-            Tính lợi nhuận ròng thực tế dựa trên dữ liệu đơn hàng và chi phí vận hành
+            Tính toán dòng tiền thực tế, nguồn vốn đang có và doanh thu/lợi nhuận dự kiến
           </Text>
         </View>
 
@@ -148,10 +170,96 @@ export const FinanceModule = () => {
       <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
         {activeTab === 'PROFIT' && (
           <View style={{ gap: 18 }}>
+            {/* 1. CAPITAL BALANCE & ACTUAL CASH REMAINING */}
+            <View style={styles.capitalOverviewCard}>
+              <View style={styles.capitalHeader}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  <DollarSign size={22} color={COLORS.primaryLight} />
+                  <Text style={styles.capitalTitle}>Bảng Cân Đối Nguồn Vốn & Tiền Mặt Thực Tế</Text>
+                </View>
+                <Text style={styles.capitalSubNote}>
+                  [ Tiền thực tế còn lại = Nguồn vốn đang có - Tổng tiền nhập từ các lô ]
+                </Text>
+              </View>
+
+              <View style={styles.capitalGrid}>
+                <View style={styles.capitalCardInputBox}>
+                  <Text style={styles.capitalCardLabel}>Nguồn Vốn Đang Có (Nhập VNĐ) *:</Text>
+                  <TextInput
+                    style={styles.capitalInput}
+                    keyboardType="numeric"
+                    placeholder="100.000.000 VNĐ"
+                    placeholderTextColor={COLORS.textMuted}
+                    value={formatCurrencyInput(availableCapital)}
+                    onChangeText={(val) => setAvailableCapital(parseCurrencyInput(val))}
+                  />
+                  <Text style={styles.capitalInputSub}>Số vốn ban đầu / vốn đầu tư sẵn có</Text>
+                </View>
+
+                <View style={styles.capitalStatCard}>
+                  <Text style={styles.capitalCardLabel}>Tổng Vốn Đã Nhập Hàng (Tất Cả Các Lô):</Text>
+                  <Text style={styles.capitalValInvested}>- {formatCurrency(totalCapitalInvestedAllBatches)}</Text>
+                  <Text style={styles.capitalInputSub}>Tổng {batches.length} đợt lô hàng đã nhập kho</Text>
+                </View>
+
+                <View style={[
+                  styles.capitalStatCard, 
+                  { borderColor: actualCashRemaining >= 0 ? COLORS.success : COLORS.danger }
+                ]}>
+                  <Text style={styles.capitalCardLabel}>Tổng Tiền Thực Tế Còn Lại (Tiền Mặt/Ví):</Text>
+                  <Text style={[
+                    styles.capitalValCash, 
+                    { color: actualCashRemaining >= 0 ? COLORS.success : COLORS.danger }
+                  ]}>
+                    {formatCurrency(actualCashRemaining)}
+                  </Text>
+                  <Text style={styles.capitalInputSub}>
+                    {actualCashRemaining >= 0 ? 'Dòng tiền khả dụng an toàn' : 'Cảnh báo: Nhập quá nguồn vốn!'}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            {/* 2. EXPECTED REVENUE & PROFIT FROM PRODUCTS */}
+            <View style={styles.expectedRevenueCard}>
+              <View style={styles.capitalHeader}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  <TrendingUp size={22} color={COLORS.accent} />
+                  <Text style={styles.expectedTitle}>Tổng Thu & Lợi Nhuận Dự Kiến (Kho Sản Phẩm Tồn)</Text>
+                </View>
+                <Text style={styles.expectedSubNote}>
+                  [ Tự động tổng hợp từ {products.length} sản phẩm ({totalProductsInInventory} tồn) với % lời đã cài ]
+                </Text>
+              </View>
+
+              <View style={styles.metricsGrid}>
+                <View style={styles.largeMetricCard}>
+                  <Text style={styles.metricLabel}>1. Tổng Doanh Thu Dự Kiến (Kho Hàng)</Text>
+                  <Text style={styles.metricValRevenue}>{formatCurrency(expectedInventoryRevenue)}</Text>
+                  <Text style={styles.metricSub}>Giá trị bán khi giải phóng hết {totalProductsInInventory} sp trong kho</Text>
+                </View>
+
+                <View style={styles.largeMetricCard}>
+                  <Text style={styles.metricLabel}>2. Giá Trị Vốn Hàng Tồn Kho</Text>
+                  <Text style={styles.metricValCost}>{formatCurrency(expectedInventoryCost)}</Text>
+                  <Text style={styles.metricSub}>Giá gốc hiện tại của tất cả sp đang tồn kho</Text>
+                </View>
+
+                <View style={styles.largeMetricCard}>
+                  <Text style={styles.metricLabel}>3. Tổng Lợi Nhuận Dự Kiến (Kho Hàng)</Text>
+                  <Text style={{ fontSize: 22, fontWeight: '900', color: COLORS.success, marginTop: 4 }}>
+                    + {formatCurrency(expectedInventoryProfit)}
+                  </Text>
+                  <Text style={styles.metricSub}>Lợi nhuận gộp dự kiến khi bán hết kho sản phẩm</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* 3. MONTHLY DELIVERED PROFIT REPORT */}
             <View style={styles.monthSelectorCard}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                 <Calendar size={22} color={COLORS.primaryLight} />
-                <Text style={styles.monthSelectorLabel}>Chọn Tháng Báo Cáo Lợi Nhuận:</Text>
+                <Text style={styles.monthSelectorLabel}>Chọn Tháng Báo Cáo Lợi Nhuận Thực Tế (Đơn Đã Giao):</Text>
               </View>
               <input
                 type="month"
@@ -207,19 +315,19 @@ export const FinanceModule = () => {
               <View style={styles.adminSplitBox}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                   <Users size={22} color={COLORS.primaryLight} />
-                  <Text style={styles.adminSplitTitle}>🤝 CHIA TIỀN LỢI NHUẬN GIỮA 2 QUẢN LÝ (50 / 50):</Text>
+                  <Text style={styles.adminSplitTitle}>CHIA TIỀN LỢI NHUẬN GIỮA 2 QUẢN LÝ (50 / 50):</Text>
                 </View>
 
                 <View style={styles.splitRow}>
                   <View style={styles.adminCol}>
-                    <Text style={styles.adminName}>👨‍💼 Admin 1 (Quản lý 1):</Text>
+                    <Text style={styles.adminName}>Admin 1 (Quản lý 1):</Text>
                     <Text style={styles.adminAmount}>{formatCurrency(adminSplitShare)}</Text>
                   </View>
 
                   <View style={styles.adminDivider} />
 
                   <View style={styles.adminCol}>
-                    <Text style={styles.adminName}>👩‍💼 Admin 2 (Quản lý 2):</Text>
+                    <Text style={styles.adminName}>Admin 2 (Quản lý 2):</Text>
                     <Text style={styles.adminAmount}>{formatCurrency(adminSplitShare)}</Text>
                   </View>
                 </View>
@@ -295,6 +403,9 @@ export const FinanceModule = () => {
               const capitalRecovered = batchProducts.reduce((sum, p) => sum + (p.soldCount * p.costPrice), 0);
               const remainingStockVal = batchProducts.reduce((sum, p) => sum + (p.stock * p.costPrice), 0);
 
+              const expectedBatchRevenue = batchProducts.reduce((sum, p) => sum + ((p.stock + p.soldCount) * p.sellingPrice), 0);
+              const expectedBatchProfit = expectedBatchRevenue - totalCostInvested;
+
               const percentCapitalRecovered = totalCostInvested > 0 ? Math.min(100, Math.round((capitalRecovered / totalCostInvested) * 100)) : 0;
 
               return (
@@ -324,14 +435,21 @@ export const FinanceModule = () => {
                     </View>
 
                     <View style={styles.batchStatBox}>
-                      <Text style={styles.bLabel}>Doanh thu thu về</Text>
+                      <Text style={styles.bLabel}>Doanh thu đã thu về</Text>
                       <Text style={styles.bValRev}>{formatCurrency(totalRevenueFromBatch)}</Text>
                     </View>
 
                     <View style={styles.batchStatBox}>
-                      <Text style={styles.bLabel}>Giá trị tồn kho còn lại</Text>
-                      <Text style={{ color: COLORS.textMuted, fontSize: 15, fontWeight: '800' }}>
-                        {formatCurrency(remainingStockVal)}
+                      <Text style={styles.bLabel}>Tổng thu dự kiến (bán hết)</Text>
+                      <Text style={{ color: COLORS.accent, fontSize: 15, fontWeight: '800' }}>
+                        {formatCurrency(expectedBatchRevenue)}
+                      </Text>
+                    </View>
+
+                    <View style={styles.batchStatBox}>
+                      <Text style={styles.bLabel}>Lợi nhuận dự kiến lô</Text>
+                      <Text style={{ color: expectedBatchProfit >= 0 ? COLORS.success : COLORS.danger, fontSize: 15, fontWeight: '800' }}>
+                        {expectedBatchProfit >= 0 ? '+' : ''}{formatCurrency(expectedBatchProfit)}
                       </Text>
                     </View>
                   </View>
@@ -347,7 +465,7 @@ export const FinanceModule = () => {
         <View style={styles.overlay}>
           <View style={styles.modalBox}>
             <Text style={styles.modalTitle}>
-              {editingExpenseId === 'NEW' ? '➕ Ghi Khoản Chi Vận Hành Mới' : '✏️ Chỉnh Sửa Khoản Chi'}
+              {editingExpenseId === 'NEW' ? 'Ghi Khoản Chi Vận Hành Mới' : 'Chỉnh Sửa Khoản Chi'}
             </Text>
 
             <Text style={styles.inputLabel}>Ngày chi (Bảng chọn datepicker):</Text>
@@ -358,47 +476,46 @@ export const FinanceModule = () => {
               onChangeText={setExpDate}
             />
 
-            <Text style={styles.inputLabel}>Số tiền chi (Hiển thị trực tiếp VNĐ) *:</Text>
+            <Text style={styles.inputLabel}>Danh mục chi phí:</Text>
+            <select
+              value={expCategory}
+              onChange={(e) => setExpCategory(e.target.value)}
+              style={styles.selectStyle}
+            >
+              <option value="Bao bì & In ấn">Bao bì & In ấn (Hộp, Túi, Sticker...)</option>
+              <option value="Băng keo & Đóng gói">Băng keo & Vật tư đóng gói</option>
+              <option value="Quảng cáo & Marketing">Quảng cáo Facebook / TikTok Ads</option>
+              <option value="Vận chuyển & Phụ phí">Phí vận chuyển nhập hàng</option>
+              <option value="Chi phí khác">Chi phí khác</option>
+            </select>
+
+            <Text style={styles.inputLabel}>Số tiền chi (VNĐ) *:</Text>
             <TextInput
-              style={[styles.largeInput, { color: COLORS.danger, fontWeight: '800', fontSize: 16 }]}
+              style={[styles.largeInput, { color: COLORS.danger, fontWeight: '800' }]}
               keyboardType="numeric"
-              placeholder="0 VNĐ"
+              placeholder="100.000 VNĐ"
               placeholderTextColor={COLORS.textMuted}
               value={formatCurrencyInput(expAmount)}
               onChangeText={(val) => setExpAmount(parseCurrencyInput(val))}
             />
 
-            <Text style={styles.inputLabel}>Danh mục chi phí:</Text>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
-              {['Bao bì & In ấn', 'Quảng cáo', 'Vật tư gói hàng', 'Phần mềm', 'Khác'].map(c => (
-                <TouchableOpacity
-                  key={c}
-                  style={[styles.largeCatChip, expCategory === c && styles.largeCatChipActive]}
-                  onPress={() => setExpCategory(c)}
-                >
-                  <Text style={[styles.largeCatChipText, expCategory === c && styles.largeCatChipTextActive]}>{c}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
             <Text style={styles.inputLabel}>Lý do chi chi tiết *:</Text>
             <TextInput
-              style={[styles.largeInput, { height: 80 }]}
-              multiline
-              placeholder="Ví dụ: In 500 túi xốp logo, Tiền băng keo niêm phong..."
+              style={styles.largeInput}
+              placeholder="Ví dụ: In 1000 túi niêm phong logo Thành Store..."
               placeholderTextColor={COLORS.textMuted}
               value={expReason}
               onChangeText={setExpReason}
             />
 
-            <View style={styles.modalActions}>
-              <TouchableOpacity style={styles.cancelBtn} onPress={() => setIsExpenseModalOpen(false)}>
-                <Text style={styles.cancelText}>Hủy</Text>
+            <View style={styles.modalFooter}>
+              <TouchableOpacity style={styles.modalCancelBtn} onPress={() => setIsExpenseModalOpen(false)}>
+                <Text style={styles.modalCancelText}>Hủy</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.saveBtn} onPress={handleSaveExpense}>
+              <TouchableOpacity style={styles.modalSaveBtn} onPress={handleSaveExpense}>
                 <Check size={18} color="#ffffff" style={{ marginRight: 6 }} />
-                <Text style={styles.saveText}>Lưu Khoản Chi</Text>
+                <Text style={styles.modalSaveText}>Lưu Khoản Chi</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -411,32 +528,40 @@ export const FinanceModule = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: COLORS.bgDark
+    padding: 18,
+    backgroundColor: '#0f172a',
+    maxWidth: '100%',
+    boxSizing: 'border-box'
   },
   headerRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 18,
+    justifyContent: 'space-between',
+    backgroundColor: COLORS.cardDark,
+    padding: 18,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: COLORS.cardBorder,
+    marginBottom: 16,
     flexWrap: 'wrap',
     gap: 14
   },
   mainTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '900',
     color: COLORS.textMain
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 13,
     color: COLORS.textMuted,
     marginTop: 4
   },
   largeTabsRow: {
     flexDirection: 'row',
-    backgroundColor: COLORS.cardDark,
-    borderRadius: 12,
+    gap: 10,
+    backgroundColor: '#0f172a',
     padding: 6,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: COLORS.cardBorder
   },
@@ -445,87 +570,197 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 10
+    borderRadius: 8,
+    backgroundColor: 'transparent'
   },
   largeTabBtnActive: {
     backgroundColor: COLORS.primary
   },
   largeTabText: {
     fontSize: 14,
+    fontWeight: '700',
     color: COLORS.textMuted
   },
   largeTabTextActive: {
-    color: '#ffffff',
-    fontWeight: '800'
+    color: '#ffffff'
   },
-  monthSelectorCard: {
+
+  /* Capital Overview Card Styles */
+  capitalOverviewCard: {
     backgroundColor: COLORS.cardDark,
-    padding: 16,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: COLORS.primaryLight,
+    padding: 18,
+    marginBottom: 8
+  },
+  capitalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.cardBorder,
+    paddingBottom: 12,
+    marginBottom: 14,
+    flexWrap: 'wrap',
+    gap: 8
+  },
+  capitalTitle: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: COLORS.textMain
+  },
+  capitalSubNote: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    fontStyle: 'italic'
+  },
+  capitalGrid: {
+    flexDirection: 'row',
+    gap: 14,
+    flexWrap: 'wrap'
+  },
+  capitalCardInputBox: {
+    flex: 1,
+    minWidth: 240,
+    backgroundColor: '#162032',
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: COLORS.primary
+  },
+  capitalStatCard: {
+    flex: 1,
+    minWidth: 240,
+    backgroundColor: '#162032',
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: COLORS.cardBorder
+  },
+  capitalCardLabel: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: COLORS.textMuted,
+    marginBottom: 6
+  },
+  capitalInput: {
+    backgroundColor: '#0f172a',
+    borderWidth: 1.5,
+    borderColor: COLORS.primary,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    color: COLORS.primaryLight,
+    fontSize: 18,
+    fontWeight: '900'
+  },
+  capitalInputSub: {
+    fontSize: 11,
+    color: COLORS.textMuted,
+    marginTop: 6
+  },
+  capitalValInvested: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: COLORS.danger
+  },
+  capitalValCash: {
+    fontSize: 20,
+    fontWeight: '900'
+  },
+
+  /* Expected Revenue Card Styles */
+  expectedRevenueCard: {
+    backgroundColor: COLORS.cardDark,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: COLORS.accent,
+    padding: 18,
+    marginBottom: 8
+  },
+  expectedTitle: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: COLORS.accent
+  },
+  expectedSubNote: {
+    fontSize: 12,
+    color: COLORS.textMuted,
+    fontStyle: 'italic'
+  },
+
+  monthSelectorCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: COLORS.cardDark,
+    padding: 14,
     borderRadius: 14,
     borderWidth: 1,
     borderColor: COLORS.cardBorder,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center'
+    flexWrap: 'wrap',
+    gap: 12
   },
   monthSelectorLabel: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '800',
     color: COLORS.textMain
   },
   metricsGrid: {
     flexDirection: 'row',
-    gap: 16,
+    gap: 14,
     flexWrap: 'wrap'
   },
   largeMetricCard: {
     flex: 1,
-    minWidth: 240,
+    minWidth: 220,
     backgroundColor: COLORS.cardDark,
-    padding: 18,
+    padding: 16,
     borderRadius: 14,
     borderWidth: 1,
     borderColor: COLORS.cardBorder
   },
   metricLabel: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: COLORS.textSub
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.textMuted
   },
   metricValRevenue: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '900',
-    color: COLORS.success,
-    marginTop: 10
+    color: COLORS.primaryLight,
+    marginTop: 4
   },
   metricValCost: {
-    fontSize: 24,
-    fontWeight: '900',
-    color: COLORS.statusPending,
-    marginTop: 10
-  },
-  metricValExp: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '900',
     color: COLORS.danger,
-    marginTop: 10
+    marginTop: 4
+  },
+  metricValExp: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: COLORS.statusPending,
+    marginTop: 4
   },
   metricSub: {
-    fontSize: 13,
+    fontSize: 11,
     color: COLORS.textMuted,
     marginTop: 6
   },
   netProfitCard: {
-    backgroundColor: '#162032',
-    padding: 24,
-    borderRadius: 18,
-    borderWidth: 2.5,
-    borderColor: COLORS.success
+    backgroundColor: COLORS.cardDark,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: COLORS.success,
+    padding: 20
   },
   netProfitHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
     flexWrap: 'wrap',
     gap: 10
   },
@@ -535,66 +770,69 @@ const styles = StyleSheet.create({
     color: COLORS.success
   },
   netProfitFormulaNote: {
-    fontSize: 13,
-    color: COLORS.textMuted
+    fontSize: 12,
+    color: COLORS.textMuted,
+    fontStyle: 'italic'
   },
   netProfitAmount: {
-    fontSize: 42,
+    fontSize: 36,
     fontWeight: '900',
     color: COLORS.success,
-    marginVertical: 14
+    marginBottom: 16
   },
   adminSplitBox: {
     backgroundColor: '#0f172a',
-    padding: 18,
-    borderRadius: 14,
+    padding: 16,
+    borderRadius: 12,
     borderWidth: 1,
     borderColor: COLORS.cardBorder
   },
   adminSplitTitle: {
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: '800',
     color: COLORS.primaryLight
   },
   splitRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 10
+    gap: 14
   },
   adminCol: {
-    flex: 1,
-    alignItems: 'center'
-  },
-  adminDivider: {
-    width: 1.5,
-    height: 48,
-    backgroundColor: COLORS.cardBorder
+    flex: 1
   },
   adminName: {
-    fontSize: 14,
-    color: COLORS.textSub
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.textMuted
   },
   adminAmount: {
     fontSize: 20,
     fontWeight: '900',
     color: COLORS.textMain,
-    marginTop: 6
+    marginTop: 2
+  },
+  adminDivider: {
+    width: 1,
+    height: 40,
+    backgroundColor: COLORS.cardBorder
   },
   expenseToolbar: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    alignItems: 'center'
+    flexWrap: 'wrap',
+    gap: 12
   },
   sectionHeading: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '800',
     color: COLORS.textMain
   },
   bigAddExpBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.danger,
-    paddingHorizontal: 18,
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 10
   },
@@ -613,102 +851,101 @@ const styles = StyleSheet.create({
   trHeader: {
     flexDirection: 'row',
     backgroundColor: '#162032',
-    paddingVertical: 14,
+    paddingVertical: 12,
     paddingHorizontal: 14,
     borderBottomWidth: 1.5,
     borderBottomColor: COLORS.cardBorder
   },
   th: {
     color: COLORS.textMuted,
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '800',
     textTransform: 'uppercase'
   },
   tr: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 14,
+    paddingVertical: 12,
     paddingHorizontal: 14,
     borderBottomWidth: 1,
     borderBottomColor: '#1e293b'
   },
   trEven: {
-    backgroundColor: '#172336'
+    backgroundColor: 'transparent'
   },
   tdText: {
-    fontSize: 14,
-    color: COLORS.textMain
+    color: COLORS.textMain,
+    fontSize: 14
   },
   tdAmount: {
-    fontSize: 15,
-    fontWeight: '900',
-    color: COLORS.danger
+    color: COLORS.danger,
+    fontSize: 14,
+    fontWeight: '800'
   },
   td: {
     justifyContent: 'center'
   },
   catBadge: {
-    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+    backgroundColor: 'rgba(59, 130, 246, 0.15)',
     paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
     alignSelf: 'flex-start'
   },
   catBadgeText: {
+    color: COLORS.primaryLight,
     fontSize: 12,
-    fontWeight: '700',
-    color: COLORS.primaryLight
+    fontWeight: '700'
   },
   bigEditBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 10,
     paddingVertical: 6,
-    borderRadius: 8,
-    backgroundColor: 'rgba(59, 130, 246, 0.2)',
-    borderWidth: 1,
-    borderColor: COLORS.primaryLight
+    borderRadius: 6,
+    backgroundColor: 'rgba(59, 130, 246, 0.12)'
   },
   bigDeleteBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 10,
     paddingVertical: 6,
-    borderRadius: 8,
-    backgroundColor: 'rgba(239, 68, 68, 0.2)',
-    borderWidth: 1,
-    borderColor: COLORS.danger
+    borderRadius: 6,
+    backgroundColor: 'rgba(239, 68, 68, 0.12)'
   },
   emptyBox: {
-    padding: 40,
+    padding: 30,
     alignItems: 'center'
   },
   batchReportCard: {
     backgroundColor: COLORS.cardDark,
-    padding: 18,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: COLORS.cardBorder
+    borderColor: COLORS.cardBorder,
+    padding: 16
   },
   batchReportHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 14
+    justifyContent: 'space-between',
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.cardBorder,
+    paddingBottom: 10,
+    marginBottom: 12
   },
   batchReportTitle: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '800',
     color: COLORS.textMain
   },
   batchReportDate: {
-    fontSize: 13,
+    fontSize: 12,
     color: COLORS.textMuted
   },
   batchStatsGrid: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12
+    gap: 12,
+    flexWrap: 'wrap'
   },
   batchStatBox: {
     flex: 1,
@@ -720,32 +957,29 @@ const styles = StyleSheet.create({
     borderColor: COLORS.cardBorder
   },
   bLabel: {
-    fontSize: 12,
-    color: COLORS.textMuted
+    fontSize: 11,
+    color: COLORS.textMuted,
+    marginBottom: 4
   },
   bVal: {
     fontSize: 15,
-    fontWeight: '900',
-    color: COLORS.textMain,
-    marginTop: 4
+    fontWeight: '800',
+    color: COLORS.textMain
   },
   bValSold: {
     fontSize: 15,
-    fontWeight: '900',
-    color: COLORS.success,
-    marginTop: 4
+    fontWeight: '800',
+    color: COLORS.primaryLight
   },
   bValCost: {
     fontSize: 15,
-    fontWeight: '900',
-    color: COLORS.statusPending,
-    marginTop: 4
+    fontWeight: '800',
+    color: COLORS.success
   },
   bValRev: {
     fontSize: 15,
-    fontWeight: '900',
-    color: COLORS.primaryLight,
-    marginTop: 4
+    fontWeight: '800',
+    color: COLORS.accent
   },
   overlay: {
     position: 'fixed',
@@ -753,91 +987,80 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(15, 23, 42, 0.85)',
+    backgroundColor: 'rgba(0,0,0,0.7)',
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 9999,
-    padding: 16
+    zIndex: 9999
   },
   modalBox: {
-    width: '100%',
-    maxWidth: 520,
+    width: 480,
+    maxWidth: '90%',
     backgroundColor: COLORS.cardDark,
     borderRadius: 16,
-    padding: 22,
-    borderWidth: 1,
-    borderColor: COLORS.cardBorder
+    borderWidth: 1.5,
+    borderColor: COLORS.cardBorder,
+    padding: 20
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: '800',
+    fontWeight: '900',
     color: COLORS.textMain,
-    marginBottom: 14
+    marginBottom: 16
   },
   inputLabel: {
     fontSize: 13,
     fontWeight: '700',
-    color: COLORS.textSub,
-    marginBottom: 6,
-    marginTop: 10
+    color: COLORS.textMuted,
+    marginTop: 10,
+    marginBottom: 6
   },
   largeInput: {
     backgroundColor: '#0f172a',
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: COLORS.cardBorder,
-    borderRadius: 10,
-    paddingHorizontal: 14,
+    borderRadius: 8,
+    paddingHorizontal: 12,
     paddingVertical: 10,
     color: COLORS.textMain,
-    fontSize: 15,
+    fontSize: 14,
     outlineStyle: 'none'
   },
-  largeCatChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
+  selectStyle: {
     backgroundColor: '#0f172a',
-    borderWidth: 1,
-    borderColor: COLORS.cardBorder
+    border: '1px solid #334155',
+    color: '#f8fafc',
+    padding: '10px 12px',
+    borderRadius: '8px',
+    fontSize: '14px',
+    outline: 'none',
+    width: '100%'
   },
-  largeCatChipActive: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary
-  },
-  largeCatChipText: {
-    fontSize: 12,
-    color: COLORS.textMuted
-  },
-  largeCatChipTextActive: {
-    color: '#ffffff',
-    fontWeight: '800'
-  },
-  modalActions: {
+  modalFooter: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
     gap: 12,
     marginTop: 20
   },
-  cancelBtn: {
+  modalCancelBtn: {
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 10,
+    borderRadius: 8,
     backgroundColor: COLORS.surfaceHover
   },
-  cancelText: {
+  modalCancelText: {
     color: COLORS.textMuted,
     fontWeight: '700',
     fontSize: 14
   },
-  saveBtn: {
+  modalSaveBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 10,
-    borderRadius: 10,
-    backgroundColor: COLORS.danger
+    borderRadius: 8,
+    backgroundColor: COLORS.primary
   },
-  saveText: {
+  modalSaveText: {
     color: '#ffffff',
     fontWeight: '800',
     fontSize: 14
