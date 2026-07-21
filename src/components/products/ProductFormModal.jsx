@@ -7,7 +7,7 @@ import { Package, Tag, DollarSign, Percent, X, Check, Info, Upload, Trash2, Imag
 import { formatCurrencyInput, parseCurrencyInput } from '../../utils/formatters';
 
 export const ProductFormModal = ({ visible, onClose, initialProduct = null }) => {
-  const { batches, customCategories, addCustomCategory, addProduct, updateProduct, generateNextSKU } = useData();
+  const { batches, customCategories, addCustomCategory, deleteCustomCategory, addProduct, updateProduct, generateNextSKU } = useData();
   const { requireAdmin } = useAuth();
 
   const [category, setCategory] = useState('TS');
@@ -41,6 +41,18 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
       setCustomCatName('');
       setCustomCatPrefix('');
     }, 'Vui lòng đăng nhập Admin để tạo loại mặt hàng mới!');
+  };
+
+  const handleDeleteCategory = (cat) => {
+    requireAdmin(() => {
+      if (window.confirm(`Bạn có chắc chắn muốn xóa vĩnh viễn phân loại SKU "${cat.name}" (${cat.prefix}) khỏi hệ thống?`)) {
+        deleteCustomCategory(cat.code);
+        if (category === cat.code) {
+          setCategory('TS');
+          setSku(generateNextSKU('TS'));
+        }
+      }
+    }, 'Vui lòng đăng nhập Admin để xóa phân loại SKU!');
   };
 
   // Read file and convert to Base64
@@ -239,17 +251,34 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
 
           <Text style={styles.label}>1. Phân loại sản phẩm (SKU tự động tăng):</Text>
           <View style={styles.categoryRow}>
-            {customCategories.map(cat => (
-              <TouchableOpacity 
-                key={cat.code}
-                style={[styles.catBadge, category === cat.code && styles.catBadgeTSActive]} 
-                onPress={() => handleCategoryChange(cat.code)}
-              >
-                <Text style={[styles.catBadgeText, category === cat.code && styles.catTextActive]}>
-                  {cat.icon || '📦'} {cat.name} ({cat.prefix || cat.code})
-                </Text>
-              </TouchableOpacity>
-            ))}
+            {customCategories.map(cat => {
+              const isDefault = cat.code === 'TS' || cat.code === 'QA';
+              return (
+                <View key={cat.code} style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  <TouchableOpacity 
+                    style={[styles.catBadge, category === cat.code && styles.catBadgeTSActive]} 
+                    onPress={() => handleCategoryChange(cat.code)}
+                  >
+                    <Text style={[styles.catBadgeText, category === cat.code && styles.catTextActive]}>
+                      {cat.icon || '📦'} {cat.name} ({cat.prefix || cat.code})
+                    </Text>
+
+                    {!isDefault && (
+                      <TouchableOpacity 
+                        style={styles.deleteCatIconBtn}
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          handleDeleteCategory(cat);
+                        }}
+                        title="Xóa phân loại SKU này khỏi hệ thống"
+                      >
+                        <X size={13} color="#ef4444" />
+                      </TouchableOpacity>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              );
+            })}
 
             <TouchableOpacity 
               style={styles.addCustomCatTriggerBtn}
@@ -872,5 +901,13 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
     fontSize: 13,
     fontWeight: '700'
+  },
+  deleteCatIconBtn: {
+    marginLeft: 6,
+    padding: 3,
+    borderRadius: 6,
+    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(239, 68, 68, 0.4)'
   }
 });

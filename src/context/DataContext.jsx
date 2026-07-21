@@ -98,7 +98,19 @@ export const DataProvider = ({ children }) => {
       if (prev.some(c => c.code === newCat.code)) return prev;
       return [...prev, newCat];
     });
+    notifyChange();
     return newCat;
+  };
+
+  const deleteCustomCategory = (categoryCode) => {
+    setCustomCategories(prev => {
+      const updated = prev.filter(c => c.code !== categoryCode && c.prefix !== categoryCode);
+      try {
+        localStorage.setItem('thanh_app_custom_categories', JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
+    });
+    notifyChange();
   };
 
   // Manual Full Data Reload Helper
@@ -531,6 +543,7 @@ export const DataProvider = ({ children }) => {
       expenses,
       customCategories,
       addCustomCategory,
+      deleteCustomCategory,
       isCloudConnected,
       refreshAllData,
       exportBackupJSON,

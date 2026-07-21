@@ -8,7 +8,7 @@ import { ProductFormModal } from './ProductFormModal';
 import { BatchManagementModal } from '../batches/BatchManagementModal';
 
 export const ProductList = () => {
-  const { products, batches, deleteProduct, deleteBatch } = useData();
+  const { products, batches, customCategories, deleteProduct, deleteBatch } = useData();
   const { requireAdmin } = useAuth();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -414,23 +414,20 @@ export const ProductList = () => {
                   </Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity 
-                  style={[styles.modalCatChip, selectedCategory === 'TS' && styles.modalCatChipTSActive]}
-                  onPress={() => setSelectedCategory('TS')}
-                >
-                  <Text style={[styles.modalCatChipText, selectedCategory === 'TS' && styles.modalCatChipTextActive]}>
-                    💎 Trang Sức TS ({products.filter(p => p.category === 'TS').length})
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity 
-                  style={[styles.modalCatChip, selectedCategory === 'QA' && styles.modalCatChipQAActive]}
-                  onPress={() => setSelectedCategory('QA')}
-                >
-                  <Text style={[styles.modalCatChipText, selectedCategory === 'QA' && styles.modalCatChipTextActive]}>
-                    👔 Quần Áo QA ({products.filter(p => p.category === 'QA').length})
-                  </Text>
-                </TouchableOpacity>
+                {customCategories.map(cat => {
+                  const count = products.filter(p => p.category === cat.code || p.sku.startsWith(cat.prefix || cat.code)).length;
+                  return (
+                    <TouchableOpacity 
+                      key={cat.code}
+                      style={[styles.modalCatChip, selectedCategory === cat.code && styles.modalCatChipActive]}
+                      onPress={() => setSelectedCategory(cat.code)}
+                    >
+                      <Text style={[styles.modalCatChipText, selectedCategory === cat.code && styles.modalCatChipTextActive]}>
+                        {cat.icon || '📦'} {cat.name} ({count})
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
               </View>
 
               {/* 3. Batch selection */}
