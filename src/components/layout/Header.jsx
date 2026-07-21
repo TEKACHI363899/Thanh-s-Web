@@ -24,11 +24,11 @@ export const Header = ({ activeTab, onToggleSidebar, onOpenAuthModal }) => {
   const getTitle = () => {
     switch (activeTab) {
       case 'ORDERS':
-        return '📊 Bảng Đơn Hàng (Data Grid)';
+        return 'Bảng Đơn Hàng (Data Grid)';
       case 'PRODUCTS':
-        return '📦 Quản Lý Sản Phẩm & Lô Hàng Tồn Kho';
+        return 'Quản Lý Sản Phẩm & Lô Hàng Tồn Kho';
       case 'FINANCE':
-        return '💰 Tài Chính & Báo Cáo Lợi Nhuận';
+        return 'Tài Chính & Báo Cáo Lợi Nhuận';
       default:
         return 'Hệ Thống Quản Lý';
     }
@@ -67,7 +67,7 @@ export const Header = ({ activeTab, onToggleSidebar, onOpenAuthModal }) => {
         ) : (
           <View style={[styles.onlineStatusBadge, { backgroundColor: 'rgba(245, 158, 11, 0.15)', borderColor: COLORS.statusPending }]}>
             <Text style={{ fontSize: 12, color: COLORS.statusPending, fontWeight: '700' }}>
-              👁️ Chỉ Xem (Read-Only)
+              Chỉ Xem (Read-Only)
             </Text>
           </View>
         )}
@@ -104,14 +104,14 @@ export const Header = ({ activeTab, onToggleSidebar, onOpenAuthModal }) => {
                 <View style={styles.dropdownBody}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 6 }}>
                     <View style={[styles.avatarBigCircle, { backgroundColor: colors.primary }]}>
-                      <Text style={{ fontSize: 18 }}>{currentUser.avatar || '👑'}</Text>
+                      <User size={20} color="#ffffff" />
                     </View>
                     <View>
                       <Text style={{ fontSize: 14, fontWeight: '800', color: colors.textMain }}>{currentUser.name}</Text>
-                      <Text style={{ fontSize: 11, color: colors.textMuted }}>👑 Admin Hệ Thống</Text>
+                      <Text style={{ fontSize: 11, color: colors.textMuted }}>Admin Hệ Thống</Text>
                     </View>
                   </View>
-                  <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 4 }}>📧 {currentUser.email}</Text>
+                  <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 4 }}>{currentUser.email}</Text>
                 </View>
 
                 <TouchableOpacity 

@@ -235,7 +235,7 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
       <View style={styles.modalContainer}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>
-            {initialProduct ? '✏️ Chỉnh Sửa Sản Phẩm' : '➕ Thêm Sản Phẩm Mới'}
+            {initialProduct ? 'Chỉnh Sửa Sản Phẩm' : 'Thêm Sản Phẩm Mới'}
           </Text>
           <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
             <X size={20} color={COLORS.textMuted} />
@@ -260,7 +260,7 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
                     onPress={() => handleCategoryChange(cat.code)}
                   >
                     <Text style={[styles.catBadgeText, category === cat.code && styles.catTextActive]}>
-                      {cat.icon || '📦'} {cat.name} ({cat.prefix || cat.code})
+                      {cat.name} ({cat.prefix || cat.code})
                     </Text>
 
                     {!isDefault && (
@@ -285,14 +285,14 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
               onPress={() => setShowAddCustomCat(!showAddCustomCat)}
             >
               <Plus size={15} color={COLORS.primaryLight} style={{ marginRight: 4 }} />
-              <Text style={styles.addCustomCatTriggerText}>➕ Thêm loại mới</Text>
+              <Text style={styles.addCustomCatTriggerText}>Thêm loại mới</Text>
             </TouchableOpacity>
           </View>
 
           {/* INLINE FORM CREATING NEW CUSTOM CATEGORY */}
           {showAddCustomCat && (
             <View style={styles.addCustomCatCard}>
-              <Text style={styles.addCustomCatTitle}>✨ Thêm Loại Mặt Hàng Mới (Tự Động Sinh Mã Prefix SKU)</Text>
+              <Text style={styles.addCustomCatTitle}>Thêm Loại Mặt Hàng Mới (Tự Động Sinh Mã Prefix SKU)</Text>
               
               <Text style={styles.label}>Tên Loại Mặt Hàng Mới *:</Text>
               <TextInput
@@ -364,7 +364,7 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
             }}
           />
           {showValidation && getNameError() ? (
-            <Text style={styles.fieldErrorText}>❌ {getNameError()}</Text>
+            <Text style={styles.fieldErrorText}>{getNameError()}</Text>
           ) : null}
 
           <Text style={styles.label}>3. Gắn vào Lô hàng (Đợt nhập):</Text>
@@ -376,7 +376,7 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
                 onPress={() => setBatchId(b.id)}
               >
                 <Text style={[styles.batchChipText, batchId === b.id && styles.batchChipTextActive]}>
-                  📦 {b.code} - {b.name}
+                  [{b.code}] {b.name}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -427,7 +427,7 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
                 />
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <span style={{ fontSize: '12px', color: COLORS.success, fontWeight: '600' }}>
-                    ✓ Đã tải ảnh thành công
+                    Đã tải ảnh thành công
                   </span>
                   <button
                     type="button"
@@ -445,7 +445,7 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
                       cursor: 'pointer'
                     }}
                   >
-                    🗑️ Xóa ảnh
+                    Xóa ảnh
                   </button>
                 </div>
               </div>
@@ -456,7 +456,7 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
                   Kéo & thả ảnh vào đây, hoặc <span style={{ color: COLORS.primaryLight }}>bấm để chọn tệp</span>
                 </p>
                 <p style={{ margin: 0, fontSize: '12px', color: COLORS.textMuted }}>
-                  💡 Mẹo: Chụp màn hình / Copy ảnh rồi bấm <strong style={{ color: COLORS.statusPending }}>Ctrl + V</strong> để dán trực tiếp
+                  Mẹo: Chụp màn hình / Copy ảnh rồi bấm <strong style={{ color: COLORS.statusPending }}>Ctrl + V</strong> để dán trực tiếp
                 </p>
               </div>
             )}
@@ -472,7 +472,7 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
           />
 
           <View style={styles.priceSection}>
-            <Text style={styles.sectionTitle}>💰 Thiết Lập Giá Cả & Lợi Nhuận</Text>
+            <Text style={styles.sectionTitle}>Thiết Lập Giá Cả & Lợi Nhuận</Text>
 
             <View style={styles.grid2}>
               <View style={styles.col}>
@@ -489,7 +489,7 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
                   onChangeText={(val) => handleCostPriceChange(parseCurrencyInput(val))}
                 />
                 {showValidation && getCostPriceError() ? (
-                  <Text style={styles.fieldErrorText}>❌ {getCostPriceError()}</Text>
+                  <Text style={styles.fieldErrorText}>{getCostPriceError()}</Text>
                 ) : null}
               </View>
 

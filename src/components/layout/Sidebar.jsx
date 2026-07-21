@@ -140,7 +140,7 @@ export const Sidebar = ({
               onPress={onOpenBatchModal}
             >
               <Boxes size={18} color={COLORS.accent} style={{ marginRight: 8 }} />
-              <Text style={styles.batchQuickText}>📦 Quản Lý Lô Hàng</Text>
+              <Text style={styles.batchQuickText}>Quản Lý Lô Hàng</Text>
             </TouchableOpacity>
 
             <TouchableOpacity 
@@ -148,7 +148,7 @@ export const Sidebar = ({
               onPress={onOpenSettingsModal}
             >
               <Settings size={18} color={COLORS.primaryLight} style={{ marginRight: 8 }} />
-              <Text style={styles.settingsQuickText}>⚙️ Cài Đặt Theme</Text>
+              <Text style={styles.settingsQuickText}>Cài Đặt Theme</Text>
             </TouchableOpacity>
           </>
         ) : (

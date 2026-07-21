@@ -233,7 +233,10 @@ export const ProductList = () => {
 
                     <View style={[styles.td, { width: 130 }]}>
                       <Text style={styles.catText}>
-                        {prod.category === 'TS' ? '💎 Trang Sức' : '👔 Quần Áo'}
+                        {(() => {
+                          const cat = customCategories.find(c => c.code === prod.category);
+                          return cat ? cat.name : (prod.category === 'TS' ? 'Trang Sức' : (prod.category === 'QA' ? 'Quần Áo' : prod.category));
+                        })()}
                       </Text>
                     </View>
 
@@ -363,7 +366,7 @@ export const ProductList = () => {
 
                     {b.notes ? (
                       <View style={styles.batchNoteCard}>
-                        <Text style={styles.batchNoteText}>📝 Ghi chú: {b.notes}</Text>
+                        <Text style={styles.batchNoteText}>Ghi chú: {b.notes}</Text>
                       </View>
                     ) : null}
                   </View>
@@ -423,7 +426,7 @@ export const ProductList = () => {
                       onPress={() => setSelectedCategory(cat.code)}
                     >
                       <Text style={[styles.modalCatChipText, selectedCategory === cat.code && styles.modalCatChipTextActive]}>
-                        {cat.icon || '📦'} {cat.name} ({count})
+                        {cat.name} ({count})
                       </Text>
                     </TouchableOpacity>
                   );
@@ -440,7 +443,7 @@ export const ProductList = () => {
                   style={styles.modalSelect}
                 >
                   <option value="ALL" style={{ background: '#1e293b', color: '#f8fafc' }}>
-                    📦 Tất cả Lô Hàng ({batches.length})
+                    Tất cả Lô Hàng ({batches.length})
                   </option>
                   {batches.map(b => (
                     <option key={b.id} value={b.id} style={{ background: '#1e293b', color: '#f8fafc' }}>
