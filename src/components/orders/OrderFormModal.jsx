@@ -32,6 +32,7 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
 
   // 4-Step Wizard Navigation State
   const [currentStep, setCurrentStep] = useState(1);
+  const [maxVisitedStep, setMaxVisitedStep] = useState(1);
   const [stepErrorMsg, setStepErrorMsg] = useState('');
   const [showValidation, setShowValidation] = useState(false);
 
@@ -42,6 +43,7 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
 
   useEffect(() => {
     setCurrentStep(1); // Reset to Step 1 on open
+    setMaxVisitedStep(initialOrder ? 4 : 1);
     setStepErrorMsg('');
     setShowValidation(false);
     if (initialOrder) {
@@ -66,6 +68,7 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
       setCustomerAddress('');
       setPlatform('IG');
       setSocialUsername('');
+      setSelectedItems([]); // Start with 0 items so Step 2 requires active product selection
       setShippingFee(30000);
       setIsFreeship(false);
       setPaymentMethod('COD');
@@ -78,26 +81,6 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
       setProdSearchTerm('');
       setProdCatFilter('ALL');
       setProdBatchFilter('ALL');
-      if (initialOrder) {
-        setSelectedItems(initialOrder.items || []);
-      } else {
-        const inStockProducts = products.filter(p => p.stock > 0);
-        if (inStockProducts.length > 0) {
-          const defaultP = inStockProducts[0];
-          setSelectedItems([{
-            productId: defaultP.id,
-            sku: defaultP.sku,
-            productName: defaultP.name,
-            batchId: defaultP.batchId,
-            quantity: 1,
-            unitPrice: defaultP.sellingPrice,
-            unitCost: defaultP.costPrice,
-            note: ''
-          }]);
-        } else {
-          setSelectedItems([]);
-        }
-      }
     }
   }, [initialOrder, visible]);
 
@@ -235,11 +218,47 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
     return { isValid: true, error: '' };
   };
 
+  // Sequential Step Verification Engine
+  const canJumpTo = (targetStep) => {
+    if (targetStep <= currentStep) return { allowed: true };
+
+    // Check Step 1
+    const v1 = validateStep1();
+    if (!v1.isValid) return { allowed: false, errorStep: 1, errorMsg: v1.error };
+
+    if (targetStep === 2) return { allowed: true };
+
+    // Check Step 2
+    const v2 = validateStep2();
+    if (!v2.isValid) return { allowed: false, errorStep: 2, errorMsg: v2.error };
+
+    if (targetStep === 3) return { allowed: true };
+
+    // Check Step 3
+    const v3 = validateStep3();
+    if (!v3.isValid) return { allowed: false, errorStep: 3, errorMsg: v3.error };
+
+    return { allowed: true };
+  };
+
+  const goToStep = (targetStep) => {
+    const check = canJumpTo(targetStep);
+    if (!check.allowed) {
+      setShowValidation(true);
+      setStepErrorMsg(check.errorMsg);
+      setCurrentStep(check.errorStep);
+      return;
+    }
+    setStepErrorMsg('');
+    setCurrentStep(targetStep);
+    setMaxVisitedStep(prev => Math.max(prev, targetStep));
+  };
+
   // Computed Step Checkmarks & Validations
   const step1Valid = validateStep1().isValid;
-  const step2Valid = step1Valid && validateStep2().isValid;
-  const step3Valid = step2Valid && validateStep3().isValid;
-  const step4Valid = step3Valid;
+  const step2Valid = step1Valid && validateStep2().isValid && maxVisitedStep >= 2;
+  const step3Valid = step2Valid && validateStep3().isValid && maxVisitedStep >= 3;
+  const step4Valid = step3Valid && maxVisitedStep >= 4;
 
   const handleSubmit = () => {
     requireAdmin(() => {
@@ -329,26 +348,7 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
                     isCurrent && styles.wizardStepBtnActive,
                     isCompleted && styles.wizardStepBtnCompleted
                   ]}
-                  onPress={() => {
-                    // Check validation if trying to jump forward
-                    if (s.id > currentStep) {
-                      setShowValidation(true);
-                      if (currentStep === 1) {
-                        const v1 = validateStep1();
-                        if (!v1.isValid) { setStepErrorMsg(v1.error); return; }
-                      }
-                      if (currentStep === 2 || s.id > 2) {
-                        const v2 = validateStep2();
-                        if (!v2.isValid) { setStepErrorMsg(v2.error); return; }
-                      }
-                      if (currentStep === 3 || s.id > 3) {
-                        const v3 = validateStep3();
-                        if (!v3.isValid) { setStepErrorMsg(v3.error); return; }
-                      }
-                    }
-                    setStepErrorMsg('');
-                    setCurrentStep(s.id);
-                  }}
+                  onPress={() => goToStep(s.id)}
                 >
                   <View style={[styles.wizardStepBadge, isCurrent && styles.wizardStepBadgeActive, isCompleted && styles.wizardStepBadgeCompleted]}>
                     <Text style={[styles.wizardStepBadgeText, (isCurrent || isCompleted) && { color: '#ffffff' }]}>
@@ -806,21 +806,7 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
           {currentStep < 4 ? (
             <TouchableOpacity 
               style={styles.wizardNextBtn} 
-              onPress={() => {
-                if (currentStep === 1) {
-                  const v1 = validateStep1();
-                  if (!v1.isValid) { alert(v1.error); return; }
-                }
-                if (currentStep === 2) {
-                  const v2 = validateStep2();
-                  if (!v2.isValid) { alert(v2.error); return; }
-                }
-                if (currentStep === 3) {
-                  const v3 = validateStep3();
-                  if (!v3.isValid) { alert(v3.error); return; }
-                }
-                setCurrentStep(currentStep + 1);
-              }}
+              onPress={() => goToStep(currentStep + 1)}
             >
               <Text style={styles.wizardNextBtnText}>
                 Tiếp Theo (Bước {currentStep + 1})
