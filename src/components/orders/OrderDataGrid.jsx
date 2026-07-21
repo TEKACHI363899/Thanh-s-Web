@@ -108,7 +108,7 @@ export const OrderDataGrid = () => {
           }}
         >
           <Plus size={18} color="#ffffff" style={{ marginRight: 6 }} />
-          <Text style={styles.bigCreateOrderBtnText}>Tạo Đơn Hàng Mới</Text>
+          <Text style={styles.bigCreateOrderBtnText}>Tạo Đơn Mới</Text>
         </TouchableOpacity>
       </View>
 
@@ -441,29 +441,34 @@ export const OrderDataGrid = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: '#0f172a'
+    padding: 18,
+    backgroundColor: '#0f172a',
+    maxWidth: '100%',
+    boxSizing: 'border-box',
+    overflowX: 'hidden'
   },
   topBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: COLORS.cardDark,
-    padding: 20,
+    padding: 18,
     borderRadius: 16,
     borderWidth: 1,
     borderColor: COLORS.cardBorder,
     marginBottom: 16,
     flexWrap: 'wrap',
-    gap: 14
+    gap: 14,
+    maxWidth: '100%',
+    boxSizing: 'border-box'
   },
   mainTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '900',
     color: COLORS.textMain
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 13,
     color: COLORS.textMuted,
     marginTop: 4
   },
@@ -471,7 +476,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.primary,
-    paddingHorizontal: 22,
+    paddingHorizontal: 24,
     paddingVertical: 14,
     borderRadius: 12,
     shadowColor: COLORS.primary,
@@ -488,7 +493,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
     marginBottom: 16,
-    flexWrap: 'wrap'
+    flexWrap: 'wrap',
+    maxWidth: '100%'
   },
   statCard: {
     flex: 1,
@@ -515,10 +521,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    marginBottom: 16
+    marginBottom: 16,
+    maxWidth: '100%',
+    flexWrap: 'wrap'
   },
   searchBox: {
     flex: 1,
+    minWidth: 260,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.cardDark,
@@ -540,7 +549,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.cardDark,
-    paddingHorizontal: 18,
+    paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 12,
     borderWidth: 1.5,
@@ -562,7 +571,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.surfaceHover,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 12
   },
@@ -576,6 +585,8 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     borderWidth: 1,
     borderColor: COLORS.cardBorder,
+    maxWidth: '100%',
+    boxSizing: 'border-box',
     overflow: 'hidden',
     maxHeight: 'calc(100vh - 270px)',
     overflowY: 'auto'

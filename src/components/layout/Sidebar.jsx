@@ -86,7 +86,7 @@ export const Sidebar = ({
           onPress={onOpenOrderModal}
         >
           <PlusCircle size={20} color="#ffffff" style={{ marginRight: 10 }} />
-          <Text style={styles.quickCreateText}> Tạo Đơn Hàng Mới</Text>
+          <Text style={styles.quickCreateText}> Tạo Đơn Mới</Text>
         </TouchableOpacity>
       )}
 

@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView } from '../common/RNBridge';
-import { useData } from '../../context/DataContext';
+import { useData, generatePrefixFromCategoryName } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
 import { COLORS } from '../../theme/colors';
-import { Package, Tag, DollarSign, Percent, X, Check, Info, Upload, Trash2, Image as ImageIcon } from 'lucide-react';
+import { Package, Tag, DollarSign, Percent, X, Check, Info, Upload, Trash2, Image as ImageIcon, Plus } from 'lucide-react';
 import { formatCurrencyInput, parseCurrencyInput } from '../../utils/formatters';
 
 export const ProductFormModal = ({ visible, onClose, initialProduct = null }) => {
-  const { batches, addProduct, updateProduct, generateNextSKU } = useData();
+  const { batches, customCategories, addCustomCategory, addProduct, updateProduct, generateNextSKU } = useData();
   const { requireAdmin } = useAuth();
 
   const [category, setCategory] = useState('TS');
@@ -22,6 +22,26 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
   const [sellingPrice, setSellingPrice] = useState(0);
   const [stock, setStock] = useState(1);
   const [isManualPrice, setIsManualPrice] = useState(false);
+
+  // Custom Category State
+  const [showAddCustomCat, setShowAddCustomCat] = useState(false);
+  const [customCatName, setCustomCatName] = useState('');
+  const [customCatPrefix, setCustomCatPrefix] = useState('');
+
+  const handleCreateCustomCategory = () => {
+    requireAdmin(() => {
+      if (!customCatName.trim()) {
+        alert('Vui lòng nhập Tên loại mặt hàng mới!');
+        return;
+      }
+      const createdCat = addCustomCategory(customCatName, customCatPrefix);
+      setCategory(createdCat.code);
+      setSku(generateNextSKU(createdCat.code, createdCat.prefix));
+      setShowAddCustomCat(false);
+      setCustomCatName('');
+      setCustomCatPrefix('');
+    }, 'Vui lòng đăng nhập Admin để tạo loại mặt hàng mới!');
+  };
 
   // Read file and convert to Base64
   const handleFileRead = (file) => {
@@ -81,17 +101,22 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
     };
   }, [visible]);
 
+  const [showValidation, setShowValidation] = useState(false);
+  const [stepErrorMsg, setStepErrorMsg] = useState('');
+
   useEffect(() => {
+    setShowValidation(false);
+    setStepErrorMsg('');
     if (initialProduct) {
       setCategory(initialProduct.category || 'TS');
       setSku(initialProduct.sku || '');
       setName(initialProduct.name || '');
       setBatchId(initialProduct.batchId || (batches.length > 0 ? batches[0].id : ''));
       setImage(initialProduct.image || '');
-      setCostPrice(initialProduct.costPrice || 0);
+      setCostPrice(initialProduct.costPrice || '');
       setMarginPercent(initialProduct.marginPercent || 30);
-      setSellingPrice(initialProduct.sellingPrice || 0);
-      setStock(initialProduct.stock || 0);
+      setSellingPrice(initialProduct.sellingPrice || '');
+      setStock(initialProduct.stock || 1);
       setIsManualPrice(true);
     } else {
       setCategory('TS');
@@ -99,9 +124,9 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
       setName('');
       setBatchId(batches.length > 0 ? batches[0].id : '');
       setImage('');
-      setCostPrice(100000);
+      setCostPrice(''); // Default empty for new products
       setMarginPercent(30);
-      setSellingPrice(130000);
+      setSellingPrice('');
       setStock(1);
       setIsManualPrice(false);
     }
@@ -116,6 +141,7 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
 
   const handleCostPriceChange = (val) => {
     setCostPrice(val);
+    if (stepErrorMsg) setStepErrorMsg('');
     if (!isManualPrice) {
       recalculateSellingPrice(val, marginPercent);
     }
@@ -131,27 +157,52 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
   const recalculateSellingPrice = (costVal, marginVal) => {
     const cost = Number(costVal) || 0;
     const margin = parseFloat(marginVal) || 0;
-    const rawPrice = cost * (1 + margin / 100);
-    const rounded = Math.round(rawPrice / 1000) * 1000;
-    setSellingPrice(rounded);
+    if (cost > 0) {
+      const rawPrice = cost * (1 + margin / 100);
+      const rounded = Math.round(rawPrice / 1000) * 1000;
+      setSellingPrice(rounded);
+    } else {
+      setSellingPrice('');
+    }
+  };
+
+  const getNameError = () => {
+    if (!name.trim()) return 'Tên sản phẩm không được để trống!';
+    return '';
+  };
+
+  const getCostPriceError = () => {
+    const num = Number(costPrice);
+    if (!costPrice || isNaN(num) || num <= 0) {
+      return 'Vui lòng nhập Giá Gốc sản phẩm (phải lớn hơn 0 VNĐ)!';
+    }
+    return '';
   };
 
   const handleSubmit = () => {
     requireAdmin(() => {
-      if (!name.trim()) {
-        alert('Vui lòng nhập Tên sản phẩm!');
+      setShowValidation(true);
+      const nameErr = getNameError();
+      if (nameErr) {
+        setStepErrorMsg(`⚠️ ${nameErr}`);
+        return;
+      }
+
+      const costErr = getCostPriceError();
+      if (costErr) {
+        setStepErrorMsg(`⚠️ ${costErr}`);
         return;
       }
 
       const payload = {
         category,
         sku,
-        name,
+        name: name.trim(),
         batchId,
         image: image || 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400&q=80',
         costPrice: Number(costPrice) || 0,
         marginPercent: Number(marginPercent) || 0,
-        sellingPrice: Number(sellingPrice) || 0,
+        sellingPrice: Number(sellingPrice) || Number(costPrice) || 0,
         stock: Number(stock) || 0
       };
 
@@ -180,43 +231,112 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
         </View>
 
         <ScrollView style={styles.body} showsVerticalScrollIndicator={false}>
+          {stepErrorMsg ? (
+            <View style={styles.inlineErrorBanner}>
+              <Text style={styles.inlineErrorBannerText}>{stepErrorMsg}</Text>
+            </View>
+          ) : null}
+
           <Text style={styles.label}>1. Phân loại sản phẩm (SKU tự động tăng):</Text>
           <View style={styles.categoryRow}>
-            <TouchableOpacity 
-              style={[styles.catBadge, category === 'TS' && styles.catBadgeTSActive]} 
-              onPress={() => handleCategoryChange('TS')}
-            >
-              <Text style={[styles.catBadgeText, category === 'TS' && styles.catTextActive]}>
-                💎 Trang Sức (TS)
-              </Text>
-            </TouchableOpacity>
+            {customCategories.map(cat => (
+              <TouchableOpacity 
+                key={cat.code}
+                style={[styles.catBadge, category === cat.code && styles.catBadgeTSActive]} 
+                onPress={() => handleCategoryChange(cat.code)}
+              >
+                <Text style={[styles.catBadgeText, category === cat.code && styles.catTextActive]}>
+                  {cat.icon || '📦'} {cat.name} ({cat.prefix || cat.code})
+                </Text>
+              </TouchableOpacity>
+            ))}
 
             <TouchableOpacity 
-              style={[styles.catBadge, category === 'QA' && styles.catBadgeQAActive]} 
-              onPress={() => handleCategoryChange('QA')}
+              style={styles.addCustomCatTriggerBtn}
+              onPress={() => setShowAddCustomCat(!showAddCustomCat)}
             >
-              <Text style={[styles.catBadgeText, category === 'QA' && styles.catTextActive]}>
-                👔 Quần Áo (QA)
-              </Text>
+              <Plus size={15} color={COLORS.primaryLight} style={{ marginRight: 4 }} />
+              <Text style={styles.addCustomCatTriggerText}>➕ Thêm loại mới</Text>
             </TouchableOpacity>
           </View>
 
+          {/* INLINE FORM CREATING NEW CUSTOM CATEGORY */}
+          {showAddCustomCat && (
+            <View style={styles.addCustomCatCard}>
+              <Text style={styles.addCustomCatTitle}>✨ Thêm Loại Mặt Hàng Mới (Tự Động Sinh Mã Prefix SKU)</Text>
+              
+              <Text style={styles.label}>Tên Loại Mặt Hàng Mới *:</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Ví dụ: Móc Khóa, Nước Hoa, Túi Xách..."
+                placeholderTextColor={COLORS.textMuted}
+                value={customCatName}
+                onChangeText={(val) => {
+                  setCustomCatName(val);
+                  setCustomCatPrefix(generatePrefixFromCategoryName(val));
+                }}
+              />
+
+              <View style={styles.grid2}>
+                <View style={styles.col}>
+                  <Text style={styles.label}>Mã Prefix SKU (Lấy chữ cái đầu):</Text>
+                  <TextInput
+                    style={[styles.input, { fontWeight: '800', color: COLORS.accent }]}
+                    placeholder="MK"
+                    placeholderTextColor={COLORS.textMuted}
+                    value={customCatPrefix}
+                    onChangeText={(val) => setCustomCatPrefix(val.toUpperCase())}
+                  />
+                </View>
+
+                <View style={styles.col}>
+                  <Text style={styles.label}>Mã SKU mẫu tiếp theo:</Text>
+                  <View style={styles.previewSkuBadge}>
+                    <Text style={styles.previewSkuText}>
+                      {customCatPrefix ? `${customCatPrefix.toUpperCase()}001` : 'MK001'}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+
+              <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
+                <TouchableOpacity style={styles.confirmAddCatBtn} onPress={handleCreateCustomCategory}>
+                  <Check size={16} color="#ffffff" style={{ marginRight: 6 }} />
+                  <Text style={styles.confirmAddCatText}>Tạo Phân Loại & Dùng Ngay</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.cancelAddCatBtn} onPress={() => setShowAddCustomCat(false)}>
+                  <Text style={styles.cancelAddCatText}>Hủy</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
           <View style={styles.skuBox}>
-            <Tag size={16} color={category === 'TS' ? COLORS.categoryTS : COLORS.categoryQA} />
+            <Tag size={16} color={COLORS.primaryLight} />
             <Text style={styles.skuText}>Mã SKU Tự Động: </Text>
-            <Text style={[styles.skuCode, { color: category === 'TS' ? COLORS.categoryTS : COLORS.categoryQA }]}>
+            <Text style={[styles.skuCode, { color: COLORS.primaryLight }]}>
               {sku}
             </Text>
           </View>
 
           <Text style={styles.label}>2. Tên sản phẩm *:</Text>
           <TextInput
-            style={styles.input}
+            style={[
+              styles.input,
+              showValidation && getNameError() ? styles.inputErrorHighlight : null
+            ]}
             placeholder="Ví dụ: Dây chuyền bạc Ý S925, Áo sơ mi lụa..."
             placeholderTextColor={COLORS.textMuted}
             value={name}
-            onChangeText={setName}
+            onChangeText={(val) => {
+              setName(val);
+              if (stepErrorMsg) setStepErrorMsg('');
+            }}
           />
+          {showValidation && getNameError() ? (
+            <Text style={styles.fieldErrorText}>❌ {getNameError()}</Text>
+          ) : null}
 
           <Text style={styles.label}>3. Gắn vào Lô hàng (Đợt nhập):</Text>
           <View style={styles.selectBox}>
@@ -327,15 +447,21 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
 
             <View style={styles.grid2}>
               <View style={styles.col}>
-                <Text style={styles.label}>Giá gốc (Hiển thị VNĐ):</Text>
+                <Text style={styles.label}>Giá gốc (Nhập VNĐ) *:</Text>
                 <TextInput
-                  style={styles.input}
+                  style={[
+                    styles.input,
+                    showValidation && getCostPriceError() ? styles.inputErrorHighlight : null
+                  ]}
                   keyboardType="numeric"
-                  placeholder="0 VNĐ"
+                  placeholder="Nhập giá gốc (VD: 150.000)..."
                   placeholderTextColor={COLORS.textMuted}
-                  value={formatCurrencyInput(costPrice)}
+                  value={costPrice ? formatCurrencyInput(costPrice) : ''}
                   onChangeText={(val) => handleCostPriceChange(parseCurrencyInput(val))}
                 />
+                {showValidation && getCostPriceError() ? (
+                  <Text style={styles.fieldErrorText}>❌ {getCostPriceError()}</Text>
+                ) : null}
               </View>
 
               <View style={styles.col}>
@@ -625,27 +751,126 @@ const styles = StyleSheet.create({
     backgroundColor: '#162032'
   },
   cancelBtn: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 8,
-    backgroundColor: COLORS.surfaceHover
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 10,
+    backgroundColor: COLORS.surfaceHover,
+    borderWidth: 1,
+    borderColor: COLORS.cardBorder
   },
   cancelBtnText: {
     color: COLORS.textSub,
-    fontWeight: '600',
+    fontWeight: '700',
     fontSize: 14
   },
   submitBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
-    backgroundColor: COLORS.primary
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 10,
+    backgroundColor: COLORS.primary,
+    boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
   },
   submitBtnText: {
     color: '#ffffff',
+    fontWeight: '800',
+    fontSize: 15
+  },
+  inlineErrorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(239, 68, 68, 0.12)',
+    borderWidth: 1,
+    borderColor: '#ef4444',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginBottom: 14
+  },
+  inlineErrorBannerText: {
+    color: '#ef4444',
+    fontSize: 13,
     fontWeight: '700',
-    fontSize: 14
+    flex: 1
+  },
+  inputErrorHighlight: {
+    borderColor: '#ef4444',
+    backgroundColor: 'rgba(239, 68, 68, 0.08)'
+  },
+  fieldErrorText: {
+    color: '#ef4444',
+    fontSize: 12,
+    fontWeight: '600',
+    marginTop: 4
+  },
+  addCustomCatTriggerBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 10,
+    backgroundColor: 'rgba(59, 130, 246, 0.12)',
+    borderWidth: 1,
+    borderColor: COLORS.primaryLight
+  },
+  addCustomCatTriggerText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: COLORS.primaryLight
+  },
+  addCustomCatCard: {
+    backgroundColor: '#162032',
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: COLORS.primary,
+    marginBottom: 14,
+    boxShadow: '0 4px 16px rgba(0,0,0,0.3)'
+  },
+  addCustomCatTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: COLORS.primaryLight,
+    marginBottom: 10
+  },
+  previewSkuBadge: {
+    backgroundColor: '#0f172a',
+    borderWidth: 1.5,
+    borderColor: COLORS.accent,
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  previewSkuText: {
+    fontSize: 15,
+    fontWeight: '900',
+    color: COLORS.accent
+  },
+  confirmAddCatBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.success,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8
+  },
+  confirmAddCatText: {
+    color: '#ffffff',
+    fontSize: 13,
+    fontWeight: '800'
+  },
+  cancelAddCatBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: COLORS.surfaceHover
+  },
+  cancelAddCatText: {
+    color: COLORS.textMuted,
+    fontSize: 13,
+    fontWeight: '700'
   }
 });

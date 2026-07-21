@@ -3,6 +3,31 @@ import { db, collection, onSnapshot, doc, setDoc, deleteDoc, broadcastRealtimeEv
 
 const DataContext = createContext();
 
+// Utility: Extract capital first letters of each word in Vietnamese string
+export const generatePrefixFromCategoryName = (name) => {
+  if (!name || typeof name !== 'string') return 'SP';
+  const cleanStr = name
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // remove Vietnamese diacritics
+    .replace(/[đĐ]/g, 'd')
+    .trim();
+  
+  if (!cleanStr) return 'SP';
+
+  const words = cleanStr.split(/\s+/).filter(Boolean);
+  if (words.length === 1) {
+    return words[0].substring(0, 2).toUpperCase();
+  }
+  
+  const prefix = words.map(w => w[0].toUpperCase()).join('');
+  return prefix || 'SP';
+};
+
+const DEFAULT_CUSTOM_CATEGORIES = [
+  { code: 'TS', name: 'Trang Sức', prefix: 'TS', icon: '💎' },
+  { code: 'QA', name: 'Quần Áo', prefix: 'QA', icon: '👔' }
+];
+
 // Unique ID Generator (Combines prefix, timestamp, and random string to prevent ID collisions forever)
 const generateUniqueId = (prefix) => {
   const randomPart = Math.random().toString(36).substring(2, 9);
@@ -46,6 +71,35 @@ export const DataProvider = ({ children }) => {
   const [orders, setOrders] = useState(() => safeParse('thanh_app_orders', INITIAL_ORDERS, 'ord'));
   const [expenses, setExpenses] = useState(() => safeParse('thanh_app_expenses', INITIAL_EXPENSES, 'exp'));
   const [isCloudConnected, setIsCloudConnected] = useState(false);
+
+  const [customCategories, setCustomCategories] = useState(() => {
+    try {
+      const saved = localStorage.getItem('thanh_app_custom_categories');
+      if (saved) return JSON.parse(saved);
+    } catch (e) {}
+    return DEFAULT_CUSTOM_CATEGORIES;
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('thanh_app_custom_categories', JSON.stringify(customCategories));
+    } catch (e) {}
+  }, [customCategories]);
+
+  const addCustomCategory = (categoryName, customPrefixInput) => {
+    const prefix = (customPrefixInput || generatePrefixFromCategoryName(categoryName)).toUpperCase().trim();
+    const newCat = {
+      code: prefix,
+      name: categoryName.trim(),
+      prefix: prefix,
+      icon: '📦'
+    };
+    setCustomCategories(prev => {
+      if (prev.some(c => c.code === newCat.code)) return prev;
+      return [...prev, newCat];
+    });
+    return newCat;
+  };
 
   // Manual Full Data Reload Helper
   const refreshAllData = () => {
@@ -145,6 +199,8 @@ export const DataProvider = ({ children }) => {
         setOrders(safeParse('thanh_app_orders', INITIAL_ORDERS, 'ord'));
       } else if (e.key === 'thanh_app_expenses') {
         setExpenses(safeParse('thanh_app_expenses', INITIAL_EXPENSES, 'exp'));
+      } else if (e.key === 'thanh_app_custom_categories') {
+        try { setCustomCategories(JSON.parse(e.newValue)); } catch (err) {}
       }
     };
 
@@ -187,13 +243,28 @@ export const DataProvider = ({ children }) => {
     }
   };
 
-  const generateNextSKU = (category) => {
-    const catPrefix = category === 'TS' ? 'TS' : 'QA';
-    const matchingProducts = products.filter(p => p.category === category);
+  const generateNextSKU = (categoryCode, customPrefixInput) => {
+    let catPrefix = 'TS';
+    if (customPrefixInput) {
+      catPrefix = customPrefixInput.toUpperCase().trim();
+    } else if (categoryCode) {
+      const foundCat = customCategories.find(c => c.code === categoryCode || c.name === categoryCode);
+      if (foundCat) {
+        catPrefix = foundCat.prefix || foundCat.code;
+      } else {
+        catPrefix = categoryCode.toUpperCase().trim();
+      }
+    }
+
+    const matchingProducts = products.filter(p => {
+      if (!p.sku) return false;
+      const cleanSkuPrefix = p.sku.replace(/\d+$/, '').toUpperCase();
+      return p.category === categoryCode || cleanSkuPrefix === catPrefix || p.sku.toUpperCase().startsWith(catPrefix);
+    });
     
     let maxNum = 0;
     matchingProducts.forEach(p => {
-      const numPart = p.sku.replace(catPrefix, '');
+      const numPart = p.sku.replace(new RegExp(`^${catPrefix}`, 'i'), '').replace(/\D+/g, '');
       const val = parseInt(numPart, 10);
       if (!isNaN(val) && val > maxNum) {
         maxNum = val;
@@ -424,7 +495,8 @@ export const DataProvider = ({ children }) => {
       batches,
       products,
       orders,
-      expenses
+      expenses,
+      customCategories
     };
     const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -442,6 +514,7 @@ export const DataProvider = ({ children }) => {
       if (parsed.products) setProducts(sanitizeList(parsed.products, 'prod'));
       if (parsed.orders) setOrders(sanitizeList(parsed.orders, 'ord'));
       if (parsed.expenses) setExpenses(sanitizeList(parsed.expenses, 'exp'));
+      if (parsed.customCategories) setCustomCategories(parsed.customCategories);
       notifyChange();
       return true;
     } catch (e) {
@@ -456,6 +529,8 @@ export const DataProvider = ({ children }) => {
       products,
       orders,
       expenses,
+      customCategories,
+      addCustomCategory,
       isCloudConnected,
       refreshAllData,
       exportBackupJSON,
