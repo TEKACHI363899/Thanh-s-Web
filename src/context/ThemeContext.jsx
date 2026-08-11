@@ -9,67 +9,103 @@ export const THEMES = {
     previewBg: '#0f172a',
     previewAccent: '#3b82f6',
     colors: {
-      primary: '#3b82f6',
-      primaryDark: '#1d4ed8',
+      label: '#FFFFFF',
+      secondaryLabel: '#EBEBF5',
+      tertiaryLabel: '#EBEBF54D',
+      systemBackground: '#000000',
+      secondarySystemBackground: '#1C1C1E',
+      tertiarySystemBackground: '#2C2C2E',
+      systemGroupedBackground: '#000000',
+      
+      systemBlue: '#0A84FF',
+      systemGreen: '#30D158',
+      systemRed: '#FF453A',
+      systemOrange: '#FF9F0A',
+      systemPurple: '#BF5AF2',
+      systemTeal: '#64D2FF',
+      systemIndigo: '#5E5CE6',
+      systemPink: '#FF375F',
+      systemCyan: '#32ADE6',
+
+      primary: '#0A84FF',
+      primaryDark: '#0061e0',
       primaryLight: '#60a5fa',
-      accent: '#8b5cf6',
-      accentHover: '#7c3aed',
-      bgDark: '#0f172a',
-      cardDark: '#1e293b',
-      sidebarBg: '#162032',
-      cardBorder: '#334155',
-      surfaceHover: '#2a3a52',
-      textMain: '#ffffff',
-      textMuted: '#cbd5e1',
-      textSub: '#e2e8f0',
-      statusPending: '#f59e0b',
-      statusConfirmed: '#3b82f6',
-      statusShipping: '#8b5cf6',
-      statusDelivered: '#10b981',
-      statusCancelled: '#ef4444',
-      categoryTS: '#ec4899',
-      categoryQA: '#06b6d4',
-      orderTypeInStock: '#10b981',
-      orderTypePreorder: '#f59e0b',
-      success: '#10b981',
-      danger: '#ef4444',
-      warning: '#f59e0b',
-      info: '#3b82f6'
+      accent: '#BF5AF2',
+      accentHover: '#8b5cf6',
+      bgDark: '#000000',
+      cardDark: '#1C1C1E',
+      sidebarBg: '#1C1C1E',
+      cardBorder: '#38383A',
+      surfaceHover: '#2C2C2E',
+      textMain: '#FFFFFF',
+      textMuted: '#EBEBF5',
+      textSub: '#EBEBF599',
+      statusPending: '#FF9F0A',
+      statusConfirmed: '#0A84FF',
+      statusShipping: '#BF5AF2',
+      statusDelivered: '#30D158',
+      statusCancelled: '#FF453A',
+      categoryTS: '#FF375F',
+      categoryQA: '#64D2FF',
+      orderTypeInStock: '#30D158',
+      orderTypePreorder: '#FF9F0A',
+      success: '#30D158',
+      danger: '#FF453A',
+      warning: '#FF9F0A',
+      info: '#0A84FF'
     }
   },
   bright: {
     id: 'bright',
     name: 'Theme Bright (Trắng Đen)',
     desc: 'Nền sáng tối giản, độ tương phản chữ đen đậm sắc nét',
-    previewBg: '#f8fafc',
-    previewAccent: '#0f172a',
+    previewBg: '#F2F2F7',
+    previewAccent: '#007AFF',
     colors: {
-      primary: '#2563eb',
-      primaryDark: '#1d4ed8',
-      primaryLight: '#3b82f6',
-      accent: '#7c3aed',
-      accentHover: '#6d28d9',
-      bgDark: '#f8fafc',
-      cardDark: '#ffffff',
-      sidebarBg: '#ffffff',
-      cardBorder: '#cbd5e1',
-      surfaceHover: '#f1f5f9',
-      textMain: '#0f172a',
-      textMuted: '#334155',
-      textSub: '#1e293b',
-      statusPending: '#d97706',
-      statusConfirmed: '#2563eb',
-      statusShipping: '#7c3aed',
-      statusDelivered: '#059669',
-      statusCancelled: '#dc2626',
-      categoryTS: '#db2777',
-      categoryQA: '#0891b2',
-      orderTypeInStock: '#059669',
-      orderTypePreorder: '#d97706',
-      success: '#059669',
-      danger: '#dc2626',
-      warning: '#d97706',
-      info: '#2563eb'
+      label: '#000000',
+      secondaryLabel: '#3C3C43',
+      tertiaryLabel: '#3C3C434D',
+      systemBackground: '#FFFFFF',
+      secondarySystemBackground: '#F2F2F7',
+      tertiarySystemBackground: '#FFFFFF',
+      systemGroupedBackground: '#F2F2F7',
+      
+      systemBlue: '#007AFF',
+      systemGreen: '#34C759',
+      systemRed: '#FF3B30',
+      systemOrange: '#FF9500',
+      systemPurple: '#AF52DE',
+      systemTeal: '#5AC8FA',
+      systemIndigo: '#5856D6',
+      systemPink: '#FF2D55',
+      systemCyan: '#32ADE6',
+
+      primary: '#007AFF',
+      primaryDark: '#005bb5',
+      primaryLight: '#60a5fa',
+      accent: '#AF52DE',
+      accentHover: '#8b5cf6',
+      bgDark: '#F2F2F7',
+      cardDark: '#FFFFFF',
+      sidebarBg: '#F2F2F7',
+      cardBorder: '#C6C6C8',
+      surfaceHover: '#E5E5EA',
+      textMain: '#000000',
+      textMuted: '#3C3C43',
+      textSub: '#3C3C434D',
+      statusPending: '#FF9500',
+      statusConfirmed: '#007AFF',
+      statusShipping: '#AF52DE',
+      statusDelivered: '#34C759',
+      statusCancelled: '#FF3B30',
+      categoryTS: '#FF2D55',
+      categoryQA: '#32ADE6',
+      orderTypeInStock: '#34C759',
+      orderTypePreorder: '#FF9500',
+      success: '#34C759',
+      danger: '#FF3B30',
+      warning: '#FF9500',
+      info: '#007AFF'
     }
   },
   pink: {
@@ -77,12 +113,30 @@ export const THEMES = {
     name: 'Theme Hồng (Sweetie Pink)',
     desc: 'Nền hồng pastel ngọt ngào, chữ hồng đô sang trọng',
     previewBg: '#fff1f2',
-    previewAccent: '#f43f5e',
+    previewAccent: '#FF2D55',
     colors: {
-      primary: '#f43f5e',
+      label: '#881337',
+      secondaryLabel: '#9f1239',
+      tertiaryLabel: '#be123c',
+      systemBackground: '#fff1f2',
+      secondarySystemBackground: '#ffe4e6',
+      tertiarySystemBackground: '#ffffff',
+      systemGroupedBackground: '#fff1f2',
+      
+      systemBlue: '#007AFF',
+      systemGreen: '#34C759',
+      systemRed: '#FF3B30',
+      systemOrange: '#FF9500',
+      systemPurple: '#AF52DE',
+      systemTeal: '#5AC8FA',
+      systemIndigo: '#5856D6',
+      systemPink: '#FF2D55',
+      systemCyan: '#32ADE6',
+
+      primary: '#FF2D55',
       primaryDark: '#e11d48',
       primaryLight: '#fb7185',
-      accent: '#ec4899',
+      accent: '#FF2D55',
       accentHover: '#db2777',
       bgDark: '#fff1f2',
       cardDark: '#ffffff',
@@ -92,19 +146,19 @@ export const THEMES = {
       textMain: '#881337',
       textMuted: '#9f1239',
       textSub: '#be123c',
-      statusPending: '#d97706',
-      statusConfirmed: '#f43f5e',
-      statusShipping: '#ec4899',
-      statusDelivered: '#10b981',
-      statusCancelled: '#e11d48',
-      categoryTS: '#ec4899',
-      categoryQA: '#06b6d4',
-      orderTypeInStock: '#10b981',
-      orderTypePreorder: '#f59e0b',
-      success: '#10b981',
-      danger: '#e11d48',
-      warning: '#f59e0b',
-      info: '#f43f5e'
+      statusPending: '#FF9500',
+      statusConfirmed: '#FF2D55',
+      statusShipping: '#AF52DE',
+      statusDelivered: '#34C759',
+      statusCancelled: '#FF3B30',
+      categoryTS: '#FF2D55',
+      categoryQA: '#32ADE6',
+      orderTypeInStock: '#34C759',
+      orderTypePreorder: '#FF9500',
+      success: '#34C759',
+      danger: '#FF3B30',
+      warning: '#FF9500',
+      info: '#007AFF'
     }
   },
   kuromi: {
@@ -112,34 +166,52 @@ export const THEMES = {
     name: 'Theme Tím Kuromi (Mystic Violet)',
     desc: 'Nền tím Kuromi mộng mơ, chữ sáng lung linh & nổi bật',
     previewBg: '#130b24',
-    previewAccent: '#c084fc',
+    previewAccent: '#AF52DE',
     colors: {
-      primary: '#a855f7',
+      label: '#FFFFFF',
+      secondaryLabel: '#EBEBF5',
+      tertiaryLabel: '#EBEBF54D',
+      systemBackground: '#130b24',
+      secondarySystemBackground: '#21153b',
+      tertiarySystemBackground: '#1a0e30',
+      systemGroupedBackground: '#130b24',
+      
+      systemBlue: '#0A84FF',
+      systemGreen: '#30D158',
+      systemRed: '#FF453A',
+      systemOrange: '#FF9F0A',
+      systemPurple: '#AF52DE',
+      systemTeal: '#64D2FF',
+      systemIndigo: '#5E5CE6',
+      systemPink: '#FF375F',
+      systemCyan: '#32ADE6',
+
+      primary: '#AF52DE',
       primaryDark: '#9333ea',
       primaryLight: '#c084fc',
-      accent: '#f43f5e',
+      accent: '#FF375F',
       accentHover: '#e11d48',
       bgDark: '#130b24',
       cardDark: '#21153b',
       sidebarBg: '#1a0e30',
       cardBorder: '#4c327a',
       surfaceHover: '#2e1c50',
-      textMain: '#ffffff',
-      textMuted: '#e9d5ff',
-      textSub: '#f3e8ff',
-      statusPending: '#f59e0b',
-      statusConfirmed: '#a855f7',
-      statusShipping: '#f43f5e',
-      statusDelivered: '#10b981',
-      statusCancelled: '#ef4444',
-      categoryTS: '#f43f5e',
-      categoryQA: '#c084fc',
-      orderTypeInStock: '#10b981',
-      orderTypePreorder: '#f59e0b',
-      success: '#10b981',
-      danger: '#ef4444',
-      warning: '#f59e0b',
-      info: '#a855f7'
+      textMain: '#FFFFFF',
+      textMuted: '#EBEBF5',
+      textSub: '#EBEBF599',
+      statusPending: '#FF9F0A',
+      statusConfirmed: '#AF52DE',
+      statusShipping: '#FF375F',
+      statusDelivered: '#30D158',
+      statusCancelled: '#FF453A',
+      categoryTS: '#FF375F',
+      categoryQA: '#64D2FF',
+      orderTypeInStock: '#30D158',
+      orderTypePreorder: '#FF9F0A',
+      success: '#30D158',
+      danger: '#FF453A',
+      warning: '#FF9F0A',
+      info: '#AF52DE'
     }
   }
 };
@@ -152,95 +224,55 @@ const injectGlobalThemeStyle = (activeTheme) => {
     document.head.appendChild(styleEl);
   }
 
-  const { bgDark, cardDark, sidebarBg, cardBorder, surfaceHover, textMain, textMuted, textSub, primary } = activeTheme.colors;
-  const isLight = activeTheme.id === 'bright' || activeTheme.id === 'pink';
+  // Generate CSS Variables dynamically from activeTheme.colors
+  let cssVariables = ':root {\n';
+  Object.keys(activeTheme.colors).forEach(key => {
+    // convert camelCase to kebab-case
+    const kebabKey = key.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+    cssVariables += `  --${kebabKey}: ${activeTheme.colors[key]};\n`;
+  });
+  cssVariables += '}\n';
 
   styleEl.innerHTML = `
+    ${cssVariables}
+    
     html, body, #root {
-      background-color: ${bgDark} !important;
-      color: ${textMain} !important;
-      font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif !important;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro", "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+    }
+
+    input, select, textarea {
+      background-color: var(--bg-dark) !important;
+      color: var(--text-main) !important;
+      border-color: var(--card-border) !important;
     }
     
-    /* Comprehensive Background Overrides for Cards & Grids */
-    [style*="background-color: rgb(15, 23, 42)"],
-    [style*="background-color: rgb(11, 19, 43)"],
-    [style*="background-color: rgb(241, 245, 249)"] {
-      background-color: ${bgDark} !important;
-    }
-
-    [style*="background-color: rgb(22, 32, 50)"] {
-      background-color: ${sidebarBg} !important;
-    }
-
-    [style*="background-color: rgb(30, 41, 59)"],
-    [style*="background-color: rgb(28, 37, 65)"],
-    [style*="background-color: rgb(17, 28, 46)"],
-    [style*="background-color: rgb(17, 24, 39)"],
-    [style*="background-color: rgb(31, 41, 55)"] {
-      background-color: ${cardDark} !important;
-    }
-
-    [style*="background-color: rgb(51, 65, 85)"] {
-      background-color: ${surfaceHover} !important;
-    }
-
-    /* Table Headers & Rows */
-    th, td {
-      border-color: ${cardBorder} !important;
-      color: ${textMain} !important;
-    }
-
-    /* Search Input & Form Element Backgrounds across Dark, Bright, Pink, Kuromi */
-    input, select, textarea {
-      background-color: ${isLight ? '#ffffff' : (activeTheme.id === 'kuromi' ? '#2e1c50' : '#1e293b')} !important;
-      color: ${textMain} !important;
-      border-color: ${cardBorder} !important;
-    }
     input::placeholder, textarea::placeholder {
-      color: ${textMuted} !important;
+      color: var(--text-muted) !important;
       opacity: 0.85;
     }
-
+    
     /* Native Select Options */
     option {
-      background-color: ${cardDark} !important;
-      color: ${textMain} !important;
-    }
-
-    /* Ultra-Bright Table Text Overrides for Dark & Kuromi themes */
-    [style*="color: rgb(248, 250, 252)"],
-    [style*="color: rgb(241, 245, 249)"],
-    [style*="color: rgb(255, 255, 255)"] {
-      color: ${textMain} !important;
-    }
-
-    [style*="color: rgb(148, 163, 184)"],
-    [style*="color: rgb(100, 116, 139)"],
-    [style*="color: rgb(156, 163, 175)"] {
-      color: ${textMuted} !important;
-    }
-
-    [style*="color: rgb(203, 213, 225)"],
-    [style*="color: rgb(226, 232, 240)"] {
-      color: ${textSub} !important;
-    }
-
-    /* Border Overrides */
-    [style*="border-color: rgb(51, 65, 85)"],
-    [style*="border-bottom-color: rgb(51, 65, 85)"],
-    [style*="border-top-color: rgb(51, 65, 85)"],
-    [style*="border-left-color: rgb(51, 65, 85)"],
-    [style*="border-right-color: rgb(51, 65, 85)"] {
-      border-color: ${cardBorder} !important;
+      background-color: var(--card-dark) !important;
+      color: var(--text-main) !important;
     }
 
     /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
     ::-webkit-scrollbar-track {
-      background: ${bgDark} !important;
+      background: var(--bg-dark) !important;
     }
     ::-webkit-scrollbar-thumb {
-      background: ${primary} !important;
+      background: var(--primary) !important;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--primary-dark) !important;
     }
   `;
 };

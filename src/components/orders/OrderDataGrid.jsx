@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { TYPOGRAPHY } from '../../theme/typography';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from '../common/RNBridge';
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
@@ -141,7 +142,7 @@ export const OrderDataGrid = () => {
         </View>
 
         <View style={[styles.statCard, { borderColor: COLORS.danger }]}>
-          <Text style={[styles.statVal, { color: COLORS.danger, fontSize: 18 }]}>
+          <Text style={[styles.statVal, { color: COLORS.danger, ...TYPOGRAPHY.headline, }]}>
             {formatCurrency(orders.reduce((sum, o) => sum + (o.remainingDebt || 0), 0))}
           </Text>
           <Text style={styles.statLabel}>Tổng Nợ Khách Order</Text>
@@ -270,18 +271,18 @@ export const OrderDataGrid = () => {
                             border: 'none',
                             color: stStyle.text,
                             fontWeight: '700',
-                            fontSize: '13px',
+                            ...TYPOGRAPHY.footnote,
                             outline: 'none',
                             cursor: 'pointer',
                             paddingVertical: '2px',
                             width: '100%'
                           }}
                         >
-                          <option value="Chờ xử lý" style={{ background: '#1e293b', color: '#f8fafc' }}>Chờ xử lý</option>
-                          <option value="Đã chốt" style={{ background: '#1e293b', color: '#f8fafc' }}>Đã chốt</option>
-                          <option value="Đang giao" style={{ background: '#1e293b', color: '#f8fafc' }}>Đang giao</option>
-                          <option value="Đã giao" style={{ background: '#1e293b', color: '#f8fafc' }}>Đã giao</option>
-                          <option value="Hoàn/Hủy" style={{ background: '#1e293b', color: '#f8fafc' }}>Hoàn/Hủy (Hoàn kho)</option>
+                          <option value="Chờ xử lý" style={{ background: COLORS.cardDark, color: COLORS.textMain }}>Chờ xử lý</option>
+                          <option value="Đã chốt" style={{ background: COLORS.cardDark, color: COLORS.textMain }}>Đã chốt</option>
+                          <option value="Đang giao" style={{ background: COLORS.cardDark, color: COLORS.textMain }}>Đang giao</option>
+                          <option value="Đã giao" style={{ background: COLORS.cardDark, color: COLORS.textMain }}>Đã giao</option>
+                          <option value="Hoàn/Hủy" style={{ background: COLORS.cardDark, color: COLORS.textMain }}>Hoàn/Hủy (Hoàn kho)</option>
                         </select>
                       </View>
                     </View>
@@ -312,7 +313,7 @@ export const OrderDataGrid = () => {
                         onPress={() => requireAdmin(() => handleEdit(ord), 'Vui lòng đăng nhập Admin để sửa đơn hàng!')}
                       >
                         <Edit2 size={14} color={COLORS.primaryLight} style={{ marginRight: 2 }} />
-                        <Text style={{ color: COLORS.primaryLight, fontWeight: '700', fontSize: 12 }}>Sửa</Text>
+                        <Text style={{ color: COLORS.primaryLight, fontWeight: '700', ...TYPOGRAPHY.caption1, }}>Sửa</Text>
                       </TouchableOpacity>
 
                       <TouchableOpacity 
@@ -320,7 +321,7 @@ export const OrderDataGrid = () => {
                         onPress={() => requireAdmin(() => handleDelete(ord), 'Vui lòng đăng nhập Admin để xóa đơn hàng!')}
                       >
                         <Trash2 size={14} color={COLORS.danger} style={{ marginRight: 2 }} />
-                        <Text style={{ color: COLORS.danger, fontWeight: '700', fontSize: 12 }}>Xóa</Text>
+                        <Text style={{ color: COLORS.danger, fontWeight: '700', ...TYPOGRAPHY.caption1, }}>Xóa</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -368,11 +369,11 @@ export const OrderDataGrid = () => {
                   onChange={(e) => setSelectedBatch(e.target.value)}
                   style={styles.modalSelect}
                 >
-                  <option value="ALL" style={{ background: '#1e293b', color: '#f8fafc' }}>
+                  <option value="ALL" style={{ background: COLORS.cardDark, color: COLORS.textMain }}>
                     📦 Tất cả Lô Hàng ({batches.length})
                   </option>
                   {batches.map(b => (
-                    <option key={b.id} value={b.id} style={{ background: '#1e293b', color: '#f8fafc' }}>
+                    <option key={b.id} value={b.id} style={{ background: COLORS.cardDark, color: COLORS.textMain }}>
                       [{b.code}] {b.name}
                     </option>
                   ))}
@@ -442,7 +443,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 18,
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     maxWidth: '100%',
     boxSizing: 'border-box',
     overflowX: 'hidden'
@@ -463,12 +464,12 @@ const styles = StyleSheet.create({
     boxSizing: 'border-box'
   },
   mainTitle: {
-    fontSize: 22,
+    ...TYPOGRAPHY.title2,
     fontWeight: '900',
     color: COLORS.textMain
   },
   subtitle: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     color: COLORS.textMuted,
     marginTop: 4
   },
@@ -487,7 +488,7 @@ const styles = StyleSheet.create({
   bigCreateOrderBtnText: {
     color: '#ffffff',
     fontWeight: '800',
-    fontSize: 16
+    ...TYPOGRAPHY.callout,
   },
   statsRow: {
     flexDirection: 'row',
@@ -507,12 +508,12 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   statVal: {
-    fontSize: 24,
+    ...TYPOGRAPHY.title2,
     fontWeight: '900',
     color: COLORS.textMain
   },
   statLabel: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     fontWeight: '600',
     color: COLORS.textMuted,
     marginTop: 4
@@ -539,7 +540,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     paddingVertical: 12,
-    fontSize: 15,
+    ...TYPOGRAPHY.callout,
     color: COLORS.textMain
   },
   clearIcon: {
@@ -560,7 +561,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.primary
   },
   filterTriggerText: {
-    fontSize: 15,
+    ...TYPOGRAPHY.callout,
     fontWeight: '800',
     color: COLORS.primaryLight
   },
@@ -576,7 +577,7 @@ const styles = StyleSheet.create({
     borderRadius: 12
   },
   resetFilterText: {
-    fontSize: 14,
+    ...TYPOGRAPHY.subhead,
     fontWeight: '700',
     color: COLORS.textMuted
   },
@@ -599,7 +600,7 @@ const styles = StyleSheet.create({
   },
   trHeader: {
     flexDirection: 'row',
-    backgroundColor: '#162032',
+    backgroundColor: COLORS.sidebarBg,
     borderBottomWidth: 1.5,
     borderBottomColor: COLORS.cardBorder,
     paddingVertical: 12,
@@ -607,7 +608,7 @@ const styles = StyleSheet.create({
   },
   th: {
     color: COLORS.textMuted,
-    fontSize: 12,
+    ...TYPOGRAPHY.caption1,
     fontWeight: '800',
     textTransform: 'uppercase'
   },
@@ -617,17 +618,17 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#1e293b',
+    borderBottomColor: COLORS.cardDark,
     minHeight: 52
   },
   trEven: {
-    backgroundColor: '#172336'
+    backgroundColor: COLORS.sidebarBg
   },
   td: {
     justifyContent: 'center'
   },
   codeText: {
-    fontSize: 15,
+    ...TYPOGRAPHY.callout,
     fontWeight: '900',
     color: COLORS.primaryLight
   },
@@ -645,35 +646,35 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(245, 158, 11, 0.2)'
   },
   typeBadgeText: {
-    fontSize: 11,
+    ...TYPOGRAPHY.caption2,
     fontWeight: '800',
     color: COLORS.textMain
   },
   dateText: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     color: COLORS.textMuted
   },
   customerName: {
-    fontSize: 15,
+    ...TYPOGRAPHY.callout,
     fontWeight: '800',
     color: COLORS.textMain
   },
   customerPhone: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     color: COLORS.textMuted
   },
   itemSummaryText: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     color: COLORS.textSub,
     lineHeight: 18
   },
   totalPriceText: {
-    fontSize: 15,
+    ...TYPOGRAPHY.callout,
     fontWeight: '900',
     color: COLORS.success
   },
   payMethodText: {
-    fontSize: 12,
+    ...TYPOGRAPHY.caption1,
     color: COLORS.textMuted,
     marginTop: 2
   },
@@ -685,21 +686,21 @@ const styles = StyleSheet.create({
     borderRadius: 8
   },
   debtVal: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     fontWeight: '800',
     color: COLORS.danger
   },
   depositVal: {
-    fontSize: 12,
+    ...TYPOGRAPHY.caption1,
     color: COLORS.statusPending
   },
   noDebtText: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     color: COLORS.success,
     fontWeight: '700'
   },
   notesText: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     color: COLORS.textMuted
   },
   bigEditBtn: {
@@ -727,7 +728,7 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   emptyText: {
-    fontSize: 15,
+    ...TYPOGRAPHY.callout,
     color: COLORS.textMuted,
     marginTop: 10
   },
@@ -763,7 +764,7 @@ const styles = StyleSheet.create({
     paddingBottom: 14
   },
   filterModalTitle: {
-    fontSize: 18,
+    ...TYPOGRAPHY.headline,
     fontWeight: '900',
     color: COLORS.textMain
   },
@@ -776,7 +777,7 @@ const styles = StyleSheet.create({
     gap: 14
   },
   filterSectionLabel: {
-    fontSize: 14,
+    ...TYPOGRAPHY.subhead,
     fontWeight: '700',
     color: COLORS.textSub,
     marginTop: 4
@@ -784,7 +785,7 @@ const styles = StyleSheet.create({
   modalSearchBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     borderRadius: 10,
     paddingHorizontal: 14,
     borderWidth: 1.5,
@@ -793,8 +794,8 @@ const styles = StyleSheet.create({
   modalSearchInput: {
     flex: 1,
     paddingVertical: 10,
-    fontSize: 14,
-    color: '#f8fafc'
+    ...TYPOGRAPHY.subhead,
+    color: COLORS.textMain
   },
   chipsRow: {
     flexDirection: 'row',
@@ -805,7 +806,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 8,
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     borderWidth: 1,
     borderColor: COLORS.cardBorder
   },
@@ -814,7 +815,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.primary
   },
   modalChipText: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     color: COLORS.textMuted
   },
   modalChipTextActive: {
@@ -824,7 +825,7 @@ const styles = StyleSheet.create({
   modalSelectWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 10,
@@ -835,8 +836,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'transparent',
     border: 'none',
-    color: '#f8fafc',
-    fontSize: 14,
+    color: COLORS.textMain,
+    ...TYPOGRAPHY.subhead,
     fontWeight: '700',
     outline: 'none',
     cursor: 'pointer'
@@ -859,7 +860,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surfaceHover
   },
   resetModalBtnText: {
-    fontSize: 14,
+    ...TYPOGRAPHY.subhead,
     fontWeight: '700',
     color: COLORS.textMuted
   },
@@ -872,7 +873,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary
   },
   applyModalBtnText: {
-    fontSize: 14,
+    ...TYPOGRAPHY.subhead,
     fontWeight: '800',
     color: '#ffffff'
   }

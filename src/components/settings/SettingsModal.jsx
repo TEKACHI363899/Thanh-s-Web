@@ -1,4 +1,5 @@
 import React from 'react';
+import { TYPOGRAPHY } from '../../theme/typography';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from '../common/RNBridge';
 import { useTheme, THEMES } from '../../context/ThemeContext';
 import { COLORS } from '../../theme/colors';
@@ -51,7 +52,7 @@ export const SettingsModal = ({ visible, onClose }) => {
                   style={[
                     styles.themeRow,
                     {
-                      backgroundColor: isSelected ? 'rgba(59, 130, 246, 0.08)' : (colors.bgDark || '#0f172a'),
+                      backgroundColor: isSelected ? 'rgba(59, 130, 246, 0.08)' : (colors.bgDark || COLORS.bgDark),
                       borderColor: isSelected ? colors.primary : colors.cardBorder
                     }
                   ]}
@@ -107,7 +108,7 @@ export const SettingsModal = ({ visible, onClose }) => {
         </ScrollView>
 
         <View style={[styles.footer, { borderColor: colors.cardBorder }]}>
-          <TouchableOpacity style={[styles.closeModalBtn, { backgroundColor: colors.surfaceHover || '#334155' }]} onPress={onClose}>
+          <TouchableOpacity style={[styles.closeModalBtn, { backgroundColor: colors.surfaceHover || COLORS.surfaceHover }]} onPress={onClose}>
             <Text style={[styles.closeModalBtnText, { color: colors.textMain }]}>Đóng Cài Đặt</Text>
           </TouchableOpacity>
         </View>
@@ -149,7 +150,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1
   },
   headerTitle: {
-    fontSize: 16,
+    ...TYPOGRAPHY.callout,
     fontWeight: '800'
   },
   closeBtn: {
@@ -168,11 +169,11 @@ const styles = StyleSheet.create({
     marginBottom: 2
   },
   sectionTitle: {
-    fontSize: 15,
+    ...TYPOGRAPHY.callout,
     fontWeight: '800'
   },
   sectionSub: {
-    fontSize: 12,
+    ...TYPOGRAPHY.caption1,
     marginBottom: 12
   },
   themeList: {
@@ -204,7 +205,7 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   themeName: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     fontWeight: '700'
   },
   activeTag: {
@@ -213,12 +214,12 @@ const styles = StyleSheet.create({
     borderRadius: 8
   },
   activeTagText: {
-    fontSize: 10,
+    ...TYPOGRAPHY.caption2,
     fontWeight: '700',
     color: '#ffffff'
   },
   themeDesc: {
-    fontSize: 11,
+    ...TYPOGRAPHY.caption2,
     marginTop: 1
   },
   swatchRowCompact: {
@@ -241,7 +242,7 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   applyBtnText: {
-    fontSize: 12,
+    ...TYPOGRAPHY.caption1,
     fontWeight: '700'
   },
   footer: {
@@ -256,7 +257,7 @@ const styles = StyleSheet.create({
     borderRadius: 8
   },
   closeModalBtnText: {
-    fontSize: 12,
+    ...TYPOGRAPHY.caption1,
     fontWeight: '700'
   }
 });

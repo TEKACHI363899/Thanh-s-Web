@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { TYPOGRAPHY } from '../../theme/typography';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from '../common/RNBridge';
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
@@ -268,7 +269,7 @@ export const FinanceModule = () => {
 
                 <View style={styles.largeMetricCard}>
                   <Text style={styles.metricLabel}>3. Tổng Lợi Nhuận Dự Kiến (Kho Hàng)</Text>
-                  <Text style={{ fontSize: 22, fontWeight: '900', color: COLORS.success, marginTop: 4 }}>
+                  <Text style={{ ...TYPOGRAPHY.title2, fontWeight: '900', color: COLORS.success, marginTop: 4 }}>
                     + {formatCurrency(expectedInventoryProfit)}
                   </Text>
                   <Text style={styles.metricSub}>Lợi nhuận gộp dự kiến khi bán hết kho sản phẩm</Text>
@@ -287,12 +288,12 @@ export const FinanceModule = () => {
                 value={selectedMonth}
                 onChange={(e) => setSelectedMonth(e.target.value)}
                 style={{
-                  backgroundColor: '#0f172a',
+                  backgroundColor: COLORS.bgDark,
                   border: '1.5px solid #334155',
-                  color: '#f8fafc',
+                  color: COLORS.textMain,
                   padding: '10px 16px',
                   borderRadius: '10px',
-                  fontSize: '16px',
+                  ...TYPOGRAPHY.callout,
                   fontWeight: '700',
                   outline: 'none',
                   cursor: 'pointer'
@@ -379,7 +380,7 @@ export const FinanceModule = () => {
 
               {expenses.length === 0 ? (
                 <View style={styles.emptyBox}>
-                  <Text style={{ color: COLORS.textMuted, fontSize: 15 }}>Chưa có khoản chi vận hành nào được ghi nhận</Text>
+                  <Text style={{ color: COLORS.textMuted, ...TYPOGRAPHY.callout, }}>Chưa có khoản chi vận hành nào được ghi nhận</Text>
                 </View>
               ) : (
                 expenses.map((exp, idx) => (
@@ -396,12 +397,12 @@ export const FinanceModule = () => {
                     <View style={[styles.td, { width: 130, flexDirection: 'row', justifyContent: 'center', gap: 8 }]}>
                       <TouchableOpacity style={styles.bigEditBtn} onPress={() => startEditExpense(exp)}>
                         <Edit2 size={16} color={COLORS.primaryLight} style={{ marginRight: 4 }} />
-                        <Text style={{ color: COLORS.primaryLight, fontWeight: '700', fontSize: 13 }}>Sửa</Text>
+                        <Text style={{ color: COLORS.primaryLight, fontWeight: '700', ...TYPOGRAPHY.footnote, }}>Sửa</Text>
                       </TouchableOpacity>
 
                       <TouchableOpacity style={styles.bigDeleteBtn} onPress={() => handleDeleteExpense(exp)}>
                         <Trash2 size={16} color={COLORS.danger} style={{ marginRight: 4 }} />
-                        <Text style={{ color: COLORS.danger, fontWeight: '700', fontSize: 13 }}>Xóa</Text>
+                        <Text style={{ color: COLORS.danger, fontWeight: '700', ...TYPOGRAPHY.footnote, }}>Xóa</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -462,14 +463,14 @@ export const FinanceModule = () => {
 
                     <View style={styles.batchStatBox}>
                       <Text style={styles.bLabel}>Tổng thu dự kiến (bán hết)</Text>
-                      <Text style={{ color: COLORS.accent, fontSize: 15, fontWeight: '800' }}>
+                      <Text style={{ color: COLORS.accent, ...TYPOGRAPHY.callout, fontWeight: '800' }}>
                         {formatCurrency(expectedBatchRevenue)}
                       </Text>
                     </View>
 
                     <View style={styles.batchStatBox}>
                       <Text style={styles.bLabel}>Lợi nhuận dự kiến lô</Text>
-                      <Text style={{ color: expectedBatchProfit >= 0 ? COLORS.success : COLORS.danger, fontSize: 15, fontWeight: '800' }}>
+                      <Text style={{ color: expectedBatchProfit >= 0 ? COLORS.success : COLORS.danger, ...TYPOGRAPHY.callout, fontWeight: '800' }}>
                         {expectedBatchProfit >= 0 ? '+' : ''}{formatCurrency(expectedBatchProfit)}
                       </Text>
                     </View>
@@ -550,7 +551,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 18,
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     maxWidth: '100%',
     boxSizing: 'border-box',
     overflowY: 'auto',
@@ -570,19 +571,19 @@ const styles = StyleSheet.create({
     gap: 14
   },
   mainTitle: {
-    fontSize: 22,
+    ...TYPOGRAPHY.title2,
     fontWeight: '900',
     color: COLORS.textMain
   },
   subtitle: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     color: COLORS.textMuted,
     marginTop: 4
   },
   largeTabsRow: {
     flexDirection: 'row',
     gap: 10,
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     padding: 6,
     borderRadius: 12,
     borderWidth: 1,
@@ -600,7 +601,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary
   },
   largeTabText: {
-    fontSize: 14,
+    ...TYPOGRAPHY.subhead,
     fontWeight: '700',
     color: COLORS.textMuted
   },
@@ -629,12 +630,12 @@ const styles = StyleSheet.create({
     gap: 8
   },
   capitalTitle: {
-    fontSize: 16,
+    ...TYPOGRAPHY.callout,
     fontWeight: '900',
     color: COLORS.textMain
   },
   capitalSubNote: {
-    fontSize: 12,
+    ...TYPOGRAPHY.caption1,
     color: COLORS.textMuted,
     fontStyle: 'italic'
   },
@@ -646,7 +647,7 @@ const styles = StyleSheet.create({
   capitalCardInputBox: {
     flex: 1,
     minWidth: 240,
-    backgroundColor: '#162032',
+    backgroundColor: COLORS.sidebarBg,
     padding: 14,
     borderRadius: 12,
     borderWidth: 1.5,
@@ -655,41 +656,41 @@ const styles = StyleSheet.create({
   capitalStatCard: {
     flex: 1,
     minWidth: 240,
-    backgroundColor: '#162032',
+    backgroundColor: COLORS.sidebarBg,
     padding: 14,
     borderRadius: 12,
     borderWidth: 1.5,
     borderColor: COLORS.cardBorder
   },
   capitalCardLabel: {
-    fontSize: 12,
+    ...TYPOGRAPHY.caption1,
     fontWeight: '700',
     color: COLORS.textMuted,
     marginBottom: 6
   },
   capitalInput: {
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     borderWidth: 1.5,
     borderColor: COLORS.primary,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
     color: COLORS.primaryLight,
-    fontSize: 18,
+    ...TYPOGRAPHY.headline,
     fontWeight: '900'
   },
   capitalInputSub: {
-    fontSize: 11,
+    ...TYPOGRAPHY.caption2,
     color: COLORS.textMuted,
     marginTop: 6
   },
   capitalValInvested: {
-    fontSize: 20,
+    ...TYPOGRAPHY.title3,
     fontWeight: '900',
     color: COLORS.danger
   },
   capitalValCash: {
-    fontSize: 20,
+    ...TYPOGRAPHY.title3,
     fontWeight: '900'
   },
 
@@ -703,12 +704,12 @@ const styles = StyleSheet.create({
     marginBottom: 8
   },
   expectedTitle: {
-    fontSize: 16,
+    ...TYPOGRAPHY.callout,
     fontWeight: '900',
     color: COLORS.accent
   },
   expectedSubNote: {
-    fontSize: 12,
+    ...TYPOGRAPHY.caption1,
     color: COLORS.textMuted,
     fontStyle: 'italic'
   },
@@ -726,7 +727,7 @@ const styles = StyleSheet.create({
     gap: 12
   },
   monthSelectorLabel: {
-    fontSize: 14,
+    ...TYPOGRAPHY.subhead,
     fontWeight: '800',
     color: COLORS.textMain
   },
@@ -745,30 +746,30 @@ const styles = StyleSheet.create({
     borderColor: COLORS.cardBorder
   },
   metricLabel: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     fontWeight: '700',
     color: COLORS.textMuted
   },
   metricValRevenue: {
-    fontSize: 22,
+    ...TYPOGRAPHY.title2,
     fontWeight: '900',
     color: COLORS.primaryLight,
     marginTop: 4
   },
   metricValCost: {
-    fontSize: 22,
+    ...TYPOGRAPHY.title2,
     fontWeight: '900',
     color: COLORS.danger,
     marginTop: 4
   },
   metricValExp: {
-    fontSize: 22,
+    ...TYPOGRAPHY.title2,
     fontWeight: '900',
     color: COLORS.statusPending,
     marginTop: 4
   },
   metricSub: {
-    fontSize: 11,
+    ...TYPOGRAPHY.caption2,
     color: COLORS.textMuted,
     marginTop: 6
   },
@@ -788,30 +789,30 @@ const styles = StyleSheet.create({
     gap: 10
   },
   netProfitTitle: {
-    fontSize: 18,
+    ...TYPOGRAPHY.headline,
     fontWeight: '900',
     color: COLORS.success
   },
   netProfitFormulaNote: {
-    fontSize: 12,
+    ...TYPOGRAPHY.caption1,
     color: COLORS.textMuted,
     fontStyle: 'italic'
   },
   netProfitAmount: {
-    fontSize: 36,
+    ...TYPOGRAPHY.body,
     fontWeight: '900',
     color: COLORS.success,
     marginBottom: 16
   },
   adminSplitBox: {
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: COLORS.cardBorder
   },
   adminSplitTitle: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     fontWeight: '800',
     color: COLORS.primaryLight
   },
@@ -824,12 +825,12 @@ const styles = StyleSheet.create({
     flex: 1
   },
   adminName: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     fontWeight: '700',
     color: COLORS.textMuted
   },
   adminAmount: {
-    fontSize: 20,
+    ...TYPOGRAPHY.title3,
     fontWeight: '900',
     color: COLORS.textMain,
     marginTop: 2
@@ -847,7 +848,7 @@ const styles = StyleSheet.create({
     gap: 12
   },
   sectionHeading: {
-    fontSize: 16,
+    ...TYPOGRAPHY.callout,
     fontWeight: '800',
     color: COLORS.textMain
   },
@@ -862,7 +863,7 @@ const styles = StyleSheet.create({
   bigAddExpBtnText: {
     color: '#ffffff',
     fontWeight: '800',
-    fontSize: 14
+    ...TYPOGRAPHY.subhead,
   },
   tableCard: {
     backgroundColor: COLORS.cardDark,
@@ -873,7 +874,7 @@ const styles = StyleSheet.create({
   },
   trHeader: {
     flexDirection: 'row',
-    backgroundColor: '#162032',
+    backgroundColor: COLORS.sidebarBg,
     paddingVertical: 12,
     paddingHorizontal: 14,
     borderBottomWidth: 1.5,
@@ -881,7 +882,7 @@ const styles = StyleSheet.create({
   },
   th: {
     color: COLORS.textMuted,
-    fontSize: 12,
+    ...TYPOGRAPHY.caption1,
     fontWeight: '800',
     textTransform: 'uppercase'
   },
@@ -891,18 +892,18 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#1e293b'
+    borderBottomColor: COLORS.cardDark
   },
   trEven: {
     backgroundColor: 'transparent'
   },
   tdText: {
     color: COLORS.textMain,
-    fontSize: 14
+    ...TYPOGRAPHY.subhead,
   },
   tdAmount: {
     color: COLORS.danger,
-    fontSize: 14,
+    ...TYPOGRAPHY.subhead,
     fontWeight: '800'
   },
   td: {
@@ -917,7 +918,7 @@ const styles = StyleSheet.create({
   },
   catBadgeText: {
     color: COLORS.primaryLight,
-    fontSize: 12,
+    ...TYPOGRAPHY.caption1,
     fontWeight: '700'
   },
   bigEditBtn: {
@@ -957,12 +958,12 @@ const styles = StyleSheet.create({
     marginBottom: 12
   },
   batchReportTitle: {
-    fontSize: 16,
+    ...TYPOGRAPHY.callout,
     fontWeight: '800',
     color: COLORS.textMain
   },
   batchReportDate: {
-    fontSize: 12,
+    ...TYPOGRAPHY.caption1,
     color: COLORS.textMuted
   },
   batchStatsGrid: {
@@ -973,34 +974,34 @@ const styles = StyleSheet.create({
   batchStatBox: {
     flex: 1,
     minWidth: 150,
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     padding: 12,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: COLORS.cardBorder
   },
   bLabel: {
-    fontSize: 11,
+    ...TYPOGRAPHY.caption2,
     color: COLORS.textMuted,
     marginBottom: 4
   },
   bVal: {
-    fontSize: 15,
+    ...TYPOGRAPHY.callout,
     fontWeight: '800',
     color: COLORS.textMain
   },
   bValSold: {
-    fontSize: 15,
+    ...TYPOGRAPHY.callout,
     fontWeight: '800',
     color: COLORS.primaryLight
   },
   bValCost: {
-    fontSize: 15,
+    ...TYPOGRAPHY.callout,
     fontWeight: '800',
     color: COLORS.success
   },
   bValRev: {
-    fontSize: 15,
+    ...TYPOGRAPHY.callout,
     fontWeight: '800',
     color: COLORS.accent
   },
@@ -1025,36 +1026,36 @@ const styles = StyleSheet.create({
     padding: 20
   },
   modalTitle: {
-    fontSize: 18,
+    ...TYPOGRAPHY.headline,
     fontWeight: '900',
     color: COLORS.textMain,
     marginBottom: 16
   },
   inputLabel: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     fontWeight: '700',
     color: COLORS.textMuted,
     marginTop: 10,
     marginBottom: 6
   },
   largeInput: {
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     borderWidth: 1,
     borderColor: COLORS.cardBorder,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
     color: COLORS.textMain,
-    fontSize: 14,
+    ...TYPOGRAPHY.subhead,
     outlineStyle: 'none'
   },
   selectStyle: {
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     border: '1px solid #334155',
-    color: '#f8fafc',
+    color: COLORS.textMain,
     padding: '10px 12px',
     borderRadius: '8px',
-    fontSize: '14px',
+    ...TYPOGRAPHY.subhead,
     outline: 'none',
     width: '100%'
   },
@@ -1073,7 +1074,7 @@ const styles = StyleSheet.create({
   modalCancelText: {
     color: COLORS.textMuted,
     fontWeight: '700',
-    fontSize: 14
+    ...TYPOGRAPHY.subhead,
   },
   modalSaveBtn: {
     flexDirection: 'row',
@@ -1086,6 +1087,6 @@ const styles = StyleSheet.create({
   modalSaveText: {
     color: '#ffffff',
     fontWeight: '800',
-    fontSize: 14
+    ...TYPOGRAPHY.subhead,
   }
 });

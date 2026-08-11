@@ -1,3 +1,4 @@
+import { TYPOGRAPHY } from '../../theme/typography';
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from '../common/RNBridge';
 import { useData } from '../../context/DataContext';
@@ -140,7 +141,7 @@ export const BatchManagementModal = ({ visible, onClose }) => {
 
               <Text style={styles.label}>Tổng Vốn Nhập Đợt Đó (Hiển thị trực tiếp VNĐ) *:</Text>
               <TextInput
-                style={[styles.input, { borderColor: COLORS.accent, fontWeight: '800', color: COLORS.accent, fontSize: 16 }]}
+                style={[styles.input, { borderColor: COLORS.accent, fontWeight: '800', color: COLORS.accent, ...TYPOGRAPHY.callout, }]}
                 keyboardType="numeric"
                 placeholder="0 VNĐ"
                 placeholderTextColor={COLORS.textMuted}
@@ -275,10 +276,10 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.cardBorder,
-    backgroundColor: '#162032'
+    backgroundColor: COLORS.sidebarBg
   },
   headerTitle: {
-    fontSize: 18,
+    ...TYPOGRAPHY.headline,
     fontWeight: '700',
     color: COLORS.textMain
   },
@@ -303,10 +304,10 @@ const styles = StyleSheet.create({
   addBatchTriggerText: {
     color: '#ffffff',
     fontWeight: '700',
-    fontSize: 14
+    ...TYPOGRAPHY.subhead,
   },
   formCard: {
-    backgroundColor: '#162032',
+    backgroundColor: COLORS.sidebarBg,
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
@@ -314,27 +315,27 @@ const styles = StyleSheet.create({
     marginBottom: 20
   },
   formTitle: {
-    fontSize: 15,
+    ...TYPOGRAPHY.callout,
     fontWeight: '700',
     color: COLORS.accent,
     marginBottom: 12
   },
   label: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     fontWeight: '600',
     color: COLORS.textSub,
     marginBottom: 6,
     marginTop: 10
   },
   input: {
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     borderWidth: 1,
     borderColor: COLORS.cardBorder,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
     color: COLORS.textMain,
-    fontSize: 14,
+    ...TYPOGRAPHY.subhead,
     outlineStyle: 'none'
   },
   grid2: {
@@ -373,13 +374,13 @@ const styles = StyleSheet.create({
     fontWeight: '700'
   },
   sectionHeading: {
-    fontSize: 15,
+    ...TYPOGRAPHY.callout,
     fontWeight: '700',
     color: COLORS.textMain,
     marginBottom: 12
   },
   batchCard: {
-    backgroundColor: '#111c2e',
+    backgroundColor: COLORS.sidebarBg,
     padding: 14,
     borderRadius: 12,
     borderWidth: 1,
@@ -403,15 +404,15 @@ const styles = StyleSheet.create({
   batchCodeText: {
     color: COLORS.accent,
     fontWeight: '800',
-    fontSize: 13
+    ...TYPOGRAPHY.footnote,
   },
   batchName: {
-    fontSize: 15,
+    ...TYPOGRAPHY.callout,
     fontWeight: '700',
     color: COLORS.textMain
   },
   batchDate: {
-    fontSize: 12,
+    ...TYPOGRAPHY.caption1,
     color: COLORS.textMuted,
     marginTop: 2
   },
@@ -427,7 +428,7 @@ const styles = StyleSheet.create({
   },
   batchStatsRow: {
     flexDirection: 'row',
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     borderRadius: 8,
     padding: 10,
     gap: 10
@@ -436,26 +437,26 @@ const styles = StyleSheet.create({
     flex: 1
   },
   statLabel: {
-    fontSize: 11,
+    ...TYPOGRAPHY.caption2,
     color: COLORS.textMuted
   },
   statValCapital: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     fontWeight: '700',
     color: COLORS.accent
   },
   statVal: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     fontWeight: '600',
     color: COLORS.textMain
   },
   statValSold: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     fontWeight: '700',
     color: COLORS.success
   },
   batchNote: {
-    fontSize: 12,
+    ...TYPOGRAPHY.caption1,
     color: COLORS.textMuted,
     marginTop: 8,
     fontStyle: 'italic'
@@ -465,7 +466,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderTopWidth: 1,
     borderTopColor: COLORS.cardBorder,
-    backgroundColor: '#162032',
+    backgroundColor: COLORS.sidebarBg,
     alignItems: 'flex-end'
   },
   closeModalBtn: {

@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useData } from '../../context/DataContext';
 import { COLORS } from '../../theme/colors';
+import { TYPOGRAPHY } from '../../theme/typography';
 import { Radio, ShieldCheck, ChevronDown, LogOut, Menu, User, UserCheck, RefreshCw, Store, Check } from 'lucide-react';
 
 export const Header = ({ activeTab, onToggleSidebar, onOpenAuthModal }) => {
@@ -127,7 +128,7 @@ export const Header = ({ activeTab, onToggleSidebar, onOpenAuthModal }) => {
       <View style={styles.rightSection}>
         {/* Manual Data Refresh Button */}
         <TouchableOpacity 
-          style={[styles.refreshDataBtn, { backgroundColor: colors.surfaceHover || '#1e293b', borderColor: colors.cardBorder }]}
+          style={[styles.refreshDataBtn, { backgroundColor: colors.surfaceHover || COLORS.cardDark, borderColor: colors.cardBorder }]}
           onPress={handleManualRefresh}
           title="Bấm để tải lại dữ liệu mới nhất từ Cloud / Máy khác"
         >
@@ -145,7 +146,7 @@ export const Header = ({ activeTab, onToggleSidebar, onOpenAuthModal }) => {
           </View>
         ) : (
           <View style={[styles.onlineStatusBadge, { backgroundColor: 'rgba(245, 158, 11, 0.15)', borderColor: COLORS.statusPending }]}>
-            <Text style={{ fontSize: 12, color: COLORS.statusPending, fontWeight: '700' }}>
+            <Text style={{ ...TYPOGRAPHY.caption1, color: COLORS.statusPending, fontWeight: '700' }}>
               Chỉ Xem (Read-Only)
             </Text>
           </View>
@@ -157,7 +158,7 @@ export const Header = ({ activeTab, onToggleSidebar, onOpenAuthModal }) => {
             <TouchableOpacity 
               style={[
                 styles.userProfileIconButton,
-                { backgroundColor: colors.surfaceHover || '#1e293b', borderColor: colors.cardBorder }
+                { backgroundColor: colors.surfaceHover || COLORS.cardDark, borderColor: colors.cardBorder }
               ]}
               onPress={() => setShowAdminMenu(!showAdminMenu)}
               title={`Tài khoản: ${currentUser.name}`}
@@ -186,11 +187,11 @@ export const Header = ({ activeTab, onToggleSidebar, onOpenAuthModal }) => {
                       <User size={20} color="#ffffff" />
                     </View>
                     <View>
-                      <Text style={{ fontSize: 14, fontWeight: '800', color: colors.textMain }}>{currentUser.name}</Text>
-                      <Text style={{ fontSize: 11, color: colors.textMuted }}>Admin Hệ Thống</Text>
+                      <Text style={{ ...TYPOGRAPHY.subhead, fontWeight: '800', color: colors.textMain }}>{currentUser.name}</Text>
+                      <Text style={{ ...TYPOGRAPHY.caption2, color: colors.textMuted }}>Admin Hệ Thống</Text>
                     </View>
                   </View>
-                  <Text style={{ fontSize: 11, color: colors.textMuted, marginTop: 4 }}>{currentUser.email}</Text>
+                  <Text style={{ ...TYPOGRAPHY.caption2, color: colors.textMuted, marginTop: 4 }}>{currentUser.email}</Text>
                 </View>
 
                 <TouchableOpacity 
@@ -227,7 +228,7 @@ export const Header = ({ activeTab, onToggleSidebar, onOpenAuthModal }) => {
 const styles = StyleSheet.create({
   headerContainer: {
     height: 64,
-    backgroundColor: '#162032',
+    backgroundColor: COLORS.sidebarBg,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.cardBorder,
     flexDirection: 'row',
@@ -244,12 +245,11 @@ const styles = StyleSheet.create({
   menuToggleMobile: {
     padding: 6,
     borderRadius: 8,
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     display: 'none'
   },
   viewTitle: {
-    fontSize: 18,
-    fontWeight: '800',
+    ...TYPOGRAPHY.headline,
     color: COLORS.textMain
   },
 
@@ -264,7 +264,7 @@ const styles = StyleSheet.create({
     cursor: 'pointer'
   },
   shopBadgeText: {
-    fontSize: 12,
+    ...TYPOGRAPHY.caption1,
     fontWeight: '800'
   },
   shopDropdownMenu: {
@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
     zIndex: 99999
   },
   shopDropdownHeader: {
-    fontSize: 11,
+    ...TYPOGRAPHY.caption2,
     fontWeight: '800',
     color: COLORS.textMuted,
     marginBottom: 8,
@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(59, 130, 246, 0.15)'
   },
   shopOptionName: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     fontWeight: '700',
     color: COLORS.textMain
   },
@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
     fontWeight: '800'
   },
   shopOptionSub: {
-    fontSize: 10,
+    ...TYPOGRAPHY.caption2,
     color: COLORS.textMuted
   },
 
@@ -325,7 +325,7 @@ const styles = StyleSheet.create({
     borderWidth: 1
   },
   refreshDataText: {
-    fontSize: 12,
+    ...TYPOGRAPHY.caption1,
     fontWeight: '700'
   },
   onlineStatusBadge: {
@@ -339,7 +339,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(16, 185, 129, 0.3)'
   },
   onlineStatusText: {
-    fontSize: 12,
+    ...TYPOGRAPHY.caption1,
     fontWeight: '700',
     color: COLORS.success
   },
@@ -361,7 +361,7 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   userBadgeText: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     fontWeight: '800'
   },
   onlineDot: {
@@ -390,7 +390,7 @@ const styles = StyleSheet.create({
     marginBottom: 8
   },
   dropdownTitle: {
-    fontSize: 12,
+    ...TYPOGRAPHY.caption1,
     fontWeight: '800'
   },
   dropdownBody: {
@@ -412,7 +412,7 @@ const styles = StyleSheet.create({
     marginTop: 8
   },
   logoutText: {
-    fontSize: 12,
+    ...TYPOGRAPHY.caption1,
     fontWeight: '700',
     color: COLORS.danger
   }

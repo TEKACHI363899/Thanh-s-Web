@@ -1,3 +1,4 @@
+import { TYPOGRAPHY } from '../../theme/typography';
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView } from '../common/RNBridge';
 import { useData, generatePrefixFromCategoryName } from '../../context/DataContext';
@@ -391,7 +392,7 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
             onClick={() => fileInputRef.current && fileInputRef.current.click()}
             style={{
               border: isDragging ? `2px dashed ${COLORS.primaryLight}` : `2px dashed ${COLORS.cardBorder}`,
-              backgroundColor: isDragging ? 'rgba(59, 130, 246, 0.15)' : '#0f172a',
+              backgroundColor: isDragging ? 'rgba(59, 130, 246, 0.15)' : COLORS.bgDark,
               borderRadius: '12px',
               padding: '16px',
               textAlign: 'center',
@@ -426,7 +427,7 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
                   }}
                 />
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span style={{ fontSize: '12px', color: COLORS.success, fontWeight: '600' }}>
+                  <span style={{ ...TYPOGRAPHY.caption1, color: COLORS.success, fontWeight: '600' }}>
                     Đã tải ảnh thành công
                   </span>
                   <button
@@ -441,7 +442,7 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
                       color: '#ef4444',
                       borderRadius: '6px',
                       padding: '4px 8px',
-                      fontSize: '12px',
+                      ...TYPOGRAPHY.caption1,
                       cursor: 'pointer'
                     }}
                   >
@@ -452,17 +453,17 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
                 <Upload size={28} color={COLORS.primaryLight} />
-                <p style={{ margin: 0, fontSize: '13px', fontWeight: '600', color: COLORS.textMain }}>
+                <p style={{ margin: 0, ...TYPOGRAPHY.footnote, fontWeight: '600', color: COLORS.textMain }}>
                   Kéo & thả ảnh vào đây, hoặc <span style={{ color: COLORS.primaryLight }}>bấm để chọn tệp</span>
                 </p>
-                <p style={{ margin: 0, fontSize: '12px', color: COLORS.textMuted }}>
+                <p style={{ margin: 0, ...TYPOGRAPHY.caption1, color: COLORS.textMuted }}>
                   Mẹo: Chụp màn hình / Copy ảnh rồi bấm <strong style={{ color: COLORS.statusPending }}>Ctrl + V</strong> để dán trực tiếp
                 </p>
               </div>
             )}
           </div>
 
-          <Text style={[styles.label, { fontSize: 12, color: COLORS.textMuted }]}>Hoặc chèn Link URL ảnh từ internet:</Text>
+          <Text style={[styles.label, { ...TYPOGRAPHY.caption1, color: COLORS.textMuted }]}>Hoặc chèn Link URL ảnh từ internet:</Text>
           <TextInput
             style={styles.input}
             placeholder="https://images.unsplash.com/..."
@@ -514,7 +515,7 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
                     setIsManualPrice(false);
                     recalculateSellingPrice(costPrice, marginPercent);
                   }}>
-                    <Text style={{ color: COLORS.primaryLight, fontSize: 12 }}>🔄 Khôi phục tính tự động</Text>
+                    <Text style={{ color: COLORS.primaryLight, ...TYPOGRAPHY.caption1, }}>🔄 Khôi phục tính tự động</Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -605,10 +606,10 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.cardBorder,
-    backgroundColor: '#162032'
+    backgroundColor: COLORS.sidebarBg
   },
   headerTitle: {
-    fontSize: 18,
+    ...TYPOGRAPHY.headline,
     fontWeight: '700',
     color: COLORS.textMain
   },
@@ -622,7 +623,7 @@ const styles = StyleSheet.create({
     flex: 1
   },
   label: {
-    fontSize: 14,
+    ...TYPOGRAPHY.subhead,
     fontWeight: '600',
     color: COLORS.textSub,
     marginBottom: 8,
@@ -637,7 +638,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 10,
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     borderWidth: 1.5,
     borderColor: COLORS.cardBorder,
     alignItems: 'center'
@@ -651,7 +652,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(6, 182, 212, 0.15)'
   },
   catBadgeText: {
-    fontSize: 14,
+    ...TYPOGRAPHY.subhead,
     fontWeight: '600',
     color: COLORS.textMuted
   },
@@ -662,7 +663,7 @@ const styles = StyleSheet.create({
   skuBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     padding: 12,
     borderRadius: 10,
     marginTop: 10,
@@ -671,28 +672,28 @@ const styles = StyleSheet.create({
   },
   skuText: {
     color: COLORS.textMuted,
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     marginLeft: 8
   },
   skuCode: {
-    fontSize: 15,
+    ...TYPOGRAPHY.callout,
     fontWeight: '800',
     letterSpacing: 1
   },
   input: {
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     borderWidth: 1,
     borderColor: COLORS.cardBorder,
     borderRadius: 10,
     paddingHorizontal: 14,
     paddingVertical: 10,
     color: COLORS.textMain,
-    fontSize: 14,
+    ...TYPOGRAPHY.subhead,
     outlineStyle: 'none'
   },
   priceInputHighlight: {
     borderColor: COLORS.primary,
-    fontSize: 16,
+    ...TYPOGRAPHY.callout,
     fontWeight: '700',
     color: '#60a5fa'
   },
@@ -702,7 +703,7 @@ const styles = StyleSheet.create({
     gap: 8
   },
   batchChip: {
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
@@ -714,7 +715,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(59, 130, 246, 0.2)'
   },
   batchChipText: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     color: COLORS.textMuted
   },
   batchChipTextActive: {
@@ -724,7 +725,7 @@ const styles = StyleSheet.create({
   imagePreviewContainer: {
     marginTop: 10,
     alignItems: 'center',
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     padding: 10,
     borderRadius: 10
   },
@@ -736,7 +737,7 @@ const styles = StyleSheet.create({
   },
   imageCaption: {
     color: COLORS.textMuted,
-    fontSize: 11,
+    ...TYPOGRAPHY.caption2,
     marginTop: 6
   },
   priceSection: {
@@ -748,7 +749,7 @@ const styles = StyleSheet.create({
     marginTop: 16
   },
   sectionTitle: {
-    fontSize: 14,
+    ...TYPOGRAPHY.subhead,
     fontWeight: '700',
     color: COLORS.primaryLight,
     marginBottom: 8
@@ -766,7 +767,7 @@ const styles = StyleSheet.create({
     marginTop: 6
   },
   calcFormulaText: {
-    fontSize: 12,
+    ...TYPOGRAPHY.caption1,
     color: COLORS.textMuted
   },
   footer: {
@@ -777,7 +778,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderTopWidth: 1,
     borderTopColor: COLORS.cardBorder,
-    backgroundColor: '#162032'
+    backgroundColor: COLORS.sidebarBg
   },
   cancelBtn: {
     paddingHorizontal: 20,
@@ -790,7 +791,7 @@ const styles = StyleSheet.create({
   cancelBtnText: {
     color: COLORS.textSub,
     fontWeight: '700',
-    fontSize: 14
+    ...TYPOGRAPHY.subhead,
   },
   submitBtn: {
     flexDirection: 'row',
@@ -804,7 +805,7 @@ const styles = StyleSheet.create({
   submitBtnText: {
     color: '#ffffff',
     fontWeight: '800',
-    fontSize: 15
+    ...TYPOGRAPHY.callout,
   },
   inlineErrorBanner: {
     flexDirection: 'row',
@@ -819,7 +820,7 @@ const styles = StyleSheet.create({
   },
   inlineErrorBannerText: {
     color: '#ef4444',
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     fontWeight: '700',
     flex: 1
   },
@@ -829,7 +830,7 @@ const styles = StyleSheet.create({
   },
   fieldErrorText: {
     color: '#ef4444',
-    fontSize: 12,
+    ...TYPOGRAPHY.caption1,
     fontWeight: '600',
     marginTop: 4
   },
@@ -844,12 +845,12 @@ const styles = StyleSheet.create({
     borderColor: COLORS.primaryLight
   },
   addCustomCatTriggerText: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     fontWeight: '700',
     color: COLORS.primaryLight
   },
   addCustomCatCard: {
-    backgroundColor: '#162032',
+    backgroundColor: COLORS.sidebarBg,
     padding: 14,
     borderRadius: 12,
     borderWidth: 1.5,
@@ -858,13 +859,13 @@ const styles = StyleSheet.create({
     boxShadow: '0 4px 16px rgba(0,0,0,0.3)'
   },
   addCustomCatTitle: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     fontWeight: '800',
     color: COLORS.primaryLight,
     marginBottom: 10
   },
   previewSkuBadge: {
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     borderWidth: 1.5,
     borderColor: COLORS.accent,
     borderRadius: 10,
@@ -874,7 +875,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center'
   },
   previewSkuText: {
-    fontSize: 15,
+    ...TYPOGRAPHY.callout,
     fontWeight: '900',
     color: COLORS.accent
   },
@@ -888,7 +889,7 @@ const styles = StyleSheet.create({
   },
   confirmAddCatText: {
     color: '#ffffff',
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     fontWeight: '800'
   },
   cancelAddCatBtn: {
@@ -899,7 +900,7 @@ const styles = StyleSheet.create({
   },
   cancelAddCatText: {
     color: COLORS.textMuted,
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     fontWeight: '700'
   },
   deleteCatIconBtn: {

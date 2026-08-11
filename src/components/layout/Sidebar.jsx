@@ -4,6 +4,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
 import { COLORS } from '../../theme/colors';
+import { TYPOGRAPHY } from '../../theme/typography';
 import { 
   ShoppingBag, 
   Package, 
@@ -206,7 +207,7 @@ export const Sidebar = ({
 
 const styles = StyleSheet.create({
   sidebar: {
-    backgroundColor: '#162032',
+    backgroundColor: COLORS.sidebarBg,
     borderRightWidth: 1,
     borderRightColor: COLORS.cardBorder,
     height: '100%',
@@ -252,7 +253,7 @@ const styles = StyleSheet.create({
     resizeMode: 'cover'
   },
   brandTitle: {
-    fontSize: 15,
+    ...TYPOGRAPHY.subhead,
     fontWeight: '900',
     color: COLORS.textMain,
     letterSpacing: 0.5
@@ -269,13 +270,13 @@ const styles = StyleSheet.create({
     cursor: 'pointer'
   },
   shopSubTagText: {
-    fontSize: 10,
+    ...TYPOGRAPHY.caption2,
     fontWeight: '800'
   },
   toggleBtn: {
     padding: 6,
     borderRadius: 8,
-    backgroundColor: '#0f172a'
+    backgroundColor: COLORS.surfaceHover
   },
   quickCreateBtn: {
     flexDirection: 'row',
@@ -291,7 +292,7 @@ const styles = StyleSheet.create({
   },
   quickCreateText: {
     color: '#ffffff',
-    fontSize: 14,
+    ...TYPOGRAPHY.subhead,
     fontWeight: '800'
   },
   menuSection: {
@@ -300,7 +301,7 @@ const styles = StyleSheet.create({
     paddingTop: 12
   },
   sectionTitle: {
-    fontSize: 11,
+    ...TYPOGRAPHY.caption2,
     fontWeight: '800',
     color: COLORS.textMuted,
     marginBottom: 10,
@@ -332,7 +333,7 @@ const styles = StyleSheet.create({
     marginRight: 12
   },
   menuLabel: {
-    fontSize: 14,
+    ...TYPOGRAPHY.subhead,
     fontWeight: '600',
     color: COLORS.textMuted
   },
@@ -348,7 +349,7 @@ const styles = StyleSheet.create({
   },
   badgeText: {
     color: '#ffffff',
-    fontSize: 10,
+    ...TYPOGRAPHY.caption2,
     fontWeight: '800'
   },
   sidebarFooter: {
@@ -360,7 +361,7 @@ const styles = StyleSheet.create({
   batchQuickBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.surfaceHover,
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderRadius: 10,
@@ -369,13 +370,13 @@ const styles = StyleSheet.create({
   },
   batchQuickText: {
     color: COLORS.accent,
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     fontWeight: '700'
   },
   settingsQuickBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.surfaceHover,
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderRadius: 10,
@@ -384,7 +385,7 @@ const styles = StyleSheet.create({
   },
   settingsQuickText: {
     color: COLORS.textMain,
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     fontWeight: '700'
   }
 });

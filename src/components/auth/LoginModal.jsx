@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { TYPOGRAPHY } from '../../theme/typography';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from '../common/RNBridge';
 import { useAuth } from '../../context/AuthContext';
 import { COLORS } from '../../theme/colors';
@@ -263,7 +264,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 22,
     paddingVertical: 18,
-    backgroundColor: '#162032',
+    backgroundColor: COLORS.sidebarBg,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.cardBorder
   },
@@ -276,12 +277,12 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   headerTitle: {
-    fontSize: 16,
+    ...TYPOGRAPHY.callout,
     fontWeight: '900',
     color: COLORS.textMain
   },
   headerSub: {
-    fontSize: 12,
+    ...TYPOGRAPHY.caption1,
     color: COLORS.textMuted,
     marginTop: 2
   },
@@ -292,7 +293,7 @@ const styles = StyleSheet.create({
   },
   tabSwitcher: {
     flexDirection: 'row',
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     padding: 6,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.cardBorder
@@ -309,7 +310,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary
   },
   tabText: {
-    fontSize: 14,
+    ...TYPOGRAPHY.subhead,
     fontWeight: '700',
     color: COLORS.textMuted
   },
@@ -332,7 +333,7 @@ const styles = StyleSheet.create({
   },
   errorAlertText: {
     color: COLORS.danger,
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     fontWeight: '700',
     flex: 1
   },
@@ -348,7 +349,7 @@ const styles = StyleSheet.create({
   },
   successAlertText: {
     color: COLORS.success,
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     fontWeight: '700',
     flex: 1
   },
@@ -362,11 +363,11 @@ const styles = StyleSheet.create({
   },
   adminBadgeNoticeText: {
     color: COLORS.success,
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     lineHeight: 18
   },
   inputLabel: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     fontWeight: '700',
     color: COLORS.textSub,
     marginBottom: 6,
@@ -375,7 +376,7 @@ const styles = StyleSheet.create({
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     borderWidth: 1.5,
     borderColor: COLORS.cardBorder,
     borderRadius: 12,
@@ -385,8 +386,8 @@ const styles = StyleSheet.create({
   inputField: {
     flex: 1,
     paddingVertical: 10,
-    color: '#f8fafc',
-    fontSize: 14
+    color: COLORS.textMain,
+    ...TYPOGRAPHY.subhead,
   },
   submitBtn: {
     flexDirection: 'row',
@@ -404,6 +405,6 @@ const styles = StyleSheet.create({
   submitBtnText: {
     color: '#ffffff',
     fontWeight: '900',
-    fontSize: 15
+    ...TYPOGRAPHY.callout,
   }
 });

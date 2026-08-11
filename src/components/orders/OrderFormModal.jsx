@@ -1,3 +1,4 @@
+import { TYPOGRAPHY } from '../../theme/typography';
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from '../common/RNBridge';
 import { useData } from '../../context/DataContext';
@@ -373,7 +374,7 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
 
                 {idx < arr.length - 1 && (
                   <View style={styles.wizardArrow}>
-                    <Text style={{ color: isCompleted ? COLORS.primaryLight : COLORS.cardBorder, fontSize: 13, fontWeight: '700' }}>➔</Text>
+                    <Text style={{ color: isCompleted ? COLORS.primaryLight : COLORS.cardBorder, ...TYPOGRAPHY.footnote, fontWeight: '700' }}>➔</Text>
                   </View>
                 )}
               </React.Fragment>
@@ -509,7 +510,7 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
 
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
                   <Text style={styles.sectionHeader}>📦 2. Chọn Sản Phẩm Từ Các Lô Hàng Khả Dụng</Text>
-                  <Text style={{ fontSize: 12, color: COLORS.primaryLight, fontWeight: '700' }}>
+                  <Text style={{ ...TYPOGRAPHY.caption1, color: COLORS.primaryLight, fontWeight: '700' }}>
                     Tìm thấy: {filteredWarehouseProducts.length} sản phẩm
                   </Text>
                 </View>
@@ -550,9 +551,9 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
                       onChange={(e) => setProdBatchFilter(e.target.value)}
                       style={styles.pickerBatchSelect}
                     >
-                      <option value="ALL" style={{ background: '#1e293b', color: '#f8fafc' }}>📦 Tất cả Lô Hàng</option>
+                      <option value="ALL" style={{ background: COLORS.cardDark, color: COLORS.textMain }}>📦 Tất cả Lô Hàng</option>
                       {batches.map(b => (
-                        <option key={b.id} value={b.id} style={{ background: '#1e293b', color: '#f8fafc' }}>
+                        <option key={b.id} value={b.id} style={{ background: COLORS.cardDark, color: COLORS.textMain }}>
                           [{b.code}] {b.name}
                         </option>
                       ))}
@@ -779,7 +780,7 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
                 </View>
 
                 <TextInput
-                  style={[styles.input, { borderColor: COLORS.statusPending, fontWeight: '700', color: COLORS.statusPending, fontSize: 15, marginTop: 4 }]}
+                  style={[styles.input, { borderColor: COLORS.statusPending, fontWeight: '700', color: COLORS.statusPending, ...TYPOGRAPHY.callout, marginTop: 4 }]}
                   keyboardType="numeric"
                   placeholder="0 (Nhập số tiền khách cọc trước nếu có...)"
                   placeholderTextColor={COLORS.textMuted}
@@ -929,10 +930,10 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.cardBorder,
-    backgroundColor: '#162032'
+    backgroundColor: COLORS.sidebarBg
   },
   headerTitle: {
-    fontSize: 18,
+    ...TYPOGRAPHY.headline,
     fontWeight: '700',
     color: COLORS.textMain
   },
@@ -947,28 +948,28 @@ const styles = StyleSheet.create({
     overflowY: 'auto'
   },
   sectionHeader: {
-    fontSize: 15,
+    ...TYPOGRAPHY.callout,
     fontWeight: '700',
     color: COLORS.primaryLight,
     marginBottom: 8,
     marginTop: 14
   },
   label: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     fontWeight: '600',
     color: COLORS.textSub,
     marginBottom: 6,
     marginTop: 8
   },
   input: {
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     borderWidth: 1,
     borderColor: COLORS.cardBorder,
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 8,
     color: COLORS.textMain,
-    fontSize: 14,
+    ...TYPOGRAPHY.subhead,
     outlineStyle: 'none'
   },
   grid2: {
@@ -987,7 +988,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 6,
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     borderWidth: 1,
     borderColor: COLORS.cardBorder
   },
@@ -996,7 +997,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.primary
   },
   platformChipText: {
-    fontSize: 12,
+    ...TYPOGRAPHY.caption1,
     color: COLORS.textMuted
   },
   platformChipTextActive: {
@@ -1012,7 +1013,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
     borderRadius: 10,
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     borderWidth: 1.5,
     borderColor: COLORS.cardBorder,
     alignItems: 'center'
@@ -1026,7 +1027,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(245, 158, 11, 0.15)'
   },
   typeBadgeText: {
-    fontSize: 14,
+    ...TYPOGRAPHY.subhead,
     fontWeight: '600',
     color: COLORS.textMuted
   },
@@ -1035,7 +1036,7 @@ const styles = StyleSheet.create({
     fontWeight: '700'
   },
   orderTypeDetailsCard: {
-    backgroundColor: '#162032',
+    backgroundColor: COLORS.sidebarBg,
     padding: 12,
     borderRadius: 10,
     borderWidth: 1,
@@ -1043,7 +1044,7 @@ const styles = StyleSheet.create({
     marginBottom: 12
   },
   debtDisplayBox: {
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     borderWidth: 1,
     borderColor: COLORS.danger,
     borderRadius: 8,
@@ -1054,7 +1055,7 @@ const styles = StyleSheet.create({
   debtDisplayText: {
     color: COLORS.danger,
     fontWeight: '800',
-    fontSize: 14
+    ...TYPOGRAPHY.subhead,
   },
   addItemBtn: {
     flexDirection: 'row',
@@ -1066,11 +1067,11 @@ const styles = StyleSheet.create({
   },
   addItemBtnText: {
     color: '#ffffff',
-    fontSize: 12,
+    ...TYPOGRAPHY.caption1,
     fontWeight: '700'
   },
   itemCard: {
-    backgroundColor: '#111c2e',
+    backgroundColor: COLORS.sidebarBg,
     padding: 12,
     borderRadius: 10,
     borderWidth: 1,
@@ -1084,12 +1085,12 @@ const styles = StyleSheet.create({
     marginBottom: 8
   },
   itemIndex: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     fontWeight: '700',
     color: COLORS.textMain
   },
   pickerFilterToolbar: {
-    backgroundColor: '#162032',
+    backgroundColor: COLORS.sidebarBg,
     padding: 10,
     borderRadius: 10,
     borderWidth: 1,
@@ -1101,7 +1102,7 @@ const styles = StyleSheet.create({
   pickerSearchInputBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     borderRadius: 8,
     paddingHorizontal: 10,
     borderWidth: 1,
@@ -1110,8 +1111,8 @@ const styles = StyleSheet.create({
   pickerSearchInput: {
     flex: 1,
     paddingVertical: 8,
-    fontSize: 13,
-    color: '#f8fafc'
+    ...TYPOGRAPHY.footnote,
+    color: COLORS.textMain
   },
   pickerFilterChipsRow: {
     flexDirection: 'row',
@@ -1123,7 +1124,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 6,
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     borderWidth: 1,
     borderColor: COLORS.cardBorder
   },
@@ -1132,7 +1133,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.primary
   },
   pickerFilterChipText: {
-    fontSize: 12,
+    ...TYPOGRAPHY.caption1,
     color: COLORS.textMuted
   },
   pickerFilterChipTextActive: {
@@ -1140,19 +1141,19 @@ const styles = StyleSheet.create({
     fontWeight: '700'
   },
   pickerBatchSelect: {
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     border: '1px solid #334155',
-    color: '#f8fafc',
+    color: COLORS.textMain,
     borderRadius: '6px',
     paddingHorizontal: '8px',
     paddingVertical: '5px',
-    fontSize: '12px',
+    ...TYPOGRAPHY.caption1,
     fontWeight: '600',
     outline: 'none',
     cursor: 'pointer'
   },
   pickerEmptyText: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     color: COLORS.textMuted,
     fontStyle: 'italic',
     padding: 8
@@ -1167,7 +1168,7 @@ const styles = StyleSheet.create({
     paddingRight: 4
   },
   prodChip: {
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 6,
@@ -1184,7 +1185,7 @@ const styles = StyleSheet.create({
     opacity: 0.6
   },
   prodChipText: {
-    fontSize: 12,
+    ...TYPOGRAPHY.caption1,
     color: COLORS.textMuted
   },
   prodChipTextActive: {
@@ -1210,7 +1211,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     borderWidth: 1,
     borderColor: COLORS.cardBorder,
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 8
@@ -1220,7 +1221,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.primary
   },
   freeshipText: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     color: COLORS.textSub
   },
   payChip: {
@@ -1228,7 +1229,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 10,
     borderRadius: 8,
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     borderWidth: 1,
     borderColor: COLORS.cardBorder,
     alignItems: 'center'
@@ -1238,7 +1239,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(59, 130, 246, 0.2)'
   },
   payChipText: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     color: COLORS.textMuted
   },
   payChipTextActive: {
@@ -1254,7 +1255,7 @@ const styles = StyleSheet.create({
     borderRadius: 6
   },
   quickDepositBtnText: {
-    fontSize: 11,
+    ...TYPOGRAPHY.caption2,
     fontWeight: '700',
     color: COLORS.statusPending
   },
@@ -1267,7 +1268,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     borderWidth: 1,
     borderColor: COLORS.cardBorder
   },
@@ -1276,7 +1277,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary
   },
   statusBadgeBtnText: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     color: COLORS.textMuted
   },
   statusBadgeBtnTextActive: {
@@ -1284,7 +1285,7 @@ const styles = StyleSheet.create({
     fontWeight: '700'
   },
   summaryCard: {
-    backgroundColor: '#162032',
+    backgroundColor: COLORS.sidebarBg,
     padding: 14,
     borderRadius: 10,
     borderWidth: 1,
@@ -1298,21 +1299,21 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   summaryLabel: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     color: COLORS.textMuted
   },
   summaryVal: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     color: COLORS.textMain,
     fontWeight: '600'
   },
   summaryGrandTitle: {
-    fontSize: 14,
+    ...TYPOGRAPHY.subhead,
     fontWeight: '800',
     color: COLORS.primaryLight
   },
   summaryGrandVal: {
-    fontSize: 16,
+    ...TYPOGRAPHY.callout,
     fontWeight: '800',
     color: COLORS.primaryLight
   },
@@ -1325,7 +1326,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderTopWidth: 1,
     borderTopColor: COLORS.cardBorder,
-    backgroundColor: '#162032'
+    backgroundColor: COLORS.sidebarBg
   },
   cancelBtn: {
     paddingHorizontal: 16,
@@ -1336,7 +1337,7 @@ const styles = StyleSheet.create({
   cancelBtnText: {
     color: COLORS.textSub,
     fontWeight: '600',
-    fontSize: 14
+    ...TYPOGRAPHY.subhead,
   },
   submitBtn: {
     flexDirection: 'row',
@@ -1349,13 +1350,13 @@ const styles = StyleSheet.create({
   submitBtnText: {
     color: '#ffffff',
     fontWeight: '700',
-    fontSize: 14
+    ...TYPOGRAPHY.subhead,
   },
   wizardProgressBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: '#162032',
+    backgroundColor: COLORS.sidebarBg,
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderBottomWidth: 1,
@@ -1382,7 +1383,7 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     borderWidth: 1,
     borderColor: COLORS.cardBorder,
     justifyContent: 'center',
@@ -1397,12 +1398,12 @@ const styles = StyleSheet.create({
     borderColor: COLORS.success
   },
   wizardStepBadgeText: {
-    fontSize: 11,
+    ...TYPOGRAPHY.caption2,
     fontWeight: '800',
     color: COLORS.textMuted
   },
   wizardStepText: {
-    fontSize: 12,
+    ...TYPOGRAPHY.caption1,
     fontWeight: '600',
     color: COLORS.textMuted
   },
@@ -1419,12 +1420,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 8,
-    backgroundColor: '#334155'
+    backgroundColor: COLORS.surfaceHover
   },
   wizardBackBtnText: {
     color: '#ffffff',
     fontWeight: '700',
-    fontSize: 13
+    ...TYPOGRAPHY.footnote,
   },
   wizardNextBtn: {
     flexDirection: 'row',
@@ -1437,7 +1438,7 @@ const styles = StyleSheet.create({
   wizardNextBtnText: {
     color: '#ffffff',
     fontWeight: '700',
-    fontSize: 13
+    ...TYPOGRAPHY.footnote,
   },
   inlineErrorBanner: {
     flexDirection: 'row',
@@ -1452,7 +1453,7 @@ const styles = StyleSheet.create({
   },
   inlineErrorBannerText: {
     color: '#ef4444',
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     fontWeight: '700',
     flex: 1
   },
@@ -1462,13 +1463,13 @@ const styles = StyleSheet.create({
   },
   fieldErrorText: {
     color: '#ef4444',
-    fontSize: 12,
+    ...TYPOGRAPHY.caption1,
     fontWeight: '600',
     marginTop: 4,
     marginBottom: 4
   },
   emptySelectedBox: {
-    backgroundColor: '#162032',
+    backgroundColor: COLORS.sidebarBg,
     padding: 16,
     borderRadius: 10,
     borderWidth: 1,
@@ -1479,7 +1480,7 @@ const styles = StyleSheet.create({
   },
   emptySelectedText: {
     color: COLORS.textMuted,
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     fontWeight: '600',
     textAlign: 'center'
   }

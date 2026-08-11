@@ -1,39 +1,58 @@
-// Modern Dark/Light Premium Theme Tokens
+// Modern Dark/Light Premium Theme Tokens - Semantic System using CSS Variables
 export const COLORS = {
-  // Primary Palette
-  primary: '#3b82f6',       // Vibrant Blue
-  primaryDark: '#1d4ed8',
-  primaryLight: '#60a5fa',
-  accent: '#8b5cf6',        // Purple accent
-  accentHover: '#7c3aed',
+  // Apple HIG Semantic Colors
+  label: 'var(--label)',
+  secondaryLabel: 'var(--secondary-label)',
+  tertiaryLabel: 'var(--tertiary-label)',
+  systemBackground: 'var(--system-background)',
+  secondarySystemBackground: 'var(--secondary-system-background)',
+  tertiarySystemBackground: 'var(--tertiary-system-background)',
+  systemGroupedBackground: 'var(--system-grouped-background)',
   
-  // Neutral Colors
-  bgDark: '#0f172a',        // Slate 900 background
-  cardDark: '#1e293b',      // Slate 800 card background
-  cardBorder: '#334155',    // Slate 700 border
-  surfaceHover: '#334155',
+  // Apple System Colors
+  systemBlue: 'var(--system-blue)',
+  systemGreen: 'var(--system-green)',
+  systemRed: 'var(--system-red)',
+  systemOrange: 'var(--system-orange)',
+  systemPurple: 'var(--system-purple)',
+  systemTeal: 'var(--system-teal)',
+  systemIndigo: 'var(--system-indigo)',
+  systemPink: 'var(--system-pink)',
+  systemCyan: 'var(--system-cyan)',
+
+  // Custom App Semantic
+  primary: 'var(--primary)',
+  primaryDark: 'var(--primary-dark)',
+  primaryLight: 'var(--primary-light)',
+  accent: 'var(--accent)',
+  accentHover: 'var(--accent-hover)',
   
-  // Text Colors
-  textMain: '#f8fafc',      // White slate
-  textMuted: '#94a3b8',     // Muted gray
-  textSub: '#cbd5e1',       // Light gray
+  bgDark: 'var(--bg-dark)',
+  cardDark: 'var(--card-dark)',
+  sidebarBg: 'var(--sidebar-bg)',
+  cardBorder: 'var(--card-border)',
+  surfaceHover: 'var(--surface-hover)',
   
+  textMain: 'var(--text-main)',
+  textMuted: 'var(--text-muted)',
+  textSub: 'var(--text-sub)',
+
   // Order Status Colors
-  statusPending: '#f59e0b',    // Chờ xử lý - Amber
-  statusConfirmed: '#3b82f6',  // Đã chốt - Blue
-  statusShipping: '#8b5cf6',   // Đang giao - Purple
-  statusDelivered: '#10b981',  // Đã giao - Emerald Green
-  statusCancelled: '#ef4444',  // Hoàn/Hủy - Rose Red
+  statusPending: 'var(--status-pending)',
+  statusConfirmed: 'var(--status-confirmed)',
+  statusShipping: 'var(--status-shipping)',
+  statusDelivered: 'var(--status-delivered)',
+  statusCancelled: 'var(--status-cancelled)',
 
   // Badges & Categories
-  categoryTS: '#ec4899',       // Trang sức - Pink/Rose
-  categoryQA: '#06b6d4',       // Quần áo - Cyan
-  orderTypeInStock: '#10b981', // Có sẵn - Green
-  orderTypePreorder: '#f59e0b',// Order - Amber
+  categoryTS: 'var(--category-ts)',
+  categoryQA: 'var(--category-qa)',
+  orderTypeInStock: 'var(--order-type-in-stock)',
+  orderTypePreorder: 'var(--order-type-preorder)',
   
   // Financial Highlights
-  success: '#10b981',
-  danger: '#ef4444',
-  warning: '#f59e0b',
-  info: '#3b82f6',
+  success: 'var(--success)',
+  danger: 'var(--danger)',
+  warning: 'var(--warning)',
+  info: 'var(--info)',
 };

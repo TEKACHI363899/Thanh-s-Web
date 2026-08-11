@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { TYPOGRAPHY } from '../../theme/typography';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image } from '../common/RNBridge';
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
@@ -279,12 +280,12 @@ export const ProductList = () => {
                     <View style={[styles.td, { width: 140, flexDirection: 'row', justifyContent: 'center', gap: 8 }]}>
                       <TouchableOpacity style={styles.bigEditBtn} onPress={() => handleEditProduct(prod)}>
                         <Edit2 size={16} color={COLORS.primaryLight} style={{ marginRight: 4 }} />
-                        <Text style={{ color: COLORS.primaryLight, fontWeight: '700', fontSize: 13 }}>Sửa</Text>
+                        <Text style={{ color: COLORS.primaryLight, fontWeight: '700', ...TYPOGRAPHY.footnote, }}>Sửa</Text>
                       </TouchableOpacity>
 
                       <TouchableOpacity style={styles.bigDeleteBtn} onPress={() => handleDeleteProduct(prod)}>
                         <Trash2 size={16} color={COLORS.danger} style={{ marginRight: 4 }} />
-                        <Text style={{ color: COLORS.danger, fontWeight: '700', fontSize: 13 }}>Xóa</Text>
+                        <Text style={{ color: COLORS.danger, fontWeight: '700', ...TYPOGRAPHY.footnote, }}>Xóa</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -334,7 +335,7 @@ export const ProductList = () => {
                           onPress={() => setIsBatchModalOpen(true)}
                         >
                           <Edit2 size={15} color={COLORS.primaryLight} style={{ marginRight: 4 }} />
-                          <Text style={{ color: COLORS.primaryLight, fontSize: 13, fontWeight: '700' }}>Sửa Lô</Text>
+                          <Text style={{ color: COLORS.primaryLight, ...TYPOGRAPHY.footnote, fontWeight: '700' }}>Sửa Lô</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity 
@@ -342,7 +343,7 @@ export const ProductList = () => {
                           onPress={() => handleDeleteBatch(b)}
                         >
                           <Trash2 size={15} color={COLORS.danger} style={{ marginRight: 4 }} />
-                          <Text style={{ color: COLORS.danger, fontSize: 13, fontWeight: '700' }}>Xóa</Text>
+                          <Text style={{ color: COLORS.danger, ...TYPOGRAPHY.footnote, fontWeight: '700' }}>Xóa</Text>
                         </TouchableOpacity>
                       </View>
                     </View>
@@ -442,11 +443,11 @@ export const ProductList = () => {
                   onChange={(e) => setSelectedBatch(e.target.value)}
                   style={styles.modalSelect}
                 >
-                  <option value="ALL" style={{ background: '#1e293b', color: '#f8fafc' }}>
+                  <option value="ALL" style={{ background: COLORS.cardDark, color: COLORS.textMain }}>
                     Tất cả Lô Hàng ({batches.length})
                   </option>
                   {batches.map(b => (
-                    <option key={b.id} value={b.id} style={{ background: '#1e293b', color: '#f8fafc' }}>
+                    <option key={b.id} value={b.id} style={{ background: COLORS.cardDark, color: COLORS.textMain }}>
                       [{b.code}] {b.name}
                     </option>
                   ))}
@@ -490,7 +491,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 18,
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     maxWidth: '100%',
     boxSizing: 'border-box',
     overflowX: 'hidden'
@@ -511,12 +512,12 @@ const styles = StyleSheet.create({
     boxSizing: 'border-box'
   },
   mainTitle: {
-    fontSize: 22,
+    ...TYPOGRAPHY.title2,
     fontWeight: '900',
     color: COLORS.textMain
   },
   subtitle: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     color: COLORS.textMuted,
     marginTop: 4
   },
@@ -547,7 +548,7 @@ const styles = StyleSheet.create({
   bigBtnText: {
     color: '#ffffff',
     fontWeight: '800',
-    fontSize: 15
+    ...TYPOGRAPHY.callout,
   },
   tabSwitcherRow: {
     flexDirection: 'row',
@@ -573,7 +574,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary
   },
   switchTabText: {
-    fontSize: 15,
+    ...TYPOGRAPHY.callout,
     fontWeight: '700',
     color: COLORS.textMuted
   },
@@ -603,7 +604,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     paddingVertical: 12,
-    fontSize: 15,
+    ...TYPOGRAPHY.callout,
     color: COLORS.textMain
   },
   clearSearchIcon: {
@@ -624,7 +625,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.primary
   },
   filterTriggerText: {
-    fontSize: 15,
+    ...TYPOGRAPHY.callout,
     fontWeight: '800',
     color: COLORS.primaryLight
   },
@@ -640,7 +641,7 @@ const styles = StyleSheet.create({
     borderRadius: 12
   },
   resetFilterText: {
-    fontSize: 14,
+    ...TYPOGRAPHY.subhead,
     fontWeight: '700',
     color: COLORS.textMuted
   },
@@ -658,7 +659,7 @@ const styles = StyleSheet.create({
   },
   trHeader: {
     flexDirection: 'row',
-    backgroundColor: '#162032',
+    backgroundColor: COLORS.sidebarBg,
     borderBottomWidth: 1.5,
     borderBottomColor: COLORS.cardBorder,
     paddingVertical: 14,
@@ -666,7 +667,7 @@ const styles = StyleSheet.create({
   },
   th: {
     color: COLORS.textMuted,
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     fontWeight: '800',
     textTransform: 'uppercase'
   },
@@ -676,10 +677,10 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#1e293b'
+    borderBottomColor: COLORS.cardDark
   },
   trEven: {
-    backgroundColor: '#172336'
+    backgroundColor: COLORS.sidebarBg
   },
   td: {
     justifyContent: 'center'
@@ -691,7 +692,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start'
   },
   skuText: {
-    fontSize: 14,
+    ...TYPOGRAPHY.subhead,
     fontWeight: '900',
     letterSpacing: 0.5
   },
@@ -702,18 +703,18 @@ const styles = StyleSheet.create({
     resizeMode: 'cover'
   },
   prodName: {
-    fontSize: 15,
+    ...TYPOGRAPHY.callout,
     fontWeight: '700',
     color: COLORS.textMain
   },
   catText: {
-    fontSize: 14,
+    ...TYPOGRAPHY.subhead,
     color: COLORS.textSub
   },
   batchTagBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
@@ -722,21 +723,21 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start'
   },
   batchTagText: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     fontWeight: '700',
     color: COLORS.textSub
   },
   costText: {
-    fontSize: 14,
+    ...TYPOGRAPHY.subhead,
     color: COLORS.textMuted
   },
   marginText: {
-    fontSize: 14,
+    ...TYPOGRAPHY.subhead,
     fontWeight: '800',
     color: COLORS.success
   },
   sellingPriceText: {
-    fontSize: 15,
+    ...TYPOGRAPHY.callout,
     fontWeight: '900',
     color: COLORS.primaryLight
   },
@@ -756,12 +757,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(239, 68, 68, 0.2)'
   },
   stockText: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     fontWeight: '800',
     color: COLORS.textMain
   },
   soldText: {
-    fontSize: 14,
+    ...TYPOGRAPHY.subhead,
     color: COLORS.textSub
   },
   bigEditBtn: {
@@ -789,7 +790,7 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
   emptyText: {
-    fontSize: 15,
+    ...TYPOGRAPHY.callout,
     color: COLORS.textMuted,
     marginTop: 10
   },
@@ -801,12 +802,12 @@ const styles = StyleSheet.create({
     marginBottom: 16
   },
   batchSectionTitle: {
-    fontSize: 18,
+    ...TYPOGRAPHY.headline,
     fontWeight: '800',
     color: COLORS.textMain
   },
   batchSectionSub: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     color: COLORS.textMuted,
     marginTop: 4
   },
@@ -838,15 +839,15 @@ const styles = StyleSheet.create({
   batchCodeText: {
     color: '#ffffff',
     fontWeight: '900',
-    fontSize: 14
+    ...TYPOGRAPHY.subhead,
   },
   batchNameTitle: {
-    fontSize: 16,
+    ...TYPOGRAPHY.callout,
     fontWeight: '800',
     color: COLORS.textMain
   },
   batchDateText: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     color: COLORS.textMuted,
     marginTop: 2
   },
@@ -878,44 +879,44 @@ const styles = StyleSheet.create({
   statBox: {
     flex: 1,
     minWidth: 160,
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     padding: 12,
     borderRadius: 10,
     borderWidth: 1,
     borderColor: COLORS.cardBorder
   },
   statBoxLabel: {
-    fontSize: 12,
+    ...TYPOGRAPHY.caption1,
     color: COLORS.textMuted
   },
   statBoxValCapital: {
-    fontSize: 16,
+    ...TYPOGRAPHY.callout,
     fontWeight: '900',
     color: COLORS.accent,
     marginTop: 4
   },
   statBoxVal: {
-    fontSize: 15,
+    ...TYPOGRAPHY.callout,
     fontWeight: '800',
     color: COLORS.textMain,
     marginTop: 4
   },
   statBoxValSold: {
-    fontSize: 15,
+    ...TYPOGRAPHY.callout,
     fontWeight: '800',
     color: COLORS.success,
     marginTop: 4
   },
   batchNoteCard: {
     marginTop: 12,
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     padding: 10,
     borderRadius: 8,
     borderLeftWidth: 3,
     borderLeftColor: COLORS.primaryLight
   },
   batchNoteText: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     color: COLORS.textSub
   },
   // UNIFIED FILTER MODAL POPUP STYLES
@@ -950,7 +951,7 @@ const styles = StyleSheet.create({
     paddingBottom: 14
   },
   filterModalTitle: {
-    fontSize: 18,
+    ...TYPOGRAPHY.headline,
     fontWeight: '900',
     color: COLORS.textMain
   },
@@ -963,7 +964,7 @@ const styles = StyleSheet.create({
     gap: 14
   },
   filterSectionLabel: {
-    fontSize: 14,
+    ...TYPOGRAPHY.subhead,
     fontWeight: '700',
     color: COLORS.textSub,
     marginTop: 4
@@ -971,7 +972,7 @@ const styles = StyleSheet.create({
   modalSearchBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     borderRadius: 10,
     paddingHorizontal: 14,
     borderWidth: 1.5,
@@ -980,8 +981,8 @@ const styles = StyleSheet.create({
   modalSearchInput: {
     flex: 1,
     paddingVertical: 10,
-    fontSize: 14,
-    color: '#f8fafc'
+    ...TYPOGRAPHY.subhead,
+    color: COLORS.textMain
   },
   catChipsRow: {
     flexDirection: 'row',
@@ -992,7 +993,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 8,
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     borderWidth: 1,
     borderColor: COLORS.cardBorder
   },
@@ -1009,7 +1010,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.categoryQA
   },
   modalCatChipText: {
-    fontSize: 13,
+    ...TYPOGRAPHY.footnote,
     color: COLORS.textMuted
   },
   modalCatChipTextActive: {
@@ -1019,7 +1020,7 @@ const styles = StyleSheet.create({
   modalSelectWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#0f172a',
+    backgroundColor: COLORS.bgDark,
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 10,
@@ -1030,8 +1031,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'transparent',
     border: 'none',
-    color: '#f8fafc',
-    fontSize: 14,
+    color: COLORS.textMain,
+    ...TYPOGRAPHY.subhead,
     fontWeight: '700',
     outline: 'none',
     cursor: 'pointer'
@@ -1054,7 +1055,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.surfaceHover
   },
   resetModalBtnText: {
-    fontSize: 14,
+    ...TYPOGRAPHY.subhead,
     fontWeight: '700',
     color: COLORS.textMuted
   },
@@ -1067,7 +1068,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary
   },
   applyModalBtnText: {
-    fontSize: 14,
+    ...TYPOGRAPHY.subhead,
     fontWeight: '800',
     color: '#ffffff'
   }

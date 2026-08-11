@@ -1,3 +1,4 @@
+import { COLORS } from '../../theme/colors';
 import React from 'react';
 
 // Flatten nested style objects & arrays for React DOM compatibility
@@ -70,11 +71,14 @@ export const TextInput = ({
   const baseInputStyle = {
     fontFamily: 'inherit',
     boxSizing: 'border-box',
-    color: '#f8fafc',
+    color: COLORS.textMain,
     backgroundColor: 'transparent',
     outline: 'none',
     border: 'none',
-    colorScheme: 'dark'
+    colorScheme: 'dark',
+    minHeight: 44,
+    borderRadius: 12,
+    padding: '8px 12px'
   };
 
   const mergedStyle = flattenStyle([
@@ -109,6 +113,7 @@ export const TextInput = ({
 };
 
 export const TouchableOpacity = ({ style, children, onPress, disabled, ...props }) => {
+  const [isFocused, setIsFocused] = React.useState(false);
   const mergedStyle = flattenStyle([
     {
       background: 'none',
@@ -117,9 +122,17 @@ export const TouchableOpacity = ({ style, children, onPress, disabled, ...props 
       cursor: disabled ? 'not-allowed' : 'pointer',
       display: 'flex',
       alignItems: 'center',
+      justifyContent: 'center',
       fontFamily: 'inherit',
       textAlign: 'left',
       boxSizing: 'border-box',
+      minHeight: 44, // HIG constraint
+      minWidth: 44,  // HIG constraint
+      opacity: disabled ? 0.38 : 1,
+      outline: isFocused ? '2px solid #007AFF' : 'none',
+      outlineOffset: '2px',
+      transition: 'opacity 0.2s',
+      borderRadius: style?.borderRadius !== undefined ? style.borderRadius : 12,
     },
     style
   ]);
@@ -129,6 +142,8 @@ export const TouchableOpacity = ({ style, children, onPress, disabled, ...props 
       onClick={onPress}
       disabled={disabled}
       style={mergedStyle}
+      onFocus={() => setIsFocused(true)}
+      onBlur={() => setIsFocused(false)}
       {...props}
     >
       {children}
@@ -139,7 +154,7 @@ export const TouchableOpacity = ({ style, children, onPress, disabled, ...props 
 export const Image = ({ source, style, alt, ...props }) => {
   const uri = typeof source === 'object' && source?.uri ? source.uri : source;
   const mergedStyle = flattenStyle([
-    { objectFit: style?.resizeMode || 'cover' },
+    { objectFit: style?.resizeMode || 'cover', borderRadius: style?.borderRadius !== undefined ? style.borderRadius : 12 },
     style
   ]);
 
