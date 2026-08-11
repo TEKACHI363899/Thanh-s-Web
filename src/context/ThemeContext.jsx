@@ -274,6 +274,37 @@ const injectGlobalThemeStyle = (activeTheme) => {
     ::-webkit-scrollbar-thumb:hover {
       background: var(--primary-dark) !important;
     }
+
+    /* Mobile Responsive Flex (max-width: 768px) */
+    @media (max-width: 768px) {
+      .responsive-app-wrapper {
+        flex-direction: column !important;
+      }
+      .responsive-sidebar {
+        width: 100% !important;
+        height: auto !important;
+        border-right: none !important;
+        border-bottom: 1px solid var(--card-border) !important;
+        flex-shrink: 0;
+      }
+      .responsive-sidebar .sidebar-menu-section {
+        display: none !important;
+      }
+      .responsive-sidebar.expanded .sidebar-menu-section {
+        display: flex !important;
+      }
+      .responsive-modal {
+        width: 95% !important;
+        max-width: 100% !important;
+        margin: 10px !important;
+      }
+      .responsive-grid-container {
+        padding: 8px !important;
+      }
+      .responsive-flex-wrap {
+        flex-wrap: wrap !important;
+      }
+    }
   `;
 };
 

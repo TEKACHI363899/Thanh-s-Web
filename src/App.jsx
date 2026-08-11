@@ -35,7 +35,7 @@ export const AppContent = () => {
   };
 
   return (
-    <View style={[styles.appWrapper, { backgroundColor: themeObj.colors.bgDark }]}>
+    <View className="responsive-app-wrapper" style={[styles.appWrapper, { backgroundColor: themeObj.colors.bgDark }]}>
       {/* Collapsible Sidebar */}
       <Sidebar 
         activeTab={activeTab} 

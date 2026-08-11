@@ -65,7 +65,7 @@ export const Sidebar = ({
   ];
 
   return (
-    <View style={[
+    <View className={`responsive-sidebar ${!collapsed ? 'expanded' : ''}`} style={[
       styles.sidebar, 
       collapsed ? styles.sidebarCollapsed : styles.sidebarExpanded,
       { backgroundColor: colors.sidebarBg || colors.cardDark, borderColor: colors.cardBorder }
@@ -129,7 +129,7 @@ export const Sidebar = ({
       )}
 
       {/* Navigation Menu List */}
-      <View style={styles.menuSection}>
+      <View className="sidebar-menu-section" style={styles.menuSection}>
         <Text style={[styles.sectionTitle, collapsed && { textAlign: 'center' }]}>
           {collapsed ? '•••' : 'DANH MỤC QUẢN LÝ'}
         </Text>

@@ -89,7 +89,7 @@ export const BatchManagementModal = ({ visible, onClose }) => {
 
   return (
     <View style={styles.overlay}>
-      <View style={styles.modalContainer}>
+      <View className="responsive-modal" style={styles.modalContainer}>
         <View style={styles.header}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <Package size={20} color={COLORS.accent} />

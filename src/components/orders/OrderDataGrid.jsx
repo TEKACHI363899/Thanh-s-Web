@@ -89,9 +89,9 @@ export const OrderDataGrid = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <View className="responsive-grid-container" style={styles.container}>
       {/* Top Banner Toolbar */}
-      <View style={styles.topBanner}>
+      <View className="responsive-flex-wrap" style={styles.topBanner}>
         <View style={{ flex: 1 }}>
           <Text style={styles.mainTitle}>Bảng Danh Sách Đơn Hàng</Text>
           <Text style={styles.subtitle}>
@@ -114,7 +114,7 @@ export const OrderDataGrid = () => {
       </View>
 
       {/* KPI Stats Overview Bar */}
-      <View style={styles.statsRow}>
+      <View className="responsive-flex-wrap" style={styles.statsRow}>
         <View style={styles.statCard}>
           <Text style={styles.statVal}>{orders.length}</Text>
           <Text style={styles.statLabel}>Tổng Đơn Hàng</Text>

@@ -331,7 +331,7 @@ export const OrderFormModal = ({ visible, onClose, initialOrder = null }) => {
 
   return (
     <View style={styles.overlay}>
-      <View style={styles.modalContainer}>
+      <View className="responsive-modal" style={styles.modalContainer}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>
             {initialOrder ? `✏️ Chỉnh Sửa Đơn Hàng ${initialOrder.code}` : '➕ Tạo đơn hàng'}

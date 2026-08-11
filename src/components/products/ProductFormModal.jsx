@@ -233,7 +233,7 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
 
   return (
     <View style={styles.overlay}>
-      <View style={styles.modalContainer}>
+      <View className="responsive-modal" style={styles.modalContainer}>
         <View style={styles.header}>
           <Text style={styles.headerTitle}>
             {initialProduct ? 'Chỉnh Sửa Sản Phẩm' : 'Thêm Sản Phẩm Mới'}
