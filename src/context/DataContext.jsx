@@ -11,6 +11,8 @@ import {
   broadcastRealtimeEvent
 } from '../services/firebase';
 
+import { useAuth } from './AuthContext';
+
 const DataContext = createContext();
 
 // Utility: Extract capital first letters of each word in Vietnamese string
@@ -67,7 +69,10 @@ const sanitizeList = (list, prefix) => {
 const safeParse = (key, fallback, prefix) => {
   try {
     const saved = localStorage.getItem(key);
-    const parsed = saved ? JSON.parse(saved) : fallback;
+    let parsed = saved ? JSON.parse(saved) : fallback;
+    if (Array.isArray(parsed)) {
+      parsed.sort((a, b) => (b._createdAt || 0) - (a._createdAt || 0));
+    }
     return sanitizeList(parsed, prefix);
   } catch (err) {
     console.warn('Error parsing localStorage key:', key, err);
@@ -82,6 +87,8 @@ const INITIAL_EXPENSES = [];
 const INITIAL_ORDERS = [];
 
 export const DataProvider = ({ children }) => {
+  const { loadingAuth, currentUser } = useAuth();
+
   // Active Shop State (Defaults to 'shop_1')
   const [activeShopId, setActiveShopId] = useState(() => {
     try {
@@ -262,10 +269,10 @@ export const DataProvider = ({ children }) => {
           getDoc(doc(db, colSettings, 'store_metadata'))
         ]);
 
-        const bList = bSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
-        const pList = pSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
-        const oList = oSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
-        const eList = eSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        const bList = bSnap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => (b._createdAt || 0) - (a._createdAt || 0));
+        const pList = pSnap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => (b._createdAt || 0) - (a._createdAt || 0));
+        const oList = oSnap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => (b._createdAt || 0) - (a._createdAt || 0));
+        const eList = eSnap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => (b._createdAt || 0) - (a._createdAt || 0));
 
         setBatches(sanitizeList(bList, 'batch'));
         setProducts(sanitizeList(pList, 'prod'));
@@ -296,6 +303,8 @@ export const DataProvider = ({ children }) => {
 
   // Firestore Realtime Subscription for Active Shop
   useEffect(() => {
+    if (loadingAuth) return;
+    
     let unsubs = [];
     try {
       if (db) {
@@ -310,6 +319,7 @@ export const DataProvider = ({ children }) => {
           collection(db, colBatches),
           (snapshot) => {
             const list = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+            list.sort((a, b) => (b._createdAt || 0) - (a._createdAt || 0));
             setBatches(sanitizeList(list, 'batch')); // FIX: authoritative snapshot prevents resurrection
             setIsCloudConnected(true);
           },
@@ -322,6 +332,7 @@ export const DataProvider = ({ children }) => {
           collection(db, colProducts),
           (snapshot) => {
             const list = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+            list.sort((a, b) => (b._createdAt || 0) - (a._createdAt || 0));
             setProducts(sanitizeList(list, 'prod')); // FIX: authoritative snapshot prevents resurrection
             setIsCloudConnected(true);
           },
@@ -334,6 +345,7 @@ export const DataProvider = ({ children }) => {
           collection(db, colOrders),
           (snapshot) => {
             const list = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+            list.sort((a, b) => (b._createdAt || 0) - (a._createdAt || 0));
             setOrders(sanitizeList(list, 'ord')); // FIX: authoritative snapshot prevents resurrection
             setIsCloudConnected(true);
           },
@@ -346,6 +358,7 @@ export const DataProvider = ({ children }) => {
           collection(db, colExpenses),
           (snapshot) => {
             const list = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+            list.sort((a, b) => (b._createdAt || 0) - (a._createdAt || 0));
             setExpenses(sanitizeList(list, 'exp')); // FIX: authoritative snapshot prevents resurrection
             setIsCloudConnected(true);
           },
@@ -391,7 +404,7 @@ export const DataProvider = ({ children }) => {
     return () => {
       unsubs.forEach((unsub) => unsub && unsub());
     };
-  }, [activeShopId]);
+  }, [activeShopId, loadingAuth, currentUser]);
 
   // Save to LocalStorage using isolated shop keys
   useEffect(() => {
