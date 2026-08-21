@@ -30,7 +30,7 @@ import {
 import { OrderFormModal } from './OrderFormModal';
 
 export const OrderDataGrid = () => {
-  const { orders, batches, deleteOrder, setOrderStatus } = useData();
+  const { orders, batches, deleteOrder, setOrderStatus, cloudError } = useData();
   const { requireAdmin } = useAuth();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -143,11 +143,20 @@ export const OrderDataGrid = () => {
           }}
         >
           <Plus size={18} color="#ffffff" style={{ marginRight: 6 }} />
-          <Text style={styles.bigCreateOrderBtnText}>Tạo Đơn Mới</Text>
+          <Text style={styles.bigCreateOrderBtnText}>Tạo Đơn Hàng Mới</Text>
         </TouchableOpacity>
       </View>
 
-      {/* KPI Stats Overview Bar */}
+      {cloudError && (
+        <View style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', padding: 12, borderRadius: 8, marginBottom: 16, borderWidth: 1, borderColor: '#ef4444' }}>
+          <Text style={{ color: '#ef4444', fontWeight: 'bold' }}>⚠️ Lỗi đồng bộ dữ liệu: {cloudError}</Text>
+          <Text style={{ color: '#ef4444', fontSize: 13, marginTop: 4 }}>
+            Nếu bạn đang gặp lỗi thiếu quyền (permission-denied), Vui lòng ĐĂNG NHẬP để có quyền đọc dữ liệu từ Cloud. Các dữ liệu bạn đang thấy chỉ là dữ liệu lưu tạm ở máy này.
+          </Text>
+        </View>
+      )}
+
+      {/* Stats Summary Cards */}
       <View className="responsive-flex-wrap" style={styles.statsRow}>
         <View style={styles.statCard}>
           <Text style={styles.statVal}>{orders.length}</Text>

@@ -125,7 +125,9 @@ export const DataProvider = ({ children }) => {
   const [expenses, setExpenses] = useState(() =>
     safeParse(getShopStorageKey('thanh_app_expenses', activeShopId), INITIAL_EXPENSES, 'exp')
   );
+
   const [isCloudConnected, setIsCloudConnected] = useState(false);
+  const [cloudError, setCloudError] = useState(null);
 
   const [availableCapital, setAvailableCapitalState] = useState(() => {
     try {
@@ -322,8 +324,12 @@ export const DataProvider = ({ children }) => {
             list.sort((a, b) => (b._createdAt || 0) - (a._createdAt || 0));
             setBatches(sanitizeList(list, 'batch')); // FIX: authoritative snapshot prevents resurrection
             setIsCloudConnected(true);
+            setCloudError(null);
           },
-          (err) => console.warn(`Firestore ${colBatches} listener warning:`, err)
+          (err) => {
+            console.warn(`Firestore ${colBatches} listener warning:`, err);
+            setCloudError(err.message || 'Lỗi kết nối Firebase');
+          }
         );
         unsubs.push(unsubBatches);
 
@@ -335,8 +341,12 @@ export const DataProvider = ({ children }) => {
             list.sort((a, b) => (b._createdAt || 0) - (a._createdAt || 0));
             setProducts(sanitizeList(list, 'prod')); // FIX: authoritative snapshot prevents resurrection
             setIsCloudConnected(true);
+            setCloudError(null);
           },
-          (err) => console.warn(`Firestore ${colProducts} listener warning:`, err)
+          (err) => {
+            console.warn(`Firestore ${colProducts} listener warning:`, err);
+            setCloudError(err.message || 'Lỗi kết nối Firebase');
+          }
         );
         unsubs.push(unsubProducts);
 
@@ -348,8 +358,12 @@ export const DataProvider = ({ children }) => {
             list.sort((a, b) => (b._createdAt || 0) - (a._createdAt || 0));
             setOrders(sanitizeList(list, 'ord')); // FIX: authoritative snapshot prevents resurrection
             setIsCloudConnected(true);
+            setCloudError(null);
           },
-          (err) => console.warn(`Firestore ${colOrders} listener warning:`, err)
+          (err) => {
+            console.warn(`Firestore ${colOrders} listener warning:`, err);
+            setCloudError(err.message || 'Lỗi kết nối Firebase');
+          }
         );
         unsubs.push(unsubOrders);
 
@@ -361,8 +375,12 @@ export const DataProvider = ({ children }) => {
             list.sort((a, b) => (b._createdAt || 0) - (a._createdAt || 0));
             setExpenses(sanitizeList(list, 'exp')); // FIX: authoritative snapshot prevents resurrection
             setIsCloudConnected(true);
+            setCloudError(null);
           },
-          (err) => console.warn(`Firestore ${colExpenses} listener warning:`, err)
+          (err) => {
+            console.warn(`Firestore ${colExpenses} listener warning:`, err);
+            setCloudError(err.message || 'Lỗi kết nối Firebase');
+          }
         );
         unsubs.push(unsubExpenses);
 
@@ -392,13 +410,18 @@ export const DataProvider = ({ children }) => {
               }
             }
             setIsCloudConnected(true);
+            setCloudError(null);
           },
-          (err) => console.warn(`Firestore ${colSettings} listener warning:`, err)
+          (err) => {
+            console.warn(`Firestore ${colSettings} listener warning:`, err);
+            setCloudError(err.message || 'Lỗi kết nối Firebase');
+          }
         );
         unsubs.push(unsubSettings);
       }
     } catch (e) {
       console.warn('Cloud Firestore initialization error, falling back to local:', e);
+      setCloudError(e.message || 'Lỗi khởi tạo Firestore');
     }
 
     return () => {
@@ -854,6 +877,8 @@ export const DataProvider = ({ children }) => {
         activeShopId,
         switchShop,
         availableShops: AVAILABLE_SHOPS,
+        isCloudConnected,
+        cloudError,
         batches,
         products,
         orders,
