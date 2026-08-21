@@ -119,6 +119,18 @@ export const DataProvider = ({ children }) => {
     return 0;
   });
 
+  const syncSettingsToCloud = async (settingsData) => {
+    try {
+      if (db) {
+        const targetCol = getShopCollectionName('settings');
+        const docRef = doc(db, targetCol, 'store_metadata');
+        await setDoc(docRef, settingsData, { merge: true });
+      }
+    } catch (err) {
+      console.warn('Firestore syncSettingsToCloud error:', err);
+    }
+  };
+
   const setAvailableCapital = (val) => {
     const num = Number(val) || 0;
     setAvailableCapitalState(num);
@@ -126,6 +138,7 @@ export const DataProvider = ({ children }) => {
       const key = getShopStorageKey('thanh_app_available_capital');
       localStorage.setItem(key, num.toString());
     } catch (e) {}
+    syncSettingsToCloud({ availableCapital: num }); // FIX: sync capital to cloud metadata
     notifyChange();
   };
 
@@ -200,7 +213,9 @@ export const DataProvider = ({ children }) => {
     };
     setCustomCategories((prev) => {
       if (prev.some((c) => c.code === newCat.code)) return prev;
-      return [...prev, newCat];
+      const updated = [...prev, newCat];
+      syncSettingsToCloud({ customCategories: updated }); // FIX: sync new category to cloud
+      return updated;
     });
     notifyChange();
     return newCat;
@@ -213,6 +228,7 @@ export const DataProvider = ({ children }) => {
         const key = getShopStorageKey('thanh_app_custom_categories');
         localStorage.setItem(key, JSON.stringify(updated));
       } catch (e) {}
+      syncSettingsToCloud({ customCategories: updated }); // FIX: sync deleted category to cloud
       return updated;
     });
     notifyChange();
@@ -235,78 +251,86 @@ export const DataProvider = ({ children }) => {
         const colProducts = getShopCollectionName('products');
         const colOrders = getShopCollectionName('orders');
         const colExpenses = getShopCollectionName('expenses');
+        const colSettings = getShopCollectionName('settings');
 
-        // Subscribe to Batches for active shop
+        // Subscribe to Batches for active shop (Authoritative cloud snapshot)
         const unsubBatches = onSnapshot(
           collection(db, colBatches),
           (snapshot) => {
             const list = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
-            setBatches((prevLocal) => {
-              const cloudIds = new Set(list.map((item) => item.id));
-              const recentLocal = prevLocal.filter(
-                (item) => !cloudIds.has(item.id) && item._createdAt && Date.now() - item._createdAt < 120000
-              );
-              return sanitizeList([...list, ...recentLocal], 'batch');
-            });
+            setBatches(sanitizeList(list, 'batch')); // FIX: authoritative snapshot prevents resurrection
             setIsCloudConnected(true);
           },
           (err) => console.warn(`Firestore ${colBatches} listener warning:`, err)
         );
         unsubs.push(unsubBatches);
 
-        // Subscribe to Products for active shop
+        // Subscribe to Products for active shop (Authoritative cloud snapshot)
         const unsubProducts = onSnapshot(
           collection(db, colProducts),
           (snapshot) => {
             const list = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
-            setProducts((prevLocal) => {
-              const cloudIds = new Set(list.map((item) => item.id));
-              const recentLocal = prevLocal.filter(
-                (item) => !cloudIds.has(item.id) && item._createdAt && Date.now() - item._createdAt < 120000
-              );
-              return sanitizeList([...list, ...recentLocal], 'prod');
-            });
+            setProducts(sanitizeList(list, 'prod')); // FIX: authoritative snapshot prevents resurrection
             setIsCloudConnected(true);
           },
           (err) => console.warn(`Firestore ${colProducts} listener warning:`, err)
         );
         unsubs.push(unsubProducts);
 
-        // Subscribe to Orders for active shop
+        // Subscribe to Orders for active shop (Authoritative cloud snapshot)
         const unsubOrders = onSnapshot(
           collection(db, colOrders),
           (snapshot) => {
             const list = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
-            setOrders((prevLocal) => {
-              const cloudIds = new Set(list.map((item) => item.id));
-              const recentLocal = prevLocal.filter(
-                (item) => !cloudIds.has(item.id) && item._createdAt && Date.now() - item._createdAt < 120000
-              );
-              return sanitizeList([...list, ...recentLocal], 'ord');
-            });
+            setOrders(sanitizeList(list, 'ord')); // FIX: authoritative snapshot prevents resurrection
             setIsCloudConnected(true);
           },
           (err) => console.warn(`Firestore ${colOrders} listener warning:`, err)
         );
         unsubs.push(unsubOrders);
 
-        // Subscribe to Expenses for active shop
+        // Subscribe to Expenses for active shop (Authoritative cloud snapshot)
         const unsubExpenses = onSnapshot(
           collection(db, colExpenses),
           (snapshot) => {
             const list = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
-            setExpenses((prevLocal) => {
-              const cloudIds = new Set(list.map((item) => item.id));
-              const recentLocal = prevLocal.filter(
-                (item) => !cloudIds.has(item.id) && item._createdAt && Date.now() - item._createdAt < 120000
-              );
-              return sanitizeList([...list, ...recentLocal], 'exp');
-            });
+            setExpenses(sanitizeList(list, 'exp')); // FIX: authoritative snapshot prevents resurrection
             setIsCloudConnected(true);
           },
           (err) => console.warn(`Firestore ${colExpenses} listener warning:`, err)
         );
         unsubs.push(unsubExpenses);
+
+        // Subscribe to Settings/Metadata for active shop (Authoritative capital and custom categories)
+        const unsubSettings = onSnapshot(
+          doc(db, colSettings, 'store_metadata'),
+          (docSnap) => {
+            if (docSnap.exists()) {
+              const data = docSnap.data();
+              if (typeof data.availableCapital === 'number') {
+                setAvailableCapitalState(data.availableCapital);
+                try {
+                  localStorage.setItem(
+                    getShopStorageKey('thanh_app_available_capital'),
+                    data.availableCapital.toString()
+                  );
+                } catch (e) {}
+              }
+              if (Array.isArray(data.customCategories)) {
+                setCustomCategories(data.customCategories);
+                try {
+                  localStorage.setItem(
+                    getShopStorageKey('thanh_app_custom_categories'),
+                    JSON.stringify(data.customCategories)
+                  );
+                } catch (e) {}
+              }
+            }
+            setIsCloudConnected(true);
+          },
+          (err) => console.warn(`Firestore ${colSettings} listener warning:`, err)
+        );
+        unsubs.push(unsubSettings);
       }
     } catch (e) {
       console.warn('Cloud Firestore initialization error, falling back to local:', e);
@@ -381,7 +405,7 @@ export const DataProvider = ({ children }) => {
       const channel = new BroadcastChannel('thanh_management_realtime_sync');
       channel.onmessage = (event) => {
         const { type } = event.data;
-        if (type === 'REFRESH_DATA') {
+        if (type === 'REFRESH_DATA' && !isCloudConnected) { // FIX: bypass local refresh on cloud
           refreshAllData();
         }
       };
@@ -724,12 +748,33 @@ export const DataProvider = ({ children }) => {
   const importBackupJSON = (jsonData) => {
     try {
       const parsed = typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData;
-      if (parsed.batches) setBatches(sanitizeList(parsed.batches, 'batch'));
-      if (parsed.products) setProducts(sanitizeList(parsed.products, 'prod'));
-      if (parsed.orders) setOrders(sanitizeList(parsed.orders, 'ord'));
-      if (parsed.expenses) setExpenses(sanitizeList(parsed.expenses, 'exp'));
-      if (parsed.customCategories) setCustomCategories(parsed.customCategories);
-      if (parsed.availableCapital) setAvailableCapital(parsed.availableCapital);
+      if (parsed.batches) {
+        const sBatches = sanitizeList(parsed.batches, 'batch');
+        setBatches(sBatches);
+        sBatches.forEach((b) => syncToCloud('batches', b.id, b));
+      }
+      if (parsed.products) {
+        const sProducts = sanitizeList(parsed.products, 'prod');
+        setProducts(sProducts);
+        sProducts.forEach((p) => syncToCloud('products', p.id, p));
+      }
+      if (parsed.orders) {
+        const sOrders = sanitizeList(parsed.orders, 'ord');
+        setOrders(sOrders);
+        sOrders.forEach((o) => syncToCloud('orders', o.id, o));
+      }
+      if (parsed.expenses) {
+        const sExpenses = sanitizeList(parsed.expenses, 'exp');
+        setExpenses(sExpenses);
+        sExpenses.forEach((e) => syncToCloud('expenses', e.id, e));
+      }
+      if (parsed.customCategories) {
+        setCustomCategories(parsed.customCategories);
+        syncSettingsToCloud({ customCategories: parsed.customCategories });
+      }
+      if (parsed.availableCapital !== undefined && parsed.availableCapital !== null) {
+        setAvailableCapital(parsed.availableCapital);
+      }
       notifyChange();
       return true;
     } catch (e) {

@@ -81,7 +81,7 @@ export const AuthProvider = ({ children }) => {
         id: user.uid,
         name: user.displayName || email.split('@')[0],
         email: user.email,
-        avatar: '👑',
+        avatar: 'Admin',
         color: '#10b981',
         role: 'ADMIN'
       };
@@ -111,7 +111,7 @@ export const AuthProvider = ({ children }) => {
         id: user.uid,
         name: name || email.split('@')[0],
         email: user.email,
-        avatar: '👑',
+        avatar: 'Admin',
         color: '#8b5cf6',
         role: 'ADMIN'
       };
