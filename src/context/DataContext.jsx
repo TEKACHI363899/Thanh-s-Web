@@ -1,5 +1,15 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { db, collection, onSnapshot, doc, setDoc, deleteDoc, broadcastRealtimeEvent } from '../services/firebase';
+import {
+  db,
+  collection,
+  onSnapshot,
+  getDocs,
+  getDoc,
+  doc,
+  setDoc,
+  deleteDoc,
+  broadcastRealtimeEvent
+} from '../services/firebase';
 
 const DataContext = createContext();
 
@@ -234,8 +244,50 @@ export const DataProvider = ({ children }) => {
     notifyChange();
   };
 
-  // Manual Full Data Reload Helper
-  const refreshAllData = () => {
+  // Manual Full Data Reload & Cloud Force Sync Helper
+  const refreshAllData = async () => {
+    if (db) {
+      try {
+        const colBatches = getShopCollectionName('batches');
+        const colProducts = getShopCollectionName('products');
+        const colOrders = getShopCollectionName('orders');
+        const colExpenses = getShopCollectionName('expenses');
+        const colSettings = getShopCollectionName('settings');
+
+        const [bSnap, pSnap, oSnap, eSnap, sSnap] = await Promise.all([
+          getDocs(collection(db, colBatches)),
+          getDocs(collection(db, colProducts)),
+          getDocs(collection(db, colOrders)),
+          getDocs(collection(db, colExpenses)),
+          getDoc(doc(db, colSettings, 'store_metadata'))
+        ]);
+
+        const bList = bSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        const pList = pSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        const oList = oSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        const eList = eSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+        setBatches(sanitizeList(bList, 'batch'));
+        setProducts(sanitizeList(pList, 'prod'));
+        setOrders(sanitizeList(oList, 'ord'));
+        setExpenses(sanitizeList(eList, 'exp'));
+
+        if (sSnap.exists()) {
+          const sData = sSnap.data();
+          if (typeof sData.availableCapital === 'number') {
+            setAvailableCapitalState(sData.availableCapital);
+          }
+          if (Array.isArray(sData.customCategories)) {
+            setCustomCategories(sData.customCategories);
+          }
+        }
+        setIsCloudConnected(true);
+        return;
+      } catch (err) {
+        console.warn('Firestore force refresh error, falling back to local:', err);
+      }
+    }
+
     setBatches(safeParse(getShopStorageKey('thanh_app_batches'), INITIAL_BATCHES, 'batch'));
     setProducts(safeParse(getShopStorageKey('thanh_app_products'), INITIAL_PRODUCTS, 'prod'));
     setOrders(safeParse(getShopStorageKey('thanh_app_orders'), INITIAL_ORDERS, 'ord'));

@@ -16,12 +16,17 @@ export const Header = ({ activeTab, onToggleSidebar, onOpenAuthModal }) => {
   const [showShopMenu, setShowShopMenu] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const handleManualRefresh = () => {
+  const handleManualRefresh = async () => {
     setIsRefreshing(true);
-    refreshAllData();
-    setTimeout(() => {
-      setIsRefreshing(false);
-    }, 600);
+    try {
+      await refreshAllData();
+    } catch (e) {
+      console.warn('Manual refresh error:', e);
+    } finally {
+      setTimeout(() => {
+        setIsRefreshing(false);
+      }, 500);
+    }
   };
 
   const handleShopSwitch = (shopId) => {
