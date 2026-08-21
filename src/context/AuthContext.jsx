@@ -36,7 +36,7 @@ export const AuthProvider = ({ children }) => {
           id: user.uid,
           name: user.displayName || user.email.split('@')[0],
           email: user.email,
-          avatar: '👑',
+          avatar: 'Admin',
           color: '#10b981',
           role: 'ADMIN'
         };
@@ -64,7 +64,7 @@ export const AuthProvider = ({ children }) => {
   // Helper guard for action requiring admin login
   const requireAdmin = (actionCallback, message = 'Vui lòng đăng nhập tài khoản Admin để thực hiện thao tác này!') => {
     if (!currentUser) {
-      alert(`⚠️ ${message}`);
+      alert(message);
       openAuthModal();
       return false;
     }

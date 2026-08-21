@@ -10,20 +10,15 @@ export default defineConfig({
     extensions: ['.web.js', '.js', '.ts', '.jsx', '.tsx', '.json'],
   },
   define: {
-    global: 'window',
+    global: 'globalThis',
   },
   server: {
     port: 3000,
     host: true
   },
   build: {
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          react: ['react', 'react-dom'],
-          vendor: ['lucide-react', 'react-native-web']
-        }
-      }
-    }
+    outDir: 'dist',
+    sourcemap: false,
+    chunkSizeWarningLimit: 1500
   }
 });
