@@ -11,21 +11,21 @@ export const generatePrefixFromCategoryName = (name) => {
     .replace(/[\u0300-\u036f]/g, '') // remove Vietnamese diacritics
     .replace(/[đĐ]/g, 'd')
     .trim();
-  
+
   if (!cleanStr) return 'SP';
 
   const words = cleanStr.split(/\s+/).filter(Boolean);
   if (words.length === 1) {
     return words[0].substring(0, 2).toUpperCase();
   }
-  
-  const prefix = words.map(w => w[0].toUpperCase()).join('');
+
+  const prefix = words.map((w) => w[0].toUpperCase()).join('');
   return prefix || 'SP';
 };
 
 const DEFAULT_CUSTOM_CATEGORIES = [
-  { code: 'TS', name: 'Trang Sức', prefix: 'TS', icon: '💎' },
-  { code: 'QA', name: 'Quần Áo', prefix: 'QA', icon: '👔' }
+  { code: 'TS', name: 'Trang Sức', prefix: 'TS', icon: 'TS' },
+  { code: 'QA', name: 'Quần Áo', prefix: 'QA', icon: 'QA' }
 ];
 
 // Available Shops Metadata
@@ -44,7 +44,7 @@ const generateUniqueId = (prefix) => {
 const sanitizeList = (list, prefix) => {
   if (!Array.isArray(list)) return [];
   const seenIds = new Set();
-  return list.map(item => {
+  return list.map((item) => {
     let validId = item.id;
     if (!validId || seenIds.has(validId)) {
       validId = generateUniqueId(prefix);
@@ -60,7 +60,7 @@ const safeParse = (key, fallback, prefix) => {
     const parsed = saved ? JSON.parse(saved) : fallback;
     return sanitizeList(parsed, prefix);
   } catch (err) {
-    console.warn("Error parsing localStorage key:", key, err);
+    console.warn('Error parsing localStorage key:', key, err);
     return fallback;
   }
 };
@@ -96,10 +96,18 @@ export const DataProvider = ({ children }) => {
     return baseCol;
   };
 
-  const [batches, setBatches] = useState(() => safeParse(getShopStorageKey('thanh_app_batches', activeShopId), INITIAL_BATCHES, 'batch'));
-  const [products, setProducts] = useState(() => safeParse(getShopStorageKey('thanh_app_products', activeShopId), INITIAL_PRODUCTS, 'prod'));
-  const [orders, setOrders] = useState(() => safeParse(getShopStorageKey('thanh_app_orders', activeShopId), INITIAL_ORDERS, 'ord'));
-  const [expenses, setExpenses] = useState(() => safeParse(getShopStorageKey('thanh_app_expenses', activeShopId), INITIAL_EXPENSES, 'exp'));
+  const [batches, setBatches] = useState(() =>
+    safeParse(getShopStorageKey('thanh_app_batches', activeShopId), INITIAL_BATCHES, 'batch')
+  );
+  const [products, setProducts] = useState(() =>
+    safeParse(getShopStorageKey('thanh_app_products', activeShopId), INITIAL_PRODUCTS, 'prod')
+  );
+  const [orders, setOrders] = useState(() =>
+    safeParse(getShopStorageKey('thanh_app_orders', activeShopId), INITIAL_ORDERS, 'ord')
+  );
+  const [expenses, setExpenses] = useState(() =>
+    safeParse(getShopStorageKey('thanh_app_expenses', activeShopId), INITIAL_EXPENSES, 'exp')
+  );
   const [isCloudConnected, setIsCloudConnected] = useState(false);
 
   const [availableCapital, setAvailableCapitalState] = useState(() => {
@@ -188,10 +196,10 @@ export const DataProvider = ({ children }) => {
       code: prefix,
       name: categoryName.trim(),
       prefix: prefix,
-      icon: '📦'
+      icon: prefix
     };
-    setCustomCategories(prev => {
-      if (prev.some(c => c.code === newCat.code)) return prev;
+    setCustomCategories((prev) => {
+      if (prev.some((c) => c.code === newCat.code)) return prev;
       return [...prev, newCat];
     });
     notifyChange();
@@ -199,8 +207,8 @@ export const DataProvider = ({ children }) => {
   };
 
   const deleteCustomCategory = (categoryCode) => {
-    setCustomCategories(prev => {
-      const updated = prev.filter(c => c.code !== categoryCode && c.prefix !== categoryCode);
+    setCustomCategories((prev) => {
+      const updated = prev.filter((c) => c.code !== categoryCode && c.prefix !== categoryCode);
       try {
         const key = getShopStorageKey('thanh_app_custom_categories');
         localStorage.setItem(key, JSON.stringify(updated));
@@ -229,77 +237,109 @@ export const DataProvider = ({ children }) => {
         const colExpenses = getShopCollectionName('expenses');
 
         // Subscribe to Batches for active shop
-        const unsubBatches = onSnapshot(collection(db, colBatches), (snapshot) => {
-          const list = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
-          setBatches(prevLocal => {
-            const cloudIds = new Set(list.map(item => item.id));
-            const recentLocal = prevLocal.filter(item => !cloudIds.has(item.id) && item._createdAt && (Date.now() - item._createdAt < 120000));
-            return sanitizeList([...list, ...recentLocal], 'batch');
-          });
-          setIsCloudConnected(true);
-        }, (err) => console.warn(`Firestore ${colBatches} listener warning:`, err));
+        const unsubBatches = onSnapshot(
+          collection(db, colBatches),
+          (snapshot) => {
+            const list = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+            setBatches((prevLocal) => {
+              const cloudIds = new Set(list.map((item) => item.id));
+              const recentLocal = prevLocal.filter(
+                (item) => !cloudIds.has(item.id) && item._createdAt && Date.now() - item._createdAt < 120000
+              );
+              return sanitizeList([...list, ...recentLocal], 'batch');
+            });
+            setIsCloudConnected(true);
+          },
+          (err) => console.warn(`Firestore ${colBatches} listener warning:`, err)
+        );
         unsubs.push(unsubBatches);
 
         // Subscribe to Products for active shop
-        const unsubProducts = onSnapshot(collection(db, colProducts), (snapshot) => {
-          const list = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
-          setProducts(prevLocal => {
-            const cloudIds = new Set(list.map(item => item.id));
-            const recentLocal = prevLocal.filter(item => !cloudIds.has(item.id) && item._createdAt && (Date.now() - item._createdAt < 120000));
-            return sanitizeList([...list, ...recentLocal], 'prod');
-          });
-          setIsCloudConnected(true);
-        }, (err) => console.warn(`Firestore ${colProducts} listener warning:`, err));
+        const unsubProducts = onSnapshot(
+          collection(db, colProducts),
+          (snapshot) => {
+            const list = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+            setProducts((prevLocal) => {
+              const cloudIds = new Set(list.map((item) => item.id));
+              const recentLocal = prevLocal.filter(
+                (item) => !cloudIds.has(item.id) && item._createdAt && Date.now() - item._createdAt < 120000
+              );
+              return sanitizeList([...list, ...recentLocal], 'prod');
+            });
+            setIsCloudConnected(true);
+          },
+          (err) => console.warn(`Firestore ${colProducts} listener warning:`, err)
+        );
         unsubs.push(unsubProducts);
 
         // Subscribe to Orders for active shop
-        const unsubOrders = onSnapshot(collection(db, colOrders), (snapshot) => {
-          const list = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
-          setOrders(prevLocal => {
-            const cloudIds = new Set(list.map(item => item.id));
-            const recentLocal = prevLocal.filter(item => !cloudIds.has(item.id) && item._createdAt && (Date.now() - item._createdAt < 120000));
-            return sanitizeList([...list, ...recentLocal], 'ord');
-          });
-          setIsCloudConnected(true);
-        }, (err) => console.warn(`Firestore ${colOrders} listener warning:`, err));
+        const unsubOrders = onSnapshot(
+          collection(db, colOrders),
+          (snapshot) => {
+            const list = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+            setOrders((prevLocal) => {
+              const cloudIds = new Set(list.map((item) => item.id));
+              const recentLocal = prevLocal.filter(
+                (item) => !cloudIds.has(item.id) && item._createdAt && Date.now() - item._createdAt < 120000
+              );
+              return sanitizeList([...list, ...recentLocal], 'ord');
+            });
+            setIsCloudConnected(true);
+          },
+          (err) => console.warn(`Firestore ${colOrders} listener warning:`, err)
+        );
         unsubs.push(unsubOrders);
 
         // Subscribe to Expenses for active shop
-        const unsubExpenses = onSnapshot(collection(db, colExpenses), (snapshot) => {
-          const list = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
-          setExpenses(prevLocal => {
-            const cloudIds = new Set(list.map(item => item.id));
-            const recentLocal = prevLocal.filter(item => !cloudIds.has(item.id) && item._createdAt && (Date.now() - item._createdAt < 120000));
-            return sanitizeList([...list, ...recentLocal], 'exp');
-          });
-          setIsCloudConnected(true);
-        }, (err) => console.warn(`Firestore ${colExpenses} listener warning:`, err));
+        const unsubExpenses = onSnapshot(
+          collection(db, colExpenses),
+          (snapshot) => {
+            const list = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+            setExpenses((prevLocal) => {
+              const cloudIds = new Set(list.map((item) => item.id));
+              const recentLocal = prevLocal.filter(
+                (item) => !cloudIds.has(item.id) && item._createdAt && Date.now() - item._createdAt < 120000
+              );
+              return sanitizeList([...list, ...recentLocal], 'exp');
+            });
+            setIsCloudConnected(true);
+          },
+          (err) => console.warn(`Firestore ${colExpenses} listener warning:`, err)
+        );
         unsubs.push(unsubExpenses);
       }
     } catch (e) {
-      console.warn("Cloud Firestore initialization error, falling back to local:", e);
+      console.warn('Cloud Firestore initialization error, falling back to local:', e);
     }
 
     return () => {
-      unsubs.forEach(unsub => unsub && unsub());
+      unsubs.forEach((unsub) => unsub && unsub());
     };
   }, [activeShopId]);
 
   // Save to LocalStorage using isolated shop keys
   useEffect(() => {
-    try { localStorage.setItem(getShopStorageKey('thanh_app_batches'), JSON.stringify(batches)); } catch (e) {}
+    try {
+      localStorage.setItem(getShopStorageKey('thanh_app_batches'), JSON.stringify(batches));
+    } catch (e) {}
   }, [batches, activeShopId]);
 
   useEffect(() => {
-    try { localStorage.setItem(getShopStorageKey('thanh_app_products'), JSON.stringify(products)); } catch (e) {}
+    try {
+      localStorage.setItem(getShopStorageKey('thanh_app_products'), JSON.stringify(products));
+    } catch (e) {}
   }, [products, activeShopId]);
 
   useEffect(() => {
-    try { localStorage.setItem(getShopStorageKey('thanh_app_orders'), JSON.stringify(orders)); } catch (e) {}
+    try {
+      localStorage.setItem(getShopStorageKey('thanh_app_orders'), JSON.stringify(orders));
+    } catch (e) {}
   }, [orders, activeShopId]);
 
   useEffect(() => {
-    try { localStorage.setItem(getShopStorageKey('thanh_app_expenses'), JSON.stringify(expenses)); } catch (e) {}
+    try {
+      localStorage.setItem(getShopStorageKey('thanh_app_expenses'), JSON.stringify(expenses));
+    } catch (e) {}
   }, [expenses, activeShopId]);
 
   // Realtime Tab Sync & Cross-Window Storage Event Listener
@@ -321,9 +361,13 @@ export const DataProvider = ({ children }) => {
       } else if (e.key === eKey) {
         setExpenses(safeParse(eKey, INITIAL_EXPENSES, 'exp'));
       } else if (e.key === cKey) {
-        try { setCustomCategories(JSON.parse(e.newValue)); } catch (err) {}
+        try {
+          setCustomCategories(JSON.parse(e.newValue));
+        } catch (err) {}
       } else if (e.key === capKey) {
-        try { setAvailableCapitalState(Number(e.newValue)); } catch (err) {}
+        try {
+          setAvailableCapitalState(Number(e.newValue));
+        } catch (err) {}
       } else if (e.key === 'thanh_app_active_shop_id') {
         if (e.newValue === 'shop_1' || e.newValue === 'shop_2') {
           setActiveShopId(e.newValue);
@@ -376,7 +420,7 @@ export const DataProvider = ({ children }) => {
     if (customPrefixInput) {
       catPrefix = customPrefixInput.toUpperCase().trim();
     } else if (categoryCode) {
-      const foundCat = customCategories.find(c => c.code === categoryCode || c.name === categoryCode);
+      const foundCat = customCategories.find((c) => c.code === categoryCode || c.name === categoryCode);
       if (foundCat) {
         catPrefix = foundCat.prefix || foundCat.code;
       } else {
@@ -384,14 +428,14 @@ export const DataProvider = ({ children }) => {
       }
     }
 
-    const matchingProducts = products.filter(p => {
+    const matchingProducts = products.filter((p) => {
       if (!p.sku) return false;
       const cleanSkuPrefix = p.sku.replace(/\d+$/, '').toUpperCase();
       return p.category === categoryCode || cleanSkuPrefix === catPrefix || p.sku.toUpperCase().startsWith(catPrefix);
     });
-    
+
     let maxNum = 0;
-    matchingProducts.forEach(p => {
+    matchingProducts.forEach((p) => {
       const numPart = p.sku.replace(new RegExp(`^${catPrefix}`, 'i'), '').replace(/\D+/g, '');
       const val = parseInt(numPart, 10);
       if (!isNaN(val) && val > maxNum) {
@@ -407,18 +451,21 @@ export const DataProvider = ({ children }) => {
   const addProduct = (productData) => {
     const uniqueId = generateUniqueId('prod');
     const newSku = productData.sku || generateNextSKU(productData.category);
+    const isLoose = productData.is_loose !== undefined ? Boolean(productData.is_loose) : !productData.batchId;
     const newProduct = {
       ...productData,
       id: uniqueId,
       sku: newSku,
+      batchId: isLoose ? null : productData.batchId || null,
+      is_loose: isLoose,
       soldCount: 0,
-      stock: Number(productData.stock) || 0,
-      costPrice: Number(productData.costPrice) || 0,
-      marginPercent: Number(productData.marginPercent) || 0,
-      sellingPrice: Number(productData.sellingPrice) || 0,
+      stock: Math.max(0, Number(productData.stock) || 0),
+      costPrice: Math.max(0, Number(productData.costPrice) || 0),
+      marginPercent: Math.max(0, Number(productData.marginPercent) || 0),
+      sellingPrice: Math.max(0, Number(productData.sellingPrice) || 0),
       _createdAt: Date.now()
     };
-    setProducts(prev => [newProduct, ...prev.filter(p => p.id !== uniqueId)]);
+    setProducts((prev) => [newProduct, ...prev.filter((p) => p.id !== uniqueId)]);
     syncToCloud('products', newProduct.id, newProduct);
     notifyChange();
     return newProduct;
@@ -426,26 +473,45 @@ export const DataProvider = ({ children }) => {
 
   const updateProduct = (id, updatedData) => {
     let finalUpdated = null;
-    setProducts(prev => prev.map(p => {
-      if (p.id === id) {
-        finalUpdated = {
-          ...p,
-          ...updatedData,
-          stock: Number(updatedData.stock),
-          costPrice: Number(updatedData.costPrice),
-          marginPercent: Number(updatedData.marginPercent),
-          sellingPrice: Number(updatedData.sellingPrice)
-        };
-        return finalUpdated;
-      }
-      return p;
-    }));
+    setProducts((prev) =>
+      prev.map((p) => {
+        if (p.id === id) {
+          const isLoose =
+            updatedData.is_loose !== undefined
+              ? Boolean(updatedData.is_loose)
+              : updatedData.batchId !== undefined
+                ? !updatedData.batchId
+                : p.is_loose;
+          finalUpdated = {
+            ...p,
+            ...updatedData,
+            batchId: isLoose ? null : updatedData.batchId !== undefined ? updatedData.batchId : p.batchId,
+            is_loose: isLoose,
+            stock: Math.max(0, Number(updatedData.stock !== undefined ? updatedData.stock : p.stock) || 0),
+            costPrice: Math.max(
+              0,
+              Number(updatedData.costPrice !== undefined ? updatedData.costPrice : p.costPrice) || 0
+            ),
+            marginPercent: Math.max(
+              0,
+              Number(updatedData.marginPercent !== undefined ? updatedData.marginPercent : p.marginPercent) || 0
+            ),
+            sellingPrice: Math.max(
+              0,
+              Number(updatedData.sellingPrice !== undefined ? updatedData.sellingPrice : p.sellingPrice) || 0
+            )
+          };
+          return finalUpdated;
+        }
+        return p;
+      })
+    );
     if (finalUpdated) syncToCloud('products', id, finalUpdated);
     notifyChange();
   };
 
   const deleteProduct = (id) => {
-    setProducts(prev => prev.filter(p => p.id !== id));
+    setProducts((prev) => prev.filter((p) => p.id !== id));
     syncToCloud('products', id, null, true);
     notifyChange();
   };
@@ -455,34 +521,50 @@ export const DataProvider = ({ children }) => {
     const newBatch = {
       ...batchData,
       id: uniqueId,
-      totalCapital: Number(batchData.totalCapital) || 0,
+      totalCapital: Math.max(0, Number(batchData.totalCapital) || 0),
       _createdAt: Date.now()
     };
-    setBatches(prev => [newBatch, ...prev.filter(b => b.id !== uniqueId)]);
+    setBatches((prev) => [newBatch, ...prev.filter((b) => b.id !== uniqueId)]);
     syncToCloud('batches', newBatch.id, newBatch);
     notifyChange();
   };
 
   const updateBatch = (id, updatedData) => {
     let finalUpdated = null;
-    setBatches(prev => prev.map(b => {
-      if (b.id === id) {
-        finalUpdated = {
-          ...b,
-          ...updatedData,
-          totalCapital: Number(updatedData.totalCapital)
-        };
-        return finalUpdated;
-      }
-      return b;
-    }));
+    setBatches((prev) =>
+      prev.map((b) => {
+        if (b.id === id) {
+          finalUpdated = {
+            ...b,
+            ...updatedData,
+            totalCapital: Math.max(
+              0,
+              Number(updatedData.totalCapital !== undefined ? updatedData.totalCapital : b.totalCapital) || 0
+            )
+          };
+          return finalUpdated;
+        }
+        return b;
+      })
+    );
     if (finalUpdated) syncToCloud('batches', id, finalUpdated);
     notifyChange();
   };
 
   const deleteBatch = (id) => {
-    setBatches(prev => prev.filter(b => b.id !== id));
+    setBatches((prev) => prev.filter((b) => b.id !== id));
     syncToCloud('batches', id, null, true);
+    // Convert products attached to deleted batch into loose goods
+    setProducts((prev) =>
+      prev.map((p) => {
+        if (p.batchId === id) {
+          const updated = { ...p, batchId: null, is_loose: true };
+          syncToCloud('products', p.id, updated);
+          return updated;
+        }
+        return p;
+      })
+    );
     notifyChange();
   };
 
@@ -494,30 +576,32 @@ export const DataProvider = ({ children }) => {
       amount: Number(expenseData.amount) || 0,
       _createdAt: Date.now()
     };
-    setExpenses(prev => [newExp, ...prev.filter(e => e.id !== uniqueId)]);
+    setExpenses((prev) => [newExp, ...prev.filter((e) => e.id !== uniqueId)]);
     syncToCloud('expenses', newExp.id, newExp);
     notifyChange();
   };
 
   const updateExpense = (id, updatedData) => {
     let finalUpdated = null;
-    setExpenses(prev => prev.map(e => {
-      if (e.id === id) {
-        finalUpdated = {
-          ...e,
-          ...updatedData,
-          amount: Number(updatedData.amount)
-        };
-        return finalUpdated;
-      }
-      return e;
-    }));
+    setExpenses((prev) =>
+      prev.map((e) => {
+        if (e.id === id) {
+          finalUpdated = {
+            ...e,
+            ...updatedData,
+            amount: Number(updatedData.amount)
+          };
+          return finalUpdated;
+        }
+        return e;
+      })
+    );
     if (finalUpdated) syncToCloud('expenses', id, finalUpdated);
     notifyChange();
   };
 
   const deleteExpense = (id) => {
-    setExpenses(prev => prev.filter(e => e.id !== id));
+    setExpenses((prev) => prev.filter((e) => e.id !== id));
     syncToCloud('expenses', id, null, true);
     notifyChange();
   };
@@ -538,7 +622,7 @@ export const DataProvider = ({ children }) => {
       _createdAt: Date.now()
     };
 
-    setOrders(prev => [newOrder, ...prev.filter(o => o.id !== uniqueId)]);
+    setOrders((prev) => [newOrder, ...prev.filter((o) => o.id !== uniqueId)]);
     syncToCloud('orders', newOrder.id, newOrder);
 
     // Deduct stock immediately upon order creation (unless status is Hoàn/Hủy right away)
@@ -551,14 +635,14 @@ export const DataProvider = ({ children }) => {
   };
 
   const updateOrder = (id, updatedData) => {
-    const oldOrder = orders.find(o => o.id === id);
+    const oldOrder = orders.find((o) => o.id === id);
     if (!oldOrder) return;
 
     const wasCancelled = oldOrder.status === 'Hoàn/Hủy';
     const isNowCancelled = updatedData.status === 'Hoàn/Hủy';
     const finalOrder = { ...oldOrder, ...updatedData };
 
-    setOrders(prev => prev.map(o => o.id === id ? finalOrder : o));
+    setOrders((prev) => prev.map((o) => (o.id === id ? finalOrder : o)));
     syncToCloud('orders', id, finalOrder);
 
     // If order gets cancelled, restore stock. If restored from cancelled back to active, deduct stock.
@@ -572,22 +656,22 @@ export const DataProvider = ({ children }) => {
   };
 
   const deleteOrder = (id) => {
-    const targetOrder = orders.find(o => o.id === id);
+    const targetOrder = orders.find((o) => o.id === id);
     // If deleted order was active (not cancelled), restore stock
     if (targetOrder && targetOrder.status !== 'Hoàn/Hủy') {
       applyStockDeduction(targetOrder.items, 'restore');
     }
-    setOrders(prev => prev.filter(o => o.id !== id));
+    setOrders((prev) => prev.filter((o) => o.id !== id));
     syncToCloud('orders', id, null, true);
     notifyChange();
   };
 
   const applyStockDeduction = (orderItems, action) => {
     if (!orderItems || !orderItems.length) return;
-    
-    setProducts(prevProducts => {
-      return prevProducts.map(p => {
-        const matchedItem = orderItems.find(item => item.productId === p.id);
+
+    setProducts((prevProducts) => {
+      return prevProducts.map((p) => {
+        const matchedItem = orderItems.find((item) => item.productId === p.id);
         if (matchedItem) {
           const qty = Number(matchedItem.quantity) || 1;
           const deltaStock = action === 'deduct' ? -qty : qty;
@@ -609,7 +693,7 @@ export const DataProvider = ({ children }) => {
   };
 
   const setOrderStatus = (orderId, newStatus) => {
-    const target = orders.find(o => o.id === orderId);
+    const target = orders.find((o) => o.id === orderId);
     if (target) {
       updateOrder(orderId, { ...target, status: newStatus });
     }
@@ -649,44 +733,46 @@ export const DataProvider = ({ children }) => {
       notifyChange();
       return true;
     } catch (e) {
-      console.error("Error importing backup JSON:", e);
+      console.error('Error importing backup JSON:', e);
       return false;
     }
   };
 
   return (
-    <DataContext.Provider value={{
-      activeShopId,
-      switchShop,
-      availableShops: AVAILABLE_SHOPS,
-      batches,
-      products,
-      orders,
-      expenses,
-      customCategories,
-      addCustomCategory,
-      deleteCustomCategory,
-      availableCapital,
-      setAvailableCapital,
-      isCloudConnected,
-      refreshAllData,
-      exportBackupJSON,
-      importBackupJSON,
-      generateNextSKU,
-      addProduct,
-      updateProduct,
-      deleteProduct,
-      addBatch,
-      updateBatch,
-      deleteBatch,
-      addExpense,
-      updateExpense,
-      deleteExpense,
-      addOrder,
-      updateOrder,
-      deleteOrder,
-      setOrderStatus
-    }}>
+    <DataContext.Provider
+      value={{
+        activeShopId,
+        switchShop,
+        availableShops: AVAILABLE_SHOPS,
+        batches,
+        products,
+        orders,
+        expenses,
+        customCategories,
+        addCustomCategory,
+        deleteCustomCategory,
+        availableCapital,
+        setAvailableCapital,
+        isCloudConnected,
+        refreshAllData,
+        exportBackupJSON,
+        importBackupJSON,
+        generateNextSKU,
+        addProduct,
+        updateProduct,
+        deleteProduct,
+        addBatch,
+        updateBatch,
+        deleteBatch,
+        addExpense,
+        updateExpense,
+        deleteExpense,
+        addOrder,
+        updateOrder,
+        deleteOrder,
+        setOrderStatus
+      }}
+    >
       {children}
     </DataContext.Provider>
   );

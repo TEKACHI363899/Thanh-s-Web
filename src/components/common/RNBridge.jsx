@@ -19,10 +19,7 @@ const flattenStyle = (style) => {
 };
 
 export const View = ({ style, children, onClick, ...props }) => {
-  const mergedStyle = flattenStyle([
-    { display: 'flex', flexDirection: 'column', boxSizing: 'border-box' },
-    style
-  ]);
+  const mergedStyle = flattenStyle([{ display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }, style]);
 
   return (
     <div style={mergedStyle} onClick={onClick} {...props}>
@@ -32,19 +29,17 @@ export const View = ({ style, children, onClick, ...props }) => {
 };
 
 export const Text = ({ style, children, numberOfLines, ...props }) => {
-  const lineStyle = numberOfLines ? {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    display: '-webkit-box',
-    WebkitLineClamp: numberOfLines,
-    WebkitBoxOrient: 'vertical',
-  } : {};
+  const lineStyle = numberOfLines
+    ? {
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        display: '-webkit-box',
+        WebkitLineClamp: numberOfLines,
+        WebkitBoxOrient: 'vertical'
+      }
+    : {};
 
-  const mergedStyle = flattenStyle([
-    { boxSizing: 'border-box' },
-    lineStyle,
-    style
-  ]);
+  const mergedStyle = flattenStyle([{ boxSizing: 'border-box' }, lineStyle, style]);
 
   return (
     <span style={mergedStyle} {...props}>
@@ -53,20 +48,20 @@ export const Text = ({ style, children, numberOfLines, ...props }) => {
   );
 };
 
-export const TextInput = ({ 
-  style, 
-  value = '', 
-  onChangeText, 
-  placeholder, 
-  placeholderTextColor, 
-  keyboardType, 
-  secureTextEntry, 
-  multiline, 
-  editable = true, 
+export const TextInput = ({
+  style,
+  value = '',
+  onChangeText,
+  placeholder,
+  placeholderTextColor,
+  keyboardType,
+  secureTextEntry,
+  multiline,
+  editable = true,
   type: customType,
-  ...props 
+  ...props
 }) => {
-  const inputType = customType || (secureTextEntry ? 'password' : (keyboardType === 'numeric' ? 'text' : 'text'));
+  const inputType = customType || (secureTextEntry ? 'password' : keyboardType === 'numeric' ? 'text' : 'text');
 
   const baseInputStyle = {
     fontFamily: 'inherit',
@@ -81,10 +76,7 @@ export const TextInput = ({
     padding: '8px 12px'
   };
 
-  const mergedStyle = flattenStyle([
-    baseInputStyle,
-    style
-  ]);
+  const mergedStyle = flattenStyle([baseInputStyle, style]);
 
   if (multiline) {
     return (
@@ -127,12 +119,12 @@ export const TouchableOpacity = ({ style, children, onPress, disabled, ...props 
       textAlign: 'left',
       boxSizing: 'border-box',
       minHeight: 44, // HIG constraint
-      minWidth: 44,  // HIG constraint
+      minWidth: 44, // HIG constraint
       opacity: disabled ? 0.38 : 1,
       outline: isFocused ? '2px solid #007AFF' : 'none',
       outlineOffset: '2px',
       transition: 'opacity 0.2s',
-      borderRadius: style?.borderRadius !== undefined ? style.borderRadius : 12,
+      borderRadius: style?.borderRadius !== undefined ? style.borderRadius : 12
     },
     style
   ]);
@@ -154,27 +146,23 @@ export const TouchableOpacity = ({ style, children, onPress, disabled, ...props 
 export const Image = ({ source, style, alt, ...props }) => {
   const uri = typeof source === 'object' && source?.uri ? source.uri : source;
   const mergedStyle = flattenStyle([
-    { objectFit: style?.resizeMode || 'cover', borderRadius: style?.borderRadius !== undefined ? style.borderRadius : 12 },
+    {
+      objectFit: style?.resizeMode || 'cover',
+      borderRadius: style?.borderRadius !== undefined ? style.borderRadius : 12
+    },
     style
   ]);
 
-  return (
-    <img
-      src={uri}
-      alt={alt || ''}
-      style={mergedStyle}
-      {...props}
-    />
-  );
+  return <img src={uri} alt={alt || ''} style={mergedStyle} {...props} />;
 };
 
-export const ScrollView = ({ 
-  style, 
-  children, 
-  horizontal, 
-  showsHorizontalScrollIndicator, 
-  showsVerticalScrollIndicator, 
-  ...props 
+export const ScrollView = ({
+  style,
+  children,
+  horizontal,
+  showsHorizontalScrollIndicator,
+  showsVerticalScrollIndicator,
+  ...props
 }) => {
   const mergedStyle = flattenStyle([
     {

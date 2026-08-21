@@ -10,12 +10,7 @@ import { Radio, ShieldCheck, ChevronDown, LogOut, Menu, User, UserCheck, Refresh
 export const Header = ({ activeTab, onToggleSidebar, onOpenAuthModal }) => {
   const { currentUser, logoutAdmin } = useAuth();
   const { colors } = useTheme();
-  const { 
-    activeShopId, 
-    switchShop, 
-    availableShops, 
-    refreshAllData 
-  } = useData();
+  const { activeShopId, switchShop, availableShops, refreshAllData } = useData();
 
   const [showAdminMenu, setShowAdminMenu] = useState(false);
   const [showShopMenu, setShowShopMenu] = useState(false);
@@ -49,7 +44,10 @@ export const Header = ({ activeTab, onToggleSidebar, onOpenAuthModal }) => {
     }
   };
 
-  const activeShopObj = (availableShops || []).find(s => s.id === activeShopId) || { id: 'shop_1', name: 'Shop 1 (Chính)' };
+  const activeShopObj = (availableShops || []).find((s) => s.id === activeShopId) || {
+    id: 'shop_1',
+    name: 'Shop 1 (Chính)'
+  };
   const canSwitchShop = currentUser?.email === 'thanhdatglory@gmail.com';
 
   return (
@@ -59,7 +57,7 @@ export const Header = ({ activeTab, onToggleSidebar, onOpenAuthModal }) => {
         <TouchableOpacity style={styles.menuToggleMobile} onPress={onToggleSidebar}>
           <Menu size={22} color={colors.textMain} />
         </TouchableOpacity>
-        
+
         <Text style={[styles.viewTitle, { color: colors.textMain }]}>{getTitle()}</Text>
 
         {/* SHOP SWITCHER DROPDOWN BUTTON (RIGHT NEXT TO BRAND LOGO / TITLE) */}
@@ -67,7 +65,7 @@ export const Header = ({ activeTab, onToggleSidebar, onOpenAuthModal }) => {
           <TouchableOpacity
             style={[
               styles.shopBadgeBtn,
-              { 
+              {
                 backgroundColor: activeShopId === 'shop_2' ? 'rgba(245, 158, 11, 0.15)' : 'rgba(59, 130, 246, 0.15)',
                 borderColor: activeShopId === 'shop_2' ? COLORS.statusPending : COLORS.primaryLight
               }
@@ -79,35 +77,48 @@ export const Header = ({ activeTab, onToggleSidebar, onOpenAuthModal }) => {
               }
               setShowShopMenu(!showShopMenu);
             }}
-            title={canSwitchShop ? "Bấm để đổi Cửa hàng" : "Chỉ thanhdatglory@gmail.com mới được chuyển Shop"}
+            title={canSwitchShop ? 'Bấm để đổi Cửa hàng' : 'Chỉ thanhdatglory@gmail.com mới được chuyển Shop'}
           >
-            <Store size={14} color={activeShopId === 'shop_2' ? COLORS.statusPending : COLORS.primaryLight} style={{ marginRight: 6 }} />
-            <Text style={[
-              styles.shopBadgeText,
-              { color: activeShopId === 'shop_2' ? COLORS.statusPending : COLORS.primaryLight }
-            ]}>
+            <Store
+              size={14}
+              color={activeShopId === 'shop_2' ? COLORS.statusPending : COLORS.primaryLight}
+              style={{ marginRight: 6 }}
+            />
+            <Text
+              style={[
+                styles.shopBadgeText,
+                { color: activeShopId === 'shop_2' ? COLORS.statusPending : COLORS.primaryLight }
+              ]}
+            >
               {activeShopObj.name}
             </Text>
             {canSwitchShop && (
-              <ChevronDown size={13} color={activeShopId === 'shop_2' ? COLORS.statusPending : COLORS.primaryLight} style={{ marginLeft: 4 }} />
+              <ChevronDown
+                size={13}
+                color={activeShopId === 'shop_2' ? COLORS.statusPending : COLORS.primaryLight}
+                style={{ marginLeft: 4 }}
+              />
             )}
           </TouchableOpacity>
 
           {/* SHOP SWITCHER POPUP MENU */}
           {showShopMenu && (
-            <View style={[styles.shopDropdownMenu, { backgroundColor: colors.cardDark, borderColor: colors.cardBorder }]}>
+            <View
+              style={[styles.shopDropdownMenu, { backgroundColor: colors.cardDark, borderColor: colors.cardBorder }]}
+            >
               <Text style={styles.shopDropdownHeader}>CHUYỂN ĐỔI CỬA HÀNG</Text>
 
-              {(availableShops || []).map(s => (
+              {(availableShops || []).map((s) => (
                 <TouchableOpacity
                   key={s.id}
-                  style={[
-                    styles.shopOptionItem,
-                    activeShopId === s.id && styles.shopOptionActive
-                  ]}
+                  style={[styles.shopOptionItem, activeShopId === s.id && styles.shopOptionActive]}
                   onPress={() => handleShopSwitch(s.id)}
                 >
-                  <Store size={16} color={activeShopId === s.id ? COLORS.primaryLight : COLORS.textMuted} style={{ marginRight: 8 }} />
+                  <Store
+                    size={16}
+                    color={activeShopId === s.id ? COLORS.primaryLight : COLORS.textMuted}
+                    style={{ marginRight: 8 }}
+                  />
                   <View style={{ flex: 1 }}>
                     <Text style={[styles.shopOptionName, activeShopId === s.id && styles.shopOptionNameActive]}>
                       {s.name}
@@ -127,12 +138,19 @@ export const Header = ({ activeTab, onToggleSidebar, onOpenAuthModal }) => {
       {/* Right: Realtime Status, Sync Button & User Profile Icon Button */}
       <View style={styles.rightSection}>
         {/* Manual Data Refresh Button */}
-        <TouchableOpacity 
-          style={[styles.refreshDataBtn, { backgroundColor: colors.surfaceHover || COLORS.cardDark, borderColor: colors.cardBorder }]}
+        <TouchableOpacity
+          style={[
+            styles.refreshDataBtn,
+            { backgroundColor: colors.surfaceHover || COLORS.cardDark, borderColor: colors.cardBorder }
+          ]}
           onPress={handleManualRefresh}
           title="Bấm để tải lại dữ liệu mới nhất từ Cloud / Máy khác"
         >
-          <RefreshCw size={14} color={colors.primary} style={{ marginRight: 6, transform: isRefreshing ? [{ rotate: '180deg' }] : [] }} />
+          <RefreshCw
+            size={14}
+            color={colors.primary}
+            style={{ marginRight: 6, transform: isRefreshing ? [{ rotate: '180deg' }] : [] }}
+          />
           <Text style={[styles.refreshDataText, { color: colors.textMain }]}>
             {isRefreshing ? 'Đang Tải...' : 'Đồng Bộ Nhanh'}
           </Text>
@@ -145,7 +163,12 @@ export const Header = ({ activeTab, onToggleSidebar, onOpenAuthModal }) => {
             <Text style={styles.onlineStatusText}>Realtime Online</Text>
           </View>
         ) : (
-          <View style={[styles.onlineStatusBadge, { backgroundColor: 'rgba(245, 158, 11, 0.15)', borderColor: COLORS.statusPending }]}>
+          <View
+            style={[
+              styles.onlineStatusBadge,
+              { backgroundColor: 'rgba(245, 158, 11, 0.15)', borderColor: COLORS.statusPending }
+            ]}
+          >
             <Text style={{ ...TYPOGRAPHY.caption1, color: COLORS.statusPending, fontWeight: '700' }}>
               Chỉ Xem (Read-Only)
             </Text>
@@ -155,7 +178,7 @@ export const Header = ({ activeTab, onToggleSidebar, onOpenAuthModal }) => {
         {/* User Profile Icon Button */}
         {currentUser ? (
           <View style={{ position: 'relative' }}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[
                 styles.userProfileIconButton,
                 { backgroundColor: colors.surfaceHover || COLORS.cardDark, borderColor: colors.cardBorder }
@@ -166,16 +189,16 @@ export const Header = ({ activeTab, onToggleSidebar, onOpenAuthModal }) => {
               <View style={[styles.userIconCircle, { backgroundColor: colors.primary }]}>
                 <UserCheck size={16} color="#ffffff" />
               </View>
-              <Text style={[styles.userBadgeText, { color: colors.textMain }]}>
-                {currentUser.name.split(' ')[0]}
-              </Text>
+              <Text style={[styles.userBadgeText, { color: colors.textMain }]}>{currentUser.name.split(' ')[0]}</Text>
               <View style={styles.onlineDot} />
               <ChevronDown size={14} color={colors.textMuted} style={{ marginLeft: 2 }} />
             </TouchableOpacity>
 
             {/* Account Info Dropdown Popup */}
             {showAdminMenu && (
-              <View style={[styles.adminDropdownMenu, { backgroundColor: colors.cardDark, borderColor: colors.cardBorder }]}>
+              <View
+                style={[styles.adminDropdownMenu, { backgroundColor: colors.cardDark, borderColor: colors.cardBorder }]}
+              >
                 <View style={[styles.dropdownHeader, { borderBottomColor: colors.cardBorder }]}>
                   <ShieldCheck size={16} color={colors.primary} style={{ marginRight: 6 }} />
                   <Text style={[styles.dropdownTitle, { color: colors.textMain }]}>Thông Tin Tài Khoản</Text>
@@ -187,14 +210,18 @@ export const Header = ({ activeTab, onToggleSidebar, onOpenAuthModal }) => {
                       <User size={20} color="#ffffff" />
                     </View>
                     <View>
-                      <Text style={{ ...TYPOGRAPHY.subhead, fontWeight: '800', color: colors.textMain }}>{currentUser.name}</Text>
+                      <Text style={{ ...TYPOGRAPHY.subhead, fontWeight: '800', color: colors.textMain }}>
+                        {currentUser.name}
+                      </Text>
                       <Text style={{ ...TYPOGRAPHY.caption2, color: colors.textMuted }}>Admin Hệ Thống</Text>
                     </View>
                   </View>
-                  <Text style={{ ...TYPOGRAPHY.caption2, color: colors.textMuted, marginTop: 4 }}>{currentUser.email}</Text>
+                  <Text style={{ ...TYPOGRAPHY.caption2, color: colors.textMuted, marginTop: 4 }}>
+                    {currentUser.email}
+                  </Text>
                 </View>
 
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={[styles.logoutBtn, { borderTopColor: colors.cardBorder }]}
                   onPress={() => {
                     logoutAdmin();
@@ -209,8 +236,11 @@ export const Header = ({ activeTab, onToggleSidebar, onOpenAuthModal }) => {
             )}
           </View>
         ) : (
-          <TouchableOpacity 
-            style={[styles.userProfileIconButton, { backgroundColor: 'rgba(59, 130, 246, 0.12)', borderColor: colors.primary }]} 
+          <TouchableOpacity
+            style={[
+              styles.userProfileIconButton,
+              { backgroundColor: 'rgba(59, 130, 246, 0.12)', borderColor: colors.primary }
+            ]}
             onPress={onOpenAuthModal}
             title="Bấm để đăng nhập Admin"
           >

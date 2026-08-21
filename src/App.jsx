@@ -37,10 +37,10 @@ export const AppContent = () => {
   return (
     <View className="responsive-app-wrapper" style={[styles.appWrapper, { backgroundColor: themeObj.colors.bgDark }]}>
       {/* Collapsible Sidebar */}
-      <Sidebar 
-        activeTab={activeTab} 
-        setActiveTab={setActiveTab} 
-        collapsed={collapsed} 
+      <Sidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        collapsed={collapsed}
         setCollapsed={setCollapsed}
         onOpenBatchModal={handleOpenBatchModal}
         onOpenOrderModal={handleOpenOrderModal}
@@ -49,10 +49,10 @@ export const AppContent = () => {
 
       {/* Main Content Workspace */}
       <View style={styles.mainLayout}>
-        <Header 
-          activeTab={activeTab} 
+        <Header
+          activeTab={activeTab}
           onToggleSidebar={() => setCollapsed(!collapsed)}
-          onOpenAuthModal={openAuthModal} 
+          onOpenAuthModal={openAuthModal}
         />
 
         <View style={styles.contentBody}>
@@ -63,25 +63,13 @@ export const AppContent = () => {
       </View>
 
       {/* Modals */}
-      <LoginModal 
-        visible={isAuthModalOpen} 
-        onClose={closeAuthModal} 
-      />
+      <LoginModal visible={isAuthModalOpen} onClose={closeAuthModal} />
 
-      <BatchManagementModal
-        visible={isBatchModalOpen}
-        onClose={() => setIsBatchModalOpen(false)}
-      />
+      <BatchManagementModal visible={isBatchModalOpen} onClose={() => setIsBatchModalOpen(false)} />
 
-      <OrderFormModal
-        visible={isOrderModalOpen}
-        onClose={() => setIsOrderModalOpen(false)}
-      />
+      <OrderFormModal visible={isOrderModalOpen} onClose={() => setIsOrderModalOpen(false)} />
 
-      <SettingsModal
-        visible={isSettingsModalOpen}
-        onClose={() => setIsSettingsModalOpen(false)}
-      />
+      <SettingsModal visible={isSettingsModalOpen} onClose={() => setIsSettingsModalOpen(false)} />
     </View>
   );
 };

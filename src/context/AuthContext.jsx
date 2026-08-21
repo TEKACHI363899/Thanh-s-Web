@@ -1,5 +1,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from '../services/firebase';
+import {
+  auth,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged
+} from '../services/firebase';
 
 const AuthContext = createContext();
 
@@ -83,7 +89,11 @@ export const AuthProvider = ({ children }) => {
       return { success: true, user: adminUser };
     } catch (err) {
       let msg = 'Đăng nhập thất bại. Vui lòng kiểm tra lại Email và Mật khẩu!';
-      if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+      if (
+        err.code === 'auth/invalid-credential' ||
+        err.code === 'auth/user-not-found' ||
+        err.code === 'auth/wrong-password'
+      ) {
         msg = 'Email hoặc mật khẩu không chính xác!';
       } else if (err.code === 'auth/too-many-requests') {
         msg = 'Tài khoản tạm thời bị khóa do gõ sai quá nhiều lần. Vui lòng thử lại sau!';
@@ -129,18 +139,20 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{
-      currentUser,
-      isReadOnly,
-      loadingAuth,
-      isAuthModalOpen,
-      openAuthModal,
-      closeAuthModal,
-      requireAdmin,
-      loginWithFirebase,
-      signUpWithFirebase,
-      logoutAdmin
-    }}>
+    <AuthContext.Provider
+      value={{
+        currentUser,
+        isReadOnly,
+        loadingAuth,
+        isAuthModalOpen,
+        openAuthModal,
+        closeAuthModal,
+        requireAdmin,
+        loginWithFirebase,
+        signUpWithFirebase,
+        logoutAdmin
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

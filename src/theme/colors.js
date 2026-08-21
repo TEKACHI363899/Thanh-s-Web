@@ -8,7 +8,7 @@ export const COLORS = {
   secondarySystemBackground: 'var(--secondary-system-background)',
   tertiarySystemBackground: 'var(--tertiary-system-background)',
   systemGroupedBackground: 'var(--system-grouped-background)',
-  
+
   // Apple System Colors
   systemBlue: 'var(--system-blue)',
   systemGreen: 'var(--system-green)',
@@ -26,13 +26,13 @@ export const COLORS = {
   primaryLight: 'var(--primary-light)',
   accent: 'var(--accent)',
   accentHover: 'var(--accent-hover)',
-  
+
   bgDark: 'var(--bg-dark)',
   cardDark: 'var(--card-dark)',
   sidebarBg: 'var(--sidebar-bg)',
   cardBorder: 'var(--card-border)',
   surfaceHover: 'var(--surface-hover)',
-  
+
   textMain: 'var(--text-main)',
   textMuted: 'var(--text-muted)',
   textSub: 'var(--text-sub)',
@@ -49,10 +49,10 @@ export const COLORS = {
   categoryQA: 'var(--category-qa)',
   orderTypeInStock: 'var(--order-type-in-stock)',
   orderTypePreorder: 'var(--order-type-preorder)',
-  
+
   // Financial Highlights
   success: 'var(--success)',
   danger: 'var(--danger)',
   warning: 'var(--warning)',
-  info: 'var(--info)',
+  info: 'var(--info)'
 };

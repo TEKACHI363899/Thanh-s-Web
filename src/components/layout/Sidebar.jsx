@@ -5,32 +5,35 @@ import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
 import { COLORS } from '../../theme/colors';
 import { TYPOGRAPHY } from '../../theme/typography';
-import { 
-  ShoppingBag, 
-  Package, 
-  TrendingUp, 
-  ChevronLeft, 
-  ChevronRight, 
+import {
+  ShoppingBag,
+  Package,
+  TrendingUp,
+  ChevronLeft,
+  ChevronRight,
   Boxes,
   PlusCircle,
   Settings,
   Store
 } from 'lucide-react';
 
-export const Sidebar = ({ 
-  activeTab, 
-  setActiveTab, 
-  collapsed, 
-  setCollapsed, 
-  onOpenBatchModal, 
+export const Sidebar = ({
+  activeTab,
+  setActiveTab,
+  collapsed,
+  setCollapsed,
+  onOpenBatchModal,
   onOpenOrderModal,
-  onOpenSettingsModal 
+  onOpenSettingsModal
 }) => {
   const { colors } = useTheme();
   const { currentUser } = useAuth();
   const { activeShopId, switchShop, availableShops } = useData();
 
-  const activeShopObj = (availableShops || []).find(s => s.id === activeShopId) || { id: 'shop_1', name: 'Shop 1 (Chính)' };
+  const activeShopObj = (availableShops || []).find((s) => s.id === activeShopId) || {
+    id: 'shop_1',
+    name: 'Shop 1 (Chính)'
+  };
   const canSwitchShop = currentUser?.email === 'thanhdatglory@gmail.com';
 
   const handleToggleShop = () => {
@@ -65,11 +68,14 @@ export const Sidebar = ({
   ];
 
   return (
-    <View className={`responsive-sidebar ${!collapsed ? 'expanded' : ''}`} style={[
-      styles.sidebar, 
-      collapsed ? styles.sidebarCollapsed : styles.sidebarExpanded,
-      { backgroundColor: colors.sidebarBg || colors.cardDark, borderColor: colors.cardBorder }
-    ]}>
+    <View
+      className={`responsive-sidebar ${!collapsed ? 'expanded' : ''}`}
+      style={[
+        styles.sidebar,
+        collapsed ? styles.sidebarCollapsed : styles.sidebarExpanded,
+        { backgroundColor: colors.sidebarBg || colors.cardDark, borderColor: colors.cardBorder }
+      ]}
+    >
       {/* Sidebar Top Header with Brand & Collapse Toggle */}
       <View style={styles.sidebarHeader}>
         {!collapsed && (
@@ -79,24 +85,31 @@ export const Sidebar = ({
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.brandTitle}>Kax Leth</Text>
-              
+
               {/* COMPACT ACTIVE SHOP BADGE NEXT TO LOGO BRAND */}
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={[
                   styles.shopSubTag,
-                  { 
-                    backgroundColor: activeShopId === 'shop_2' ? 'rgba(245, 158, 11, 0.15)' : 'rgba(59, 130, 246, 0.15)',
+                  {
+                    backgroundColor:
+                      activeShopId === 'shop_2' ? 'rgba(245, 158, 11, 0.15)' : 'rgba(59, 130, 246, 0.15)',
                     borderColor: activeShopId === 'shop_2' ? COLORS.statusPending : COLORS.primaryLight
                   }
                 ]}
                 onPress={handleToggleShop}
-                title={canSwitchShop ? "Bấm để đổi Cửa hàng" : "Chỉ thanhdatglory@gmail.com mới được chuyển Shop"}
+                title={canSwitchShop ? 'Bấm để đổi Cửa hàng' : 'Chỉ thanhdatglory@gmail.com mới được chuyển Shop'}
               >
-                <Store size={11} color={activeShopId === 'shop_2' ? COLORS.statusPending : COLORS.primaryLight} style={{ marginRight: 4 }} />
-                <Text style={[
-                  styles.shopSubTagText,
-                  { color: activeShopId === 'shop_2' ? COLORS.statusPending : COLORS.primaryLight }
-                ]}>
+                <Store
+                  size={11}
+                  color={activeShopId === 'shop_2' ? COLORS.statusPending : COLORS.primaryLight}
+                  style={{ marginRight: 4 }}
+                />
+                <Text
+                  style={[
+                    styles.shopSubTagText,
+                    { color: activeShopId === 'shop_2' ? COLORS.statusPending : COLORS.primaryLight }
+                  ]}
+                >
                   {activeShopObj.name}
                 </Text>
               </TouchableOpacity>
@@ -104,7 +117,7 @@ export const Sidebar = ({
           </View>
         )}
 
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.toggleBtn}
           onPress={() => setCollapsed(!collapsed)}
           title={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
@@ -119,10 +132,7 @@ export const Sidebar = ({
 
       {/* Quick Create Action Button */}
       {!collapsed && (
-        <TouchableOpacity 
-          style={styles.quickCreateBtn} 
-          onPress={onOpenOrderModal}
-        >
+        <TouchableOpacity style={styles.quickCreateBtn} onPress={onOpenOrderModal}>
           <PlusCircle size={20} color="#ffffff" style={{ marginRight: 10 }} />
           <Text style={styles.quickCreateText}> Tạo Đơn Mới</Text>
         </TouchableOpacity>
@@ -134,18 +144,14 @@ export const Sidebar = ({
           {collapsed ? '•••' : 'DANH MỤC QUẢN LÝ'}
         </Text>
 
-        {menuItems.map(item => {
+        {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
 
           return (
             <TouchableOpacity
               key={item.id}
-              style={[
-                styles.menuItem,
-                isActive && styles.menuItemActive,
-                collapsed && styles.menuItemCollapsed
-              ]}
+              style={[styles.menuItem, isActive && styles.menuItemActive, collapsed && styles.menuItemCollapsed]}
               onPress={() => setActiveTab(item.id)}
             >
               <View style={[styles.iconWrapper, isActive && { backgroundColor: item.color }]}>
@@ -154,9 +160,7 @@ export const Sidebar = ({
 
               {!collapsed && (
                 <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Text style={[styles.menuLabel, isActive && styles.menuLabelActive]}>
-                    {item.label}
-                  </Text>
+                  <Text style={[styles.menuLabel, isActive && styles.menuLabelActive]}>{item.label}</Text>
                   {item.badge ? (
                     <View style={styles.badgeTag}>
                       <Text style={styles.badgeText}>{item.badge}</Text>
@@ -173,24 +177,18 @@ export const Sidebar = ({
       <View style={styles.sidebarFooter}>
         {!collapsed ? (
           <>
-            <TouchableOpacity 
-              style={styles.batchQuickBtn}
-              onPress={onOpenBatchModal}
-            >
+            <TouchableOpacity style={styles.batchQuickBtn} onPress={onOpenBatchModal}>
               <Boxes size={18} color={COLORS.accent} style={{ marginRight: 8 }} />
               <Text style={styles.batchQuickText}>Quản Lý Lô Hàng</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={styles.settingsQuickBtn}
-              onPress={onOpenSettingsModal}
-            >
+            <TouchableOpacity style={styles.settingsQuickBtn} onPress={onOpenSettingsModal}>
               <Settings size={18} color={COLORS.primaryLight} style={{ marginRight: 8 }} />
               <Text style={styles.settingsQuickText}>Cài Đặt Theme</Text>
             </TouchableOpacity>
           </>
         ) : (
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.menuItem, styles.menuItemCollapsed, { marginTop: 'auto' }]}
             onPress={onOpenSettingsModal}
             title="Cài đặt Theme"

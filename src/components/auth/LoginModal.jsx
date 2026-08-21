@@ -3,7 +3,19 @@ import { TYPOGRAPHY } from '../../theme/typography';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from '../common/RNBridge';
 import { useAuth } from '../../context/AuthContext';
 import { COLORS } from '../../theme/colors';
-import { ShieldCheck, User, Lock, ArrowRight, X, UserPlus, LogIn, Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react';
+import {
+  ShieldCheck,
+  User,
+  Lock,
+  ArrowRight,
+  X,
+  UserPlus,
+  LogIn,
+  Eye,
+  EyeOff,
+  CheckCircle,
+  AlertCircle
+} from 'lucide-react';
 
 export const LoginModal = ({ visible, onClose }) => {
   const { loginWithFirebase, signUpWithFirebase } = useAuth();
@@ -106,9 +118,7 @@ export const LoginModal = ({ visible, onClose }) => {
             }}
           >
             <LogIn size={16} color={authMode === 'SIGNIN' ? '#ffffff' : COLORS.textMuted} style={{ marginRight: 6 }} />
-            <Text style={[styles.tabText, authMode === 'SIGNIN' && styles.tabTextActive]}>
-              🔑 Đăng Nhập Admin
-            </Text>
+            <Text style={[styles.tabText, authMode === 'SIGNIN' && styles.tabTextActive]}>🔑 Đăng Nhập Admin</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -119,10 +129,12 @@ export const LoginModal = ({ visible, onClose }) => {
               setSuccessMessage('');
             }}
           >
-            <UserPlus size={16} color={authMode === 'SIGNUP' ? '#ffffff' : COLORS.textMuted} style={{ marginRight: 6 }} />
-            <Text style={[styles.tabText, authMode === 'SIGNUP' && styles.tabTextActive]}>
-              📝 Đăng Ký Admin Mới
-            </Text>
+            <UserPlus
+              size={16}
+              color={authMode === 'SIGNUP' ? '#ffffff' : COLORS.textMuted}
+              style={{ marginRight: 6 }}
+            />
+            <Text style={[styles.tabText, authMode === 'SIGNUP' && styles.tabTextActive]}>📝 Đăng Ký Admin Mới</Text>
           </TouchableOpacity>
         </View>
 
@@ -144,9 +156,7 @@ export const LoginModal = ({ visible, onClose }) => {
 
           {authMode === 'SIGNUP' && (
             <View style={styles.adminBadgeNotice}>
-              <Text style={styles.adminBadgeNoticeText}>
-                
-              </Text>
+              <Text style={styles.adminBadgeNoticeText}></Text>
             </View>
           )}
 
@@ -190,7 +200,11 @@ export const LoginModal = ({ visible, onClose }) => {
               onChangeText={setPassword}
             />
             <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={{ padding: 4 }}>
-              {showPassword ? <EyeOff size={18} color={COLORS.textMuted} /> : <Eye size={18} color={COLORS.textMuted} />}
+              {showPassword ? (
+                <EyeOff size={18} color={COLORS.textMuted} />
+              ) : (
+                <Eye size={18} color={COLORS.textMuted} />
+              )}
             </TouchableOpacity>
           </View>
 
@@ -212,13 +226,13 @@ export const LoginModal = ({ visible, onClose }) => {
           )}
 
           {/* Submit Button */}
-          <TouchableOpacity 
-            style={[styles.submitBtn, authMode === 'SIGNUP' && { backgroundColor: COLORS.success }]} 
-            onPress={handleAuthSubmit} 
+          <TouchableOpacity
+            style={[styles.submitBtn, authMode === 'SIGNUP' && { backgroundColor: COLORS.success }]}
+            onPress={handleAuthSubmit}
             disabled={loading}
           >
             <Text style={styles.submitBtnText}>
-              {loading ? 'Đang xử lý...' : (authMode === 'SIGNIN' ? 'Đăng Nhập Ngay' : 'Tạo Tài Khoản Admin')}
+              {loading ? 'Đang xử lý...' : authMode === 'SIGNIN' ? 'Đăng Nhập Ngay' : 'Tạo Tài Khoản Admin'}
             </Text>
             {authMode === 'SIGNIN' ? (
               <ArrowRight size={18} color="#ffffff" style={{ marginLeft: 8 }} />
@@ -387,7 +401,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
     color: COLORS.textMain,
-    ...TYPOGRAPHY.subhead,
+    ...TYPOGRAPHY.subhead
   },
   submitBtn: {
     flexDirection: 'row',
@@ -405,6 +419,6 @@ const styles = StyleSheet.create({
   submitBtnText: {
     color: '#ffffff',
     fontWeight: '900',
-    ...TYPOGRAPHY.callout,
+    ...TYPOGRAPHY.callout
   }
 });

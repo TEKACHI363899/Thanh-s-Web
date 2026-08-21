@@ -16,7 +16,7 @@ export const THEMES = {
       secondarySystemBackground: '#1C1C1E',
       tertiarySystemBackground: '#2C2C2E',
       systemGroupedBackground: '#000000',
-      
+
       systemBlue: '#0A84FF',
       systemGreen: '#30D158',
       systemRed: '#FF453A',
@@ -69,7 +69,7 @@ export const THEMES = {
       secondarySystemBackground: '#F2F2F7',
       tertiarySystemBackground: '#FFFFFF',
       systemGroupedBackground: '#F2F2F7',
-      
+
       systemBlue: '#007AFF',
       systemGreen: '#34C759',
       systemRed: '#FF3B30',
@@ -122,7 +122,7 @@ export const THEMES = {
       secondarySystemBackground: '#ffe4e6',
       tertiarySystemBackground: '#ffffff',
       systemGroupedBackground: '#fff1f2',
-      
+
       systemBlue: '#007AFF',
       systemGreen: '#34C759',
       systemRed: '#FF3B30',
@@ -175,7 +175,7 @@ export const THEMES = {
       secondarySystemBackground: '#21153b',
       tertiarySystemBackground: '#1a0e30',
       systemGroupedBackground: '#130b24',
-      
+
       systemBlue: '#0A84FF',
       systemGreen: '#30D158',
       systemRed: '#FF453A',
@@ -226,7 +226,7 @@ const injectGlobalThemeStyle = (activeTheme) => {
 
   // Generate CSS Variables dynamically from activeTheme.colors
   let cssVariables = ':root {\n';
-  Object.keys(activeTheme.colors).forEach(key => {
+  Object.keys(activeTheme.colors).forEach((key) => {
     // convert camelCase to kebab-case
     const kebabKey = key.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
     cssVariables += `  --${kebabKey}: ${activeTheme.colors[key]};\n`;
@@ -330,7 +330,9 @@ export const ThemeProvider = ({ children }) => {
   const activeThemeObj = THEMES[theme] || THEMES.dark;
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme: changeTheme, themeObj: activeThemeObj, colors: activeThemeObj.colors }}>
+    <ThemeContext.Provider
+      value={{ theme, setTheme: changeTheme, themeObj: activeThemeObj, colors: activeThemeObj.colors }}
+    >
       {children}
     </ThemeContext.Provider>
   );

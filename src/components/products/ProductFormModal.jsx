@@ -4,11 +4,31 @@ import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView 
 import { useData, generatePrefixFromCategoryName } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
 import { COLORS } from '../../theme/colors';
-import { Package, Tag, DollarSign, Percent, X, Check, Info, Upload, Trash2, Image as ImageIcon, Plus } from 'lucide-react';
+import {
+  Package,
+  Tag,
+  DollarSign,
+  Percent,
+  X,
+  Check,
+  Info,
+  Upload,
+  Trash2,
+  Image as ImageIcon,
+  Plus
+} from 'lucide-react';
 import { formatCurrencyInput, parseCurrencyInput } from '../../utils/formatters';
 
 export const ProductFormModal = ({ visible, onClose, initialProduct = null }) => {
-  const { batches, customCategories, addCustomCategory, deleteCustomCategory, addProduct, updateProduct, generateNextSKU } = useData();
+  const {
+    batches,
+    customCategories,
+    addCustomCategory,
+    deleteCustomCategory,
+    addProduct,
+    updateProduct,
+    generateNextSKU
+  } = useData();
   const { requireAdmin } = useAuth();
 
   const [category, setCategory] = useState('TS');
@@ -46,7 +66,9 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
 
   const handleDeleteCategory = (cat) => {
     requireAdmin(() => {
-      if (window.confirm(`Bạn có chắc chắn muốn xóa vĩnh viễn phân loại SKU "${cat.name}" (${cat.prefix}) khỏi hệ thống?`)) {
+      if (
+        window.confirm(`Bạn có chắc chắn muốn xóa vĩnh viễn phân loại SKU "${cat.name}" (${cat.prefix}) khỏi hệ thống?`)
+      ) {
         deleteCustomCategory(cat.code);
         if (category === cat.code) {
           setCategory('TS');
@@ -124,7 +146,7 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
       setCategory(initialProduct.category || 'TS');
       setSku(initialProduct.sku || '');
       setName(initialProduct.name || '');
-      setBatchId(initialProduct.batchId || (batches.length > 0 ? batches[0].id : ''));
+      setBatchId(initialProduct.batchId || '');
       setImage(initialProduct.image || '');
       setCostPrice(initialProduct.costPrice || '');
       setMarginPercent(initialProduct.marginPercent || 30);
@@ -135,9 +157,9 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
       setCategory('TS');
       setSku(generateNextSKU('TS'));
       setName('');
-      setBatchId(batches.length > 0 ? batches[0].id : '');
+      setBatchId(''); // Default to loose goods / no batch required
       setImage('');
-      setCostPrice(''); // Default empty for new products
+      setCostPrice('');
       setMarginPercent(30);
       setSellingPrice('');
       setStock(1);
@@ -197,26 +219,28 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
       setShowValidation(true);
       const nameErr = getNameError();
       if (nameErr) {
-        setStepErrorMsg(`⚠️ ${nameErr}`);
+        setStepErrorMsg(`[Lỗi] ${nameErr}`);
         return;
       }
 
       const costErr = getCostPriceError();
       if (costErr) {
-        setStepErrorMsg(`⚠️ ${costErr}`);
+        setStepErrorMsg(`[Lỗi] ${costErr}`);
         return;
       }
 
+      const isLoose = !batchId || batchId === 'HANG_LE';
       const payload = {
         category,
         sku,
         name: name.trim(),
-        batchId,
+        batchId: isLoose ? null : batchId,
+        is_loose: isLoose,
         image: image || 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400&q=80',
-        costPrice: Number(costPrice) || 0,
-        marginPercent: Number(marginPercent) || 0,
-        sellingPrice: Number(sellingPrice) || Number(costPrice) || 0,
-        stock: Number(stock) || 0
+        costPrice: Math.max(0, Number(costPrice) || 0),
+        marginPercent: Math.max(0, Number(marginPercent) || 0),
+        sellingPrice: Math.max(0, Number(sellingPrice) || Number(costPrice) || 0),
+        stock: Math.max(0, Number(stock) || 0)
       };
 
       if (initialProduct) {
@@ -235,9 +259,7 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
     <View style={styles.overlay}>
       <View className="responsive-modal" style={styles.modalContainer}>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>
-            {initialProduct ? 'Chỉnh Sửa Sản Phẩm' : 'Thêm Sản Phẩm Mới'}
-          </Text>
+          <Text style={styles.headerTitle}>{initialProduct ? 'Chỉnh Sửa Sản Phẩm' : 'Thêm Sản Phẩm Mới'}</Text>
           <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
             <X size={20} color={COLORS.textMuted} />
           </TouchableOpacity>
@@ -252,12 +274,12 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
 
           <Text style={styles.label}>1. Phân loại sản phẩm (SKU tự động tăng):</Text>
           <View style={styles.categoryRow}>
-            {customCategories.map(cat => {
+            {customCategories.map((cat) => {
               const isDefault = cat.code === 'TS' || cat.code === 'QA';
               return (
                 <View key={cat.code} style={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <TouchableOpacity 
-                    style={[styles.catBadge, category === cat.code && styles.catBadgeTSActive]} 
+                  <TouchableOpacity
+                    style={[styles.catBadge, category === cat.code && styles.catBadgeTSActive]}
                     onPress={() => handleCategoryChange(cat.code)}
                   >
                     <Text style={[styles.catBadgeText, category === cat.code && styles.catTextActive]}>
@@ -265,7 +287,7 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
                     </Text>
 
                     {!isDefault && (
-                      <TouchableOpacity 
+                      <TouchableOpacity
                         style={styles.deleteCatIconBtn}
                         onPress={(e) => {
                           e.stopPropagation();
@@ -281,7 +303,7 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
               );
             })}
 
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.addCustomCatTriggerBtn}
               onPress={() => setShowAddCustomCat(!showAddCustomCat)}
             >
@@ -294,7 +316,7 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
           {showAddCustomCat && (
             <View style={styles.addCustomCatCard}>
               <Text style={styles.addCustomCatTitle}>Thêm Loại Mặt Hàng Mới (Tự Động Sinh Mã Prefix SKU)</Text>
-              
+
               <Text style={styles.label}>Tên Loại Mặt Hàng Mới *:</Text>
               <TextInput
                 style={styles.input}
@@ -345,17 +367,12 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
           <View style={styles.skuBox}>
             <Tag size={16} color={COLORS.primaryLight} />
             <Text style={styles.skuText}>Mã SKU Tự Động: </Text>
-            <Text style={[styles.skuCode, { color: COLORS.primaryLight }]}>
-              {sku}
-            </Text>
+            <Text style={[styles.skuCode, { color: COLORS.primaryLight }]}>{sku}</Text>
           </View>
 
           <Text style={styles.label}>2. Tên sản phẩm *:</Text>
           <TextInput
-            style={[
-              styles.input,
-              showValidation && getNameError() ? styles.inputErrorHighlight : null
-            ]}
+            style={[styles.input, showValidation && getNameError() ? styles.inputErrorHighlight : null]}
             placeholder="Ví dụ: Dây chuyền bạc Ý S925, Áo sơ mi lụa..."
             placeholderTextColor={COLORS.textMuted}
             value={name}
@@ -364,13 +381,34 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
               if (stepErrorMsg) setStepErrorMsg('');
             }}
           />
-          {showValidation && getNameError() ? (
-            <Text style={styles.fieldErrorText}>{getNameError()}</Text>
-          ) : null}
+          {showValidation && getNameError() ? <Text style={styles.fieldErrorText}>{getNameError()}</Text> : null}
 
           <Text style={styles.label}>3. Gắn vào Lô hàng (Đợt nhập):</Text>
           <View style={styles.selectBox}>
-            {batches.map(b => (
+            <TouchableOpacity
+              style={[
+                styles.batchChip,
+                (!batchId || batchId === 'HANG_LE') && {
+                  backgroundColor: 'rgba(245, 158, 11, 0.2)',
+                  borderColor: COLORS.warning
+                }
+              ]}
+              onPress={() => setBatchId('')}
+            >
+              <Text
+                style={[
+                  styles.batchChipText,
+                  (!batchId || batchId === 'HANG_LE') && {
+                    color: COLORS.warning,
+                    fontWeight: '800'
+                  }
+                ]}
+              >
+                [LẺ] Hàng lẻ (Không theo lô)
+              </Text>
+            </TouchableOpacity>
+
+            {batches.map((b) => (
               <TouchableOpacity
                 key={b.id}
                 style={[styles.batchChip, batchId === b.id && styles.batchChipActive]}
@@ -384,7 +422,7 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
           </View>
 
           <Text style={styles.label}>4. Hình ảnh sản phẩm (Kéo thả tệp hoặc Dán Ctrl+V):</Text>
-          
+
           <div
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
@@ -457,13 +495,16 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
                   Kéo & thả ảnh vào đây, hoặc <span style={{ color: COLORS.primaryLight }}>bấm để chọn tệp</span>
                 </p>
                 <p style={{ margin: 0, ...TYPOGRAPHY.caption1, color: COLORS.textMuted }}>
-                  Mẹo: Chụp màn hình / Copy ảnh rồi bấm <strong style={{ color: COLORS.statusPending }}>Ctrl + V</strong> để dán trực tiếp
+                  Mẹo: Chụp màn hình / Copy ảnh rồi bấm{' '}
+                  <strong style={{ color: COLORS.statusPending }}>Ctrl + V</strong> để dán trực tiếp
                 </p>
               </div>
             )}
           </div>
 
-          <Text style={[styles.label, { ...TYPOGRAPHY.caption1, color: COLORS.textMuted }]}>Hoặc chèn Link URL ảnh từ internet:</Text>
+          <Text style={[styles.label, { ...TYPOGRAPHY.caption1, color: COLORS.textMuted }]}>
+            Hoặc chèn Link URL ảnh từ internet:
+          </Text>
           <TextInput
             style={styles.input}
             placeholder="https://images.unsplash.com/..."
@@ -479,10 +520,7 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
               <View style={styles.col}>
                 <Text style={styles.label}>Giá gốc (Nhập VNĐ) *:</Text>
                 <TextInput
-                  style={[
-                    styles.input,
-                    showValidation && getCostPriceError() ? styles.inputErrorHighlight : null
-                  ]}
+                  style={[styles.input, showValidation && getCostPriceError() ? styles.inputErrorHighlight : null]}
                   keyboardType="numeric"
                   placeholder="Nhập giá gốc (VD: 150.000)..."
                   placeholderTextColor={COLORS.textMuted}
@@ -511,11 +549,15 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Text style={styles.label}>Giá bán tự động / Sửa tay (VNĐ):</Text>
                 {isManualPrice && (
-                  <TouchableOpacity onPress={() => {
-                    setIsManualPrice(false);
-                    recalculateSellingPrice(costPrice, marginPercent);
-                  }}>
-                    <Text style={{ color: COLORS.primaryLight, ...TYPOGRAPHY.caption1, }}>🔄 Khôi phục tính tự động</Text>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setIsManualPrice(false);
+                      recalculateSellingPrice(costPrice, marginPercent);
+                    }}
+                  >
+                    <Text style={{ color: COLORS.primaryLight, ...TYPOGRAPHY.caption1, fontWeight: '700' }}>
+                      Khôi phục tính tự động
+                    </Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -559,9 +601,7 @@ export const ProductFormModal = ({ visible, onClose, initialProduct = null }) =>
 
           <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit}>
             <Check size={18} color="#ffffff" style={{ marginRight: 6 }} />
-            <Text style={styles.submitBtnText}>
-              {initialProduct ? 'Cập Nhật Sản Phẩm' : 'Thêm Sản Phẩm Mới'}
-            </Text>
+            <Text style={styles.submitBtnText}>{initialProduct ? 'Cập Nhật Sản Phẩm' : 'Thêm Sản Phẩm Mới'}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -791,7 +831,7 @@ const styles = StyleSheet.create({
   cancelBtnText: {
     color: COLORS.textSub,
     fontWeight: '700',
-    ...TYPOGRAPHY.subhead,
+    ...TYPOGRAPHY.subhead
   },
   submitBtn: {
     flexDirection: 'row',
@@ -805,7 +845,7 @@ const styles = StyleSheet.create({
   submitBtnText: {
     color: '#ffffff',
     fontWeight: '800',
-    ...TYPOGRAPHY.callout,
+    ...TYPOGRAPHY.callout
   },
   inlineErrorBanner: {
     flexDirection: 'row',

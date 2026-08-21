@@ -4,7 +4,29 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from 
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
 import { COLORS } from '../../theme/colors';
-import { Plus, Search, Filter, Calendar, Edit2, Trash2, Tag, ChevronDown, CheckCircle, Clock, Truck, XCircle, AlertCircle, Phone, User, Globe, FileText, Package, RotateCcw, X, Check } from 'lucide-react';
+import {
+  Plus,
+  Search,
+  Filter,
+  Calendar,
+  Edit2,
+  Trash2,
+  Tag,
+  ChevronDown,
+  CheckCircle,
+  Clock,
+  Truck,
+  XCircle,
+  AlertCircle,
+  Phone,
+  User,
+  Globe,
+  FileText,
+  Package,
+  RotateCcw,
+  X,
+  Check
+} from 'lucide-react';
 import { OrderFormModal } from './OrderFormModal';
 
 export const OrderDataGrid = () => {
@@ -22,15 +44,17 @@ export const OrderDataGrid = () => {
   const [editingOrder, setEditingOrder] = useState(null);
 
   // Filter calculation
-  const activeFilterCount = (searchTerm.trim() ? 1 : 0) + 
-    (selectedStatus !== 'ALL' ? 1 : 0) + 
-    (selectedOrderType !== 'ALL' ? 1 : 0) + 
-    (selectedBatch !== 'ALL' ? 1 : 0) + 
+  const activeFilterCount =
+    (searchTerm.trim() ? 1 : 0) +
+    (selectedStatus !== 'ALL' ? 1 : 0) +
+    (selectedOrderType !== 'ALL' ? 1 : 0) +
+    (selectedBatch !== 'ALL' ? 1 : 0) +
     (selectedMonth !== 'ALL' ? 1 : 0);
 
-  const filteredOrders = orders.filter(o => {
+  const filteredOrders = orders.filter((o) => {
     const term = searchTerm.toLowerCase().trim();
-    const matchesSearch = !term || 
+    const matchesSearch =
+      !term ||
       (o.customerName && o.customerName.toLowerCase().includes(term)) ||
       (o.customerPhone && o.customerPhone.includes(term)) ||
       (o.socialUsername && o.socialUsername.toLowerCase().includes(term)) ||
@@ -38,7 +62,11 @@ export const OrderDataGrid = () => {
 
     const matchesStatus = selectedStatus === 'ALL' || o.status === selectedStatus;
     const matchesType = selectedOrderType === 'ALL' || o.orderType === selectedOrderType;
-    const matchesBatch = selectedBatch === 'ALL' || (o.items && o.items.some(it => it.batchId === selectedBatch));
+    const matchesBatch =
+      selectedBatch === 'ALL' ||
+      (selectedBatch === 'LOOSE'
+        ? o.items && o.items.some((it) => !it.batchId || it.is_loose)
+        : o.items && o.items.some((it) => it.batchId === selectedBatch));
 
     let matchesMonth = true;
     if (selectedMonth !== 'ALL' && o.createdDate) {
@@ -62,9 +90,15 @@ export const OrderDataGrid = () => {
   };
 
   const handleDelete = (order) => {
-    if (window.confirm(`Bạn có chắc muốn XÓA đơn hàng ${order.code} của khách "${order.customerName}"? (Số lượng sản phẩm sẽ được tự động hoàn lại tồn kho)`)) {
-      deleteOrder(order.id);
-    }
+    requireAdmin(() => {
+      if (
+        window.confirm(
+          `Bạn có chắc muốn XÓA đơn hàng ${order.code} của khách "${order.customerName}"? (Số lượng sản phẩm sẽ được tự động hoàn lại tồn kho)`
+        )
+      ) {
+        deleteOrder(order.id);
+      }
+    }, 'Vui lòng đăng nhập Admin để xóa đơn hàng!');
   };
 
   const formatCurrency = (val) => {
@@ -99,8 +133,8 @@ export const OrderDataGrid = () => {
           </Text>
         </View>
 
-        <TouchableOpacity 
-          style={styles.bigCreateOrderBtn} 
+        <TouchableOpacity
+          style={styles.bigCreateOrderBtn}
           onPress={() => {
             requireAdmin(() => {
               setEditingOrder(null);
@@ -122,27 +156,27 @@ export const OrderDataGrid = () => {
 
         <View style={[styles.statCard, { borderColor: COLORS.statusPending }]}>
           <Text style={[styles.statVal, { color: COLORS.statusPending }]}>
-            {orders.filter(o => o.status === 'Chờ xử lý').length}
+            {orders.filter((o) => o.status === 'Chờ xử lý').length}
           </Text>
           <Text style={styles.statLabel}>Chờ Xử Lý</Text>
         </View>
 
         <View style={[styles.statCard, { borderColor: COLORS.statusShipping }]}>
           <Text style={[styles.statVal, { color: COLORS.statusShipping }]}>
-            {orders.filter(o => o.status === 'Đang giao').length}
+            {orders.filter((o) => o.status === 'Đang giao').length}
           </Text>
           <Text style={styles.statLabel}>Đang Giao</Text>
         </View>
 
         <View style={[styles.statCard, { borderColor: COLORS.statusDelivered }]}>
           <Text style={[styles.statVal, { color: COLORS.statusDelivered }]}>
-            {orders.filter(o => o.status === 'Đã giao').length}
+            {orders.filter((o) => o.status === 'Đã giao').length}
           </Text>
           <Text style={styles.statLabel}>Đã Giao Thành Công</Text>
         </View>
 
         <View style={[styles.statCard, { borderColor: COLORS.danger }]}>
-          <Text style={[styles.statVal, { color: COLORS.danger, ...TYPOGRAPHY.headline, }]}>
+          <Text style={[styles.statVal, { color: COLORS.danger, ...TYPOGRAPHY.headline }]}>
             {formatCurrency(orders.reduce((sum, o) => sum + (o.remainingDebt || 0), 0))}
           </Text>
           <Text style={styles.statLabel}>Tổng Nợ Khách Order</Text>
@@ -168,11 +202,15 @@ export const OrderDataGrid = () => {
         </View>
 
         {/* Unified Filter Button */}
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.filterTriggerBtn, activeFilterCount > 0 && styles.filterTriggerBtnActive]}
           onPress={() => setIsFilterModalOpen(true)}
         >
-          <Filter size={16} color={activeFilterCount > 0 ? '#ffffff' : COLORS.primaryLight} style={{ marginRight: 6 }} />
+          <Filter
+            size={16}
+            color={activeFilterCount > 0 ? '#ffffff' : COLORS.primaryLight}
+            style={{ marginRight: 6 }}
+          />
           <Text style={[styles.filterTriggerText, activeFilterCount > 0 && styles.filterTriggerTextActive]}>
             Bộ Lọc {activeFilterCount > 0 ? `(${activeFilterCount})` : ''}
           </Text>
@@ -212,17 +250,18 @@ export const OrderDataGrid = () => {
             ) : (
               filteredOrders.map((ord, idx) => {
                 const stStyle = getStatusBadgeStyle(ord.status);
-                const totalVal = ord.items.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0) + (ord.isFreeship ? 0 : ord.shippingFee);
+                const totalVal =
+                  ord.items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0) +
+                  (ord.isFreeship ? 0 : ord.shippingFee);
 
                 return (
                   <View key={ord.id} style={styles.tr}>
                     {/* Code */}
                     <View style={[styles.td, { width: 110 }]}>
                       <Text style={styles.codeText}>{ord.code}</Text>
-                      <View style={[
-                        styles.typeBadgeTag,
-                        ord.orderType === 'Order' ? styles.typeOrder : styles.typeInStock
-                      ]}>
+                      <View
+                        style={[styles.typeBadgeTag, ord.orderType === 'Order' ? styles.typeOrder : styles.typeInStock]}
+                      >
                         <Text style={styles.typeBadgeText}>{ord.orderType}</Text>
                       </View>
                     </View>
@@ -234,9 +273,13 @@ export const OrderDataGrid = () => {
 
                     {/* Customer */}
                     <View style={[styles.td, { width: 200 }]}>
-                      <Text style={styles.customerName} numberOfLines={1}>{ord.customerName}</Text>
+                      <Text style={styles.customerName} numberOfLines={1}>
+                        {ord.customerName}
+                      </Text>
                       {ord.customerPhone ? (
-                        <Text style={styles.customerPhone} numberOfLines={1}>{ord.customerPhone}</Text>
+                        <Text style={styles.customerPhone} numberOfLines={1}>
+                          {ord.customerPhone}
+                        </Text>
                       ) : null}
                     </View>
 
@@ -278,11 +321,21 @@ export const OrderDataGrid = () => {
                             width: '100%'
                           }}
                         >
-                          <option value="Chờ xử lý" style={{ background: COLORS.cardDark, color: COLORS.textMain }}>Chờ xử lý</option>
-                          <option value="Đã chốt" style={{ background: COLORS.cardDark, color: COLORS.textMain }}>Đã chốt</option>
-                          <option value="Đang giao" style={{ background: COLORS.cardDark, color: COLORS.textMain }}>Đang giao</option>
-                          <option value="Đã giao" style={{ background: COLORS.cardDark, color: COLORS.textMain }}>Đã giao</option>
-                          <option value="Hoàn/Hủy" style={{ background: COLORS.cardDark, color: COLORS.textMain }}>Hoàn/Hủy (Hoàn kho)</option>
+                          <option value="Chờ xử lý" style={{ background: COLORS.cardDark, color: COLORS.textMain }}>
+                            Chờ xử lý
+                          </option>
+                          <option value="Đã chốt" style={{ background: COLORS.cardDark, color: COLORS.textMain }}>
+                            Đã chốt
+                          </option>
+                          <option value="Đang giao" style={{ background: COLORS.cardDark, color: COLORS.textMain }}>
+                            Đang giao
+                          </option>
+                          <option value="Đã giao" style={{ background: COLORS.cardDark, color: COLORS.textMain }}>
+                            Đã giao
+                          </option>
+                          <option value="Hoàn/Hủy" style={{ background: COLORS.cardDark, color: COLORS.textMain }}>
+                            Hoàn/Hủy (Hoàn kho)
+                          </option>
                         </select>
                       </View>
                     </View>
@@ -303,25 +356,31 @@ export const OrderDataGrid = () => {
 
                     {/* Notes */}
                     <View style={[styles.td, { width: 160 }]}>
-                      <Text style={styles.notesText} numberOfLines={1}>{ord.orderNotes || 'Không'}</Text>
+                      <Text style={styles.notesText} numberOfLines={1}>
+                        {ord.orderNotes || 'Không'}
+                      </Text>
                     </View>
 
                     {/* Actions: Edit & Delete Buttons */}
                     <View style={[styles.td, { width: 130, flexDirection: 'row', justifyContent: 'center', gap: 6 }]}>
-                      <TouchableOpacity 
-                        style={styles.bigEditBtn} 
+                      <TouchableOpacity
+                        style={styles.bigEditBtn}
                         onPress={() => requireAdmin(() => handleEdit(ord), 'Vui lòng đăng nhập Admin để sửa đơn hàng!')}
                       >
                         <Edit2 size={14} color={COLORS.primaryLight} style={{ marginRight: 2 }} />
-                        <Text style={{ color: COLORS.primaryLight, fontWeight: '700', ...TYPOGRAPHY.caption1, }}>Sửa</Text>
+                        <Text style={{ color: COLORS.primaryLight, fontWeight: '700', ...TYPOGRAPHY.caption1 }}>
+                          Sửa
+                        </Text>
                       </TouchableOpacity>
 
-                      <TouchableOpacity 
-                        style={styles.bigDeleteBtn} 
-                        onPress={() => requireAdmin(() => handleDelete(ord), 'Vui lòng đăng nhập Admin để xóa đơn hàng!')}
+                      <TouchableOpacity
+                        style={styles.bigDeleteBtn}
+                        onPress={() =>
+                          requireAdmin(() => handleDelete(ord), 'Vui lòng đăng nhập Admin để xóa đơn hàng!')
+                        }
                       >
                         <Trash2 size={14} color={COLORS.danger} style={{ marginRight: 2 }} />
-                        <Text style={{ color: COLORS.danger, fontWeight: '700', ...TYPOGRAPHY.caption1, }}>Xóa</Text>
+                        <Text style={{ color: COLORS.danger, fontWeight: '700', ...TYPOGRAPHY.caption1 }}>Xóa</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -370,9 +429,15 @@ export const OrderDataGrid = () => {
                   style={styles.modalSelect}
                 >
                   <option value="ALL" style={{ background: COLORS.cardDark, color: COLORS.textMain }}>
-                    📦 Tất cả Lô Hàng ({batches.length})
+                    Tất cả Lô Hàng ({batches.length})
                   </option>
-                  {batches.map(b => (
+                  <option
+                    value="LOOSE"
+                    style={{ background: COLORS.cardDark, color: COLORS.warning, fontWeight: 'bold' }}
+                  >
+                    [LẺ] Hàng lẻ (Không theo lô)
+                  </option>
+                  {batches.map((b) => (
                     <option key={b.id} value={b.id} style={{ background: COLORS.cardDark, color: COLORS.textMain }}>
                       [{b.code}] {b.name}
                     </option>
@@ -383,7 +448,7 @@ export const OrderDataGrid = () => {
               {/* 3. Status selection */}
               <Text style={styles.filterSectionLabel}>3. Trạng thái đơn hàng:</Text>
               <View style={styles.chipsRow}>
-                {['ALL', 'Chờ xử lý', 'Đã chốt', 'Đang giao', 'Đã giao', 'Hoàn/Hủy'].map(st => (
+                {['ALL', 'Chờ xử lý', 'Đã chốt', 'Đang giao', 'Đã giao', 'Hoàn/Hủy'].map((st) => (
                   <TouchableOpacity
                     key={st}
                     style={[styles.modalChip, selectedStatus === st && styles.modalChipActive]}
@@ -399,7 +464,7 @@ export const OrderDataGrid = () => {
               {/* 4. Order type */}
               <Text style={styles.filterSectionLabel}>4. Loại đơn hàng:</Text>
               <View style={styles.chipsRow}>
-                {['ALL', 'Có sẵn', 'Order'].map(t => (
+                {['ALL', 'Có sẵn', 'Order'].map((t) => (
                   <TouchableOpacity
                     key={t}
                     style={[styles.modalChip, selectedOrderType === t && styles.modalChipActive]}
@@ -488,7 +553,7 @@ const styles = StyleSheet.create({
   bigCreateOrderBtnText: {
     color: '#ffffff',
     fontWeight: '800',
-    ...TYPOGRAPHY.callout,
+    ...TYPOGRAPHY.callout
   },
   statsRow: {
     flexDirection: 'row',
@@ -604,13 +669,16 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1.5,
     borderBottomColor: COLORS.cardBorder,
     paddingVertical: 12,
-    paddingHorizontal: 12
+    paddingHorizontal: 12,
+    alignItems: 'center'
   },
   th: {
     color: COLORS.textMuted,
     ...TYPOGRAPHY.caption1,
     fontWeight: '800',
-    textTransform: 'uppercase'
+    textTransform: 'uppercase',
+    paddingHorizontal: 4,
+    overflow: 'hidden'
   },
   tr: {
     flexDirection: 'row',
@@ -625,7 +693,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.sidebarBg
   },
   td: {
-    justifyContent: 'center'
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+    overflow: 'hidden'
   },
   codeText: {
     ...TYPOGRAPHY.callout,

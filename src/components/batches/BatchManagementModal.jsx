@@ -67,9 +67,13 @@ export const BatchManagementModal = ({ visible, onClose }) => {
 
   const handleDelete = (batch) => {
     requireAdmin(() => {
-      const productsInBatch = products.filter(p => p.batchId === batch.id);
+      const productsInBatch = products.filter((p) => p.batchId === batch.id);
       if (productsInBatch.length > 0) {
-        if (!window.confirm(`Lô hàng "${batch.name}" có ${productsInBatch.length} sản phẩm đang gắn. Bạn có chắc chắn muốn xóa?`)) {
+        if (
+          !window.confirm(
+            `Lô hàng "${batch.name}" có ${productsInBatch.length} sản phẩm đang gắn. Bạn có chắc chắn muốn xóa?`
+          )
+        ) {
           return;
         }
       } else {
@@ -103,9 +107,7 @@ export const BatchManagementModal = ({ visible, onClose }) => {
         <ScrollView style={styles.body} showsVerticalScrollIndicator={false}>
           {editingBatchId ? (
             <View style={styles.formCard}>
-              <Text style={styles.formTitle}>
-                {editingBatchId === 'NEW' ? '➕ Tạo Lô Hàng Mới' : '✏️ Chỉnh Sửa Lô Hàng'}
-              </Text>
+              <Text style={styles.formTitle}>{editingBatchId === 'NEW' ? 'Tạo Lô Hàng Mới' : 'Chỉnh Sửa Lô Hàng'}</Text>
 
               <View style={styles.grid2}>
                 <View style={styles.col}>
@@ -121,12 +123,7 @@ export const BatchManagementModal = ({ visible, onClose }) => {
 
                 <View style={styles.col}>
                   <Text style={styles.label}>Ngày Nhập Hàng (Bảng Chọn Datepicker):</Text>
-                  <TextInput
-                    type="date"
-                    style={styles.input}
-                    value={importDate}
-                    onChangeText={setImportDate}
-                  />
+                  <TextInput type="date" style={styles.input} value={importDate} onChangeText={setImportDate} />
                 </View>
               </View>
 
@@ -141,7 +138,10 @@ export const BatchManagementModal = ({ visible, onClose }) => {
 
               <Text style={styles.label}>Tổng Vốn Nhập Đợt Đó (Hiển thị trực tiếp VNĐ) *:</Text>
               <TextInput
-                style={[styles.input, { borderColor: COLORS.accent, fontWeight: '800', color: COLORS.accent, ...TYPOGRAPHY.callout, }]}
+                style={[
+                  styles.input,
+                  { borderColor: COLORS.accent, fontWeight: '800', color: COLORS.accent, ...TYPOGRAPHY.callout }
+                ]}
                 keyboardType="numeric"
                 placeholder="0 VNĐ"
                 placeholderTextColor={COLORS.textMuted}
@@ -178,8 +178,8 @@ export const BatchManagementModal = ({ visible, onClose }) => {
 
           <Text style={styles.sectionHeading}>Danh Sách Các Lô Hàng Hiện Có ({batches.length}):</Text>
 
-          {batches.map(b => {
-            const batchProducts = products.filter(p => p.batchId === b.id);
+          {batches.map((b) => {
+            const batchProducts = products.filter((p) => p.batchId === b.id);
             const totalProductsCount = batchProducts.reduce((acc, curr) => acc + (curr.stock + curr.soldCount), 0);
             const totalSoldUnits = batchProducts.reduce((acc, curr) => acc + curr.soldCount, 0);
 
@@ -192,7 +192,7 @@ export const BatchManagementModal = ({ visible, onClose }) => {
                     </View>
                     <View>
                       <Text style={styles.batchName}>{b.name}</Text>
-                      <Text style={styles.batchDate}>📅 Ngày nhập: {b.importDate}</Text>
+                      <Text style={styles.batchDate}>Ngày nhập: {b.importDate}</Text>
                     </View>
                   </View>
 
@@ -214,7 +214,9 @@ export const BatchManagementModal = ({ visible, onClose }) => {
 
                   <View style={styles.statBox}>
                     <Text style={styles.statLabel}>Số sp đợt này</Text>
-                    <Text style={styles.statVal}>{batchProducts.length} loại ({totalProductsCount} món)</Text>
+                    <Text style={styles.statVal}>
+                      {batchProducts.length} loại ({totalProductsCount} món)
+                    </Text>
                   </View>
 
                   <View style={styles.statBox}>
@@ -223,7 +225,7 @@ export const BatchManagementModal = ({ visible, onClose }) => {
                   </View>
                 </View>
 
-                {b.notes ? <Text style={styles.batchNote}>📝 {b.notes}</Text> : null}
+                {b.notes ? <Text style={styles.batchNote}>Ghi chú: {b.notes}</Text> : null}
               </View>
             );
           })}
@@ -304,7 +306,7 @@ const styles = StyleSheet.create({
   addBatchTriggerText: {
     color: '#ffffff',
     fontWeight: '700',
-    ...TYPOGRAPHY.subhead,
+    ...TYPOGRAPHY.subhead
   },
   formCard: {
     backgroundColor: COLORS.sidebarBg,
@@ -404,7 +406,7 @@ const styles = StyleSheet.create({
   batchCodeText: {
     color: COLORS.accent,
     fontWeight: '800',
-    ...TYPOGRAPHY.footnote,
+    ...TYPOGRAPHY.footnote
   },
   batchName: {
     ...TYPOGRAPHY.callout,

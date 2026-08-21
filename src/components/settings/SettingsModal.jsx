@@ -21,7 +21,12 @@ export const SettingsModal = ({ visible, onClose }) => {
     <View style={styles.overlay}>
       <View style={[styles.modalContainer, { backgroundColor: colors.cardDark, borderColor: colors.cardBorder }]}>
         {/* Header */}
-        <View style={[styles.header, { borderColor: colors.cardBorder, backgroundColor: colors.sidebarBg || colors.cardDark }]}>
+        <View
+          style={[
+            styles.header,
+            { borderColor: colors.cardBorder, backgroundColor: colors.sidebarBg || colors.cardDark }
+          ]}
+        >
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <Settings size={20} color={colors.primary} />
             <Text style={[styles.headerTitle, { color: colors.textMain }]}>Cài Đặt Theme Giao Diện</Text>
@@ -52,7 +57,7 @@ export const SettingsModal = ({ visible, onClose }) => {
                   style={[
                     styles.themeRow,
                     {
-                      backgroundColor: isSelected ? 'rgba(59, 130, 246, 0.08)' : (colors.bgDark || COLORS.bgDark),
+                      backgroundColor: isSelected ? 'rgba(59, 130, 246, 0.08)' : colors.bgDark || COLORS.bgDark,
                       borderColor: isSelected ? colors.primary : colors.cardBorder
                     }
                   ]}
@@ -60,7 +65,12 @@ export const SettingsModal = ({ visible, onClose }) => {
                 >
                   {/* Left Section: Icon + Name + Description */}
                   <View style={styles.themeRowLeft}>
-                    <View style={[styles.iconCircle, { backgroundColor: isSelected ? colors.primary : 'rgba(148, 163, 184, 0.15)' }]}>
+                    <View
+                      style={[
+                        styles.iconCircle,
+                        { backgroundColor: isSelected ? colors.primary : 'rgba(148, 163, 184, 0.15)' }
+                      ]}
+                    >
                       <IconComp size={16} color={isSelected ? '#ffffff' : colors.textMuted} />
                     </View>
                     <View style={{ flex: 1 }}>
@@ -108,7 +118,10 @@ export const SettingsModal = ({ visible, onClose }) => {
         </ScrollView>
 
         <View style={[styles.footer, { borderColor: colors.cardBorder }]}>
-          <TouchableOpacity style={[styles.closeModalBtn, { backgroundColor: colors.surfaceHover || COLORS.surfaceHover }]} onPress={onClose}>
+          <TouchableOpacity
+            style={[styles.closeModalBtn, { backgroundColor: colors.surfaceHover || COLORS.surfaceHover }]}
+            onPress={onClose}
+          >
             <Text style={[styles.closeModalBtnText, { color: colors.textMain }]}>Đóng Cài Đặt</Text>
           </TouchableOpacity>
         </View>

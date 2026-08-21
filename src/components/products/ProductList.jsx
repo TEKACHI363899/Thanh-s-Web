@@ -4,7 +4,27 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Image 
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
 import { COLORS } from '../../theme/colors';
-import { Plus, Search, Filter, Layers, Edit2, Trash2, Tag, ChevronDown, CheckCircle, Package, AlertTriangle, X, RotateCcw, ArrowRight, DollarSign, BarChart2, Calendar, FileText, Check } from 'lucide-react';
+import {
+  Plus,
+  Search,
+  Filter,
+  Layers,
+  Edit2,
+  Trash2,
+  Tag,
+  ChevronDown,
+  CheckCircle,
+  Package,
+  AlertTriangle,
+  X,
+  RotateCcw,
+  ArrowRight,
+  DollarSign,
+  BarChart2,
+  Calendar,
+  FileText,
+  Check
+} from 'lucide-react';
 import { ProductFormModal } from './ProductFormModal';
 import { BatchManagementModal } from '../batches/BatchManagementModal';
 
@@ -24,15 +44,15 @@ export const ProductList = () => {
   const [editingBatch, setEditingBatch] = useState(null);
 
   // Active filter count
-  const activeFilterCount = (searchTerm.trim() ? 1 : 0) + 
-    (selectedCategory !== 'ALL' ? 1 : 0) + 
-    (selectedBatch !== 'ALL' ? 1 : 0);
+  const activeFilterCount =
+    (searchTerm.trim() ? 1 : 0) + (selectedCategory !== 'ALL' ? 1 : 0) + (selectedBatch !== 'ALL' ? 1 : 0);
 
-  const filteredProducts = products.filter(p => {
+  const filteredProducts = products.filter((p) => {
     const term = searchTerm.toLowerCase().trim();
     const matchesSearch = !term || p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term);
     const matchesCat = selectedCategory === 'ALL' || p.category === selectedCategory;
-    const matchesBatch = selectedBatch === 'ALL' || p.batchId === selectedBatch;
+    const matchesBatch =
+      selectedBatch === 'ALL' || (selectedBatch === 'LOOSE' ? !p.batchId || p.is_loose : p.batchId === selectedBatch);
     return matchesSearch && matchesCat && matchesBatch;
   });
 
@@ -66,7 +86,11 @@ export const ProductList = () => {
 
   const handleDeleteBatch = (b) => {
     requireAdmin(() => {
-      if (window.confirm(`Xóa lô hàng "${b.name}" (${b.code})? Tất cả sản phẩm thuộc lô cũng sẽ mất lô liên kết!`)) {
+      if (
+        window.confirm(
+          `Xóa lô hàng "${b.name}" (${b.code})? Tất cả sản phẩm thuộc lô cũng sẽ được chuyển thành hàng lẻ!`
+        )
+      ) {
         deleteBatch(b.id);
       }
     }, 'Vui lòng đăng nhập Admin để xóa lô hàng!');
@@ -76,9 +100,10 @@ export const ProductList = () => {
     return (Number(val) || 0).toLocaleString('vi-VN') + ' VNĐ';
   };
 
-  const getBatchName = (batchId) => {
-    const b = batches.find(item => item.id === batchId);
-    return b ? `[${b.code}] ${b.name}` : 'Không rõ Lô';
+  const getBatchName = (batchId, isLoose) => {
+    if (isLoose || !batchId) return '[LẺ] Hàng lẻ';
+    const b = batches.find((item) => item.id === batchId);
+    return b ? `[${b.code}] ${b.name}` : '[LẺ] Hàng lẻ';
   };
 
   return (
@@ -94,8 +119,8 @@ export const ProductList = () => {
 
         {/* Action Button depending on active tab */}
         {activeSubTab === 'PRODUCTS' ? (
-          <TouchableOpacity 
-            style={styles.bigAddBtn} 
+          <TouchableOpacity
+            style={styles.bigAddBtn}
             onPress={() => {
               requireAdmin(() => {
                 setEditingProduct(null);
@@ -107,8 +132,8 @@ export const ProductList = () => {
             <Text style={styles.bigBtnText}>Thêm Sản Phẩm Mới</Text>
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity 
-            style={styles.bigBatchAddBtn} 
+          <TouchableOpacity
+            style={styles.bigBatchAddBtn}
             onPress={() => {
               requireAdmin(() => {
                 setEditingBatch(null);
@@ -128,7 +153,11 @@ export const ProductList = () => {
           style={[styles.switchTabBtn, activeSubTab === 'PRODUCTS' && styles.switchTabBtnActive]}
           onPress={() => setActiveSubTab('PRODUCTS')}
         >
-          <Package size={16} color={activeSubTab === 'PRODUCTS' ? '#ffffff' : COLORS.textMuted} style={{ marginRight: 6 }} />
+          <Package
+            size={16}
+            color={activeSubTab === 'PRODUCTS' ? '#ffffff' : COLORS.textMuted}
+            style={{ marginRight: 6 }}
+          />
           <Text style={[styles.switchTabText, activeSubTab === 'PRODUCTS' && styles.switchTabTextActive]}>
             Danh Sách Sản Phẩm ({products.length})
           </Text>
@@ -138,7 +167,11 @@ export const ProductList = () => {
           style={[styles.switchTabBtn, activeSubTab === 'BATCHES' && styles.switchTabBtnActive]}
           onPress={() => setActiveSubTab('BATCHES')}
         >
-          <Layers size={16} color={activeSubTab === 'BATCHES' ? '#ffffff' : COLORS.textMuted} style={{ marginRight: 6 }} />
+          <Layers
+            size={16}
+            color={activeSubTab === 'BATCHES' ? '#ffffff' : COLORS.textMuted}
+            style={{ marginRight: 6 }}
+          />
           <Text style={[styles.switchTabText, activeSubTab === 'BATCHES' && styles.switchTabTextActive]}>
             Danh Sách Lô Hàng Nhập ({batches.length})
           </Text>
@@ -167,11 +200,15 @@ export const ProductList = () => {
             </View>
 
             {/* Single Combined Filter Button */}
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.filterTriggerBtn, activeFilterCount > 0 && styles.filterTriggerBtnActive]}
               onPress={() => setIsFilterModalOpen(true)}
             >
-              <Filter size={18} color={activeFilterCount > 0 ? '#ffffff' : COLORS.primaryLight} style={{ marginRight: 8 }} />
+              <Filter
+                size={18}
+                color={activeFilterCount > 0 ? '#ffffff' : COLORS.primaryLight}
+                style={{ marginRight: 8 }}
+              />
               <Text style={[styles.filterTriggerText, activeFilterCount > 0 && styles.filterTriggerTextActive]}>
                 Bộ Lọc {activeFilterCount > 0 ? `(${activeFilterCount})` : ''}
               </Text>
@@ -211,14 +248,21 @@ export const ProductList = () => {
                 filteredProducts.map((prod, index) => (
                   <View key={prod.id} style={styles.tr}>
                     <View style={[styles.td, { width: 100 }]}>
-                      <View style={[
-                        styles.skuBadge,
-                        { backgroundColor: prod.category === 'TS' ? 'rgba(236, 72, 153, 0.15)' : 'rgba(6, 182, 212, 0.15)' }
-                      ]}>
-                        <Text style={[
-                          styles.skuText,
-                          { color: prod.category === 'TS' ? COLORS.categoryTS : COLORS.categoryQA }
-                        ]}>
+                      <View
+                        style={[
+                          styles.skuBadge,
+                          {
+                            backgroundColor:
+                              prod.category === 'TS' ? 'rgba(236, 72, 153, 0.15)' : 'rgba(6, 182, 212, 0.15)'
+                          }
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.skuText,
+                            { color: prod.category === 'TS' ? COLORS.categoryTS : COLORS.categoryQA }
+                          ]}
+                        >
                           {prod.sku}
                         </Text>
                       </View>
@@ -229,23 +273,49 @@ export const ProductList = () => {
                     </View>
 
                     <View style={[styles.td, { width: 240 }]}>
-                      <Text style={styles.prodName} numberOfLines={2}>{prod.name}</Text>
+                      <Text style={styles.prodName} numberOfLines={2}>
+                        {prod.name}
+                      </Text>
                     </View>
 
                     <View style={[styles.td, { width: 130 }]}>
                       <Text style={styles.catText}>
                         {(() => {
-                          const cat = customCategories.find(c => c.code === prod.category);
-                          return cat ? cat.name : (prod.category === 'TS' ? 'Trang Sức' : (prod.category === 'QA' ? 'Quần Áo' : prod.category));
+                          const cat = customCategories.find((c) => c.code === prod.category);
+                          return cat
+                            ? cat.name
+                            : prod.category === 'TS'
+                              ? 'Trang Sức'
+                              : prod.category === 'QA'
+                                ? 'Quần Áo'
+                                : prod.category;
                         })()}
                       </Text>
                     </View>
 
                     <View style={[styles.td, { width: 220 }]}>
-                      <View style={styles.batchTagBadge}>
-                        <Package size={14} color={COLORS.accent} style={{ marginRight: 6 }} />
-                        <Text style={styles.batchTagText} numberOfLines={1}>
-                          {getBatchName(prod.batchId)}
+                      <View
+                        style={[
+                          styles.batchTagBadge,
+                          (!prod.batchId || prod.is_loose) && {
+                            backgroundColor: 'rgba(245, 158, 11, 0.15)',
+                            borderColor: 'rgba(245, 158, 11, 0.3)'
+                          }
+                        ]}
+                      >
+                        <Package
+                          size={14}
+                          color={!prod.batchId || prod.is_loose ? COLORS.warning : COLORS.accent}
+                          style={{ marginRight: 6 }}
+                        />
+                        <Text
+                          style={[
+                            styles.batchTagText,
+                            (!prod.batchId || prod.is_loose) && { color: COLORS.warning, fontWeight: '700' }
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {getBatchName(prod.batchId, prod.is_loose)}
                         </Text>
                       </View>
                     </View>
@@ -263,13 +333,13 @@ export const ProductList = () => {
                     </View>
 
                     <View style={[styles.td, { width: 120 }]}>
-                      <View style={[
-                        styles.stockBadge,
-                        prod.stock === 0 ? styles.stockEmpty : prod.stock < 5 ? styles.stockLow : styles.stockNormal
-                      ]}>
-                        <Text style={styles.stockText}>
-                          {prod.stock === 0 ? 'Hết hàng' : `Còn ${prod.stock}`}
-                        </Text>
+                      <View
+                        style={[
+                          styles.stockBadge,
+                          prod.stock === 0 ? styles.stockEmpty : prod.stock < 5 ? styles.stockLow : styles.stockNormal
+                        ]}
+                      >
+                        <Text style={styles.stockText}>{prod.stock === 0 ? 'Hết hàng' : `Còn ${prod.stock}`}</Text>
                       </View>
                     </View>
 
@@ -280,12 +350,14 @@ export const ProductList = () => {
                     <View style={[styles.td, { width: 140, flexDirection: 'row', justifyContent: 'center', gap: 8 }]}>
                       <TouchableOpacity style={styles.bigEditBtn} onPress={() => handleEditProduct(prod)}>
                         <Edit2 size={16} color={COLORS.primaryLight} style={{ marginRight: 4 }} />
-                        <Text style={{ color: COLORS.primaryLight, fontWeight: '700', ...TYPOGRAPHY.footnote, }}>Sửa</Text>
+                        <Text style={{ color: COLORS.primaryLight, fontWeight: '700', ...TYPOGRAPHY.footnote }}>
+                          Sửa
+                        </Text>
                       </TouchableOpacity>
 
                       <TouchableOpacity style={styles.bigDeleteBtn} onPress={() => handleDeleteProduct(prod)}>
                         <Trash2 size={16} color={COLORS.danger} style={{ marginRight: 4 }} />
-                        <Text style={{ color: COLORS.danger, fontWeight: '700', ...TYPOGRAPHY.footnote, }}>Xóa</Text>
+                        <Text style={{ color: COLORS.danger, fontWeight: '700', ...TYPOGRAPHY.footnote }}>Xóa</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -301,18 +373,22 @@ export const ProductList = () => {
         <ScrollView style={styles.batchesScrollView} showsVerticalScrollIndicator={false}>
           <View style={styles.batchSectionHeader}>
             <Text style={styles.batchSectionTitle}>📦 Danh Sách Các Lô Hàng Đã Nhập ({batches.length})</Text>
-            <Text style={styles.batchSectionSub}>Quản lý tổng vốn từng lô, số lượng sản phẩm nhập về và hiệu quả kinh doanh</Text>
+            <Text style={styles.batchSectionSub}>
+              Quản lý tổng vốn từng lô, số lượng sản phẩm nhập về và hiệu quả kinh doanh
+            </Text>
           </View>
 
           {batches.length === 0 ? (
             <View style={styles.emptyBox}>
               <Package size={40} color={COLORS.textMuted} />
-              <Text style={styles.emptyText}>Chưa có lô hàng nào. Nhấp "Tạo Lô Hàng Mới" để bắt đầu đợt nhập hàng.</Text>
+              <Text style={styles.emptyText}>
+                {'Chưa có lô hàng nào. Nhấp "Tạo Lô Hàng Mới" để bắt đầu đợt nhập hàng.'}
+              </Text>
             </View>
           ) : (
             <View style={styles.batchGridContainer}>
-              {batches.map(b => {
-                const batchProducts = products.filter(p => p.batchId === b.id);
+              {batches.map((b) => {
+                const batchProducts = products.filter((p) => p.batchId === b.id);
                 const totalStockUnits = batchProducts.reduce((acc, curr) => acc + curr.stock, 0);
                 const totalSoldUnits = batchProducts.reduce((acc, curr) => acc + curr.soldCount, 0);
 
@@ -330,18 +406,14 @@ export const ProductList = () => {
                       </View>
 
                       <View style={{ flexDirection: 'row', gap: 8 }}>
-                        <TouchableOpacity 
-                          style={styles.batchActionBtnEdit} 
-                          onPress={() => setIsBatchModalOpen(true)}
-                        >
+                        <TouchableOpacity style={styles.batchActionBtnEdit} onPress={() => setIsBatchModalOpen(true)}>
                           <Edit2 size={15} color={COLORS.primaryLight} style={{ marginRight: 4 }} />
-                          <Text style={{ color: COLORS.primaryLight, ...TYPOGRAPHY.footnote, fontWeight: '700' }}>Sửa Lô</Text>
+                          <Text style={{ color: COLORS.primaryLight, ...TYPOGRAPHY.footnote, fontWeight: '700' }}>
+                            Sửa Lô
+                          </Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity 
-                          style={styles.batchActionBtnDelete} 
-                          onPress={() => handleDeleteBatch(b)}
-                        >
+                        <TouchableOpacity style={styles.batchActionBtnDelete} onPress={() => handleDeleteBatch(b)}>
                           <Trash2 size={15} color={COLORS.danger} style={{ marginRight: 4 }} />
                           <Text style={{ color: COLORS.danger, ...TYPOGRAPHY.footnote, fontWeight: '700' }}>Xóa</Text>
                         </TouchableOpacity>
@@ -356,7 +428,9 @@ export const ProductList = () => {
 
                       <View style={styles.statBox}>
                         <Text style={styles.statBoxLabel}>Sản Phẩm Trong Lô</Text>
-                        <Text style={styles.statBoxVal}>{batchProducts.length} loại ({totalStockUnits} tồn)</Text>
+                        <Text style={styles.statBoxVal}>
+                          {batchProducts.length} loại ({totalStockUnits} tồn)
+                        </Text>
                       </View>
 
                       <View style={styles.statBox}>
@@ -409,7 +483,7 @@ export const ProductList = () => {
               {/* 2. Category selection */}
               <Text style={styles.filterSectionLabel}>2. Chọn phân loại sản phẩm:</Text>
               <View style={styles.catChipsRow}>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={[styles.modalCatChip, selectedCategory === 'ALL' && styles.modalCatChipActive]}
                   onPress={() => setSelectedCategory('ALL')}
                 >
@@ -418,15 +492,22 @@ export const ProductList = () => {
                   </Text>
                 </TouchableOpacity>
 
-                {customCategories.map(cat => {
-                  const count = products.filter(p => p.category === cat.code || p.sku.startsWith(cat.prefix || cat.code)).length;
+                {customCategories.map((cat) => {
+                  const count = products.filter(
+                    (p) => p.category === cat.code || p.sku.startsWith(cat.prefix || cat.code)
+                  ).length;
                   return (
-                    <TouchableOpacity 
+                    <TouchableOpacity
                       key={cat.code}
                       style={[styles.modalCatChip, selectedCategory === cat.code && styles.modalCatChipActive]}
                       onPress={() => setSelectedCategory(cat.code)}
                     >
-                      <Text style={[styles.modalCatChipText, selectedCategory === cat.code && styles.modalCatChipTextActive]}>
+                      <Text
+                        style={[
+                          styles.modalCatChipText,
+                          selectedCategory === cat.code && styles.modalCatChipTextActive
+                        ]}
+                      >
                         {cat.name} ({count})
                       </Text>
                     </TouchableOpacity>
@@ -446,7 +527,13 @@ export const ProductList = () => {
                   <option value="ALL" style={{ background: COLORS.cardDark, color: COLORS.textMain }}>
                     Tất cả Lô Hàng ({batches.length})
                   </option>
-                  {batches.map(b => (
+                  <option
+                    value="LOOSE"
+                    style={{ background: COLORS.cardDark, color: COLORS.warning, fontWeight: 'bold' }}
+                  >
+                    [LẺ] Hàng lẻ (Không theo lô) ({products.filter((p) => !p.batchId || p.is_loose).length})
+                  </option>
+                  {batches.map((b) => (
                     <option key={b.id} value={b.id} style={{ background: COLORS.cardDark, color: COLORS.textMain }}>
                       [{b.code}] {b.name}
                     </option>
@@ -472,17 +559,14 @@ export const ProductList = () => {
       )}
 
       {/* PRODUCT FORM MODAL */}
-      <ProductFormModal 
+      <ProductFormModal
         visible={isProductModalOpen}
         onClose={() => setIsProductModalOpen(false)}
         initialProduct={editingProduct}
       />
 
       {/* BATCH MANAGEMENT MODAL */}
-      <BatchManagementModal
-        visible={isBatchModalOpen}
-        onClose={() => setIsBatchModalOpen(false)}
-      />
+      <BatchManagementModal visible={isBatchModalOpen} onClose={() => setIsBatchModalOpen(false)} />
     </View>
   );
 };
@@ -548,7 +632,7 @@ const styles = StyleSheet.create({
   bigBtnText: {
     color: '#ffffff',
     fontWeight: '800',
-    ...TYPOGRAPHY.callout,
+    ...TYPOGRAPHY.callout
   },
   tabSwitcherRow: {
     flexDirection: 'row',
@@ -663,13 +747,16 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1.5,
     borderBottomColor: COLORS.cardBorder,
     paddingVertical: 14,
-    paddingHorizontal: 12
+    paddingHorizontal: 12,
+    alignItems: 'center'
   },
   th: {
     color: COLORS.textMuted,
     ...TYPOGRAPHY.footnote,
     fontWeight: '800',
-    textTransform: 'uppercase'
+    textTransform: 'uppercase',
+    paddingHorizontal: 4,
+    overflow: 'hidden'
   },
   tr: {
     flexDirection: 'row',
@@ -683,7 +770,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.sidebarBg
   },
   td: {
-    justifyContent: 'center'
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+    overflow: 'hidden'
   },
   skuBadge: {
     paddingHorizontal: 10,
@@ -839,7 +928,7 @@ const styles = StyleSheet.create({
   batchCodeText: {
     color: '#ffffff',
     fontWeight: '900',
-    ...TYPOGRAPHY.subhead,
+    ...TYPOGRAPHY.subhead
   },
   batchNameTitle: {
     ...TYPOGRAPHY.callout,

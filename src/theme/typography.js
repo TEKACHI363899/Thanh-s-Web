@@ -10,5 +10,5 @@ export const TYPOGRAPHY = {
   subhead: { fontSize: 15, lineHeight: '20px', fontWeight: '400' }, // Regular
   footnote: { fontSize: 13, lineHeight: '18px', fontWeight: '400' }, // Regular
   caption1: { fontSize: 12, lineHeight: '16px', fontWeight: '400' }, // Regular
-  caption2: { fontSize: 11, lineHeight: '13px', fontWeight: '400' }, // Regular
+  caption2: { fontSize: 11, lineHeight: '13px', fontWeight: '400' } // Regular
 };
